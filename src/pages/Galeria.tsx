@@ -27,64 +27,7 @@ interface StickerInfo {
 }
 
 const STICKERS_DATA: StickerInfo[] = [
-  // Campechano Soy
-  {
-    id: 'campechano-negra',
-    name: 'Campechano Soy (Negro Mate)',
-    category: 'campechano',
-    colorName: 'Negra',
-    colorType: 'black',
-    rarity: 'essential',
-    imagePath: '/campechana_oro.png', // We apply filter to make it black
-    description: 'Edición Esencial en corte vinil negro mate. Elegancia y sobriedad para cualquier superficie.',
-    perk: 'Acceso a la Red de Aliados y 10% de descuento general.'
-  },
-  {
-    id: 'campechano-blanca',
-    name: 'Campechano Soy (Blanco Brillante)',
-    category: 'campechano',
-    colorName: 'Blanca',
-    colorType: 'white',
-    rarity: 'essential',
-    imagePath: '/campechana_oro.png', // We apply filter to make it white
-    description: 'Edición Esencial en blanco brillante. Máximo contraste y visibilidad en vidrios templados.',
-    perk: 'Acceso a la Red de Aliados y 10% de descuento general.'
-  },
-  {
-    id: 'campechano-dorada',
-    name: 'Campechano Soy (Oro VIP)',
-    category: 'campechano',
-    colorName: 'Dorada',
-    colorType: 'gold',
-    rarity: 'vip',
-    imagePath: '/campechana_oro.png', // Shows original gold gradient
-    description: 'Edición VIP en vinil oro cepillado. Reservada para socios destacados y buscadores del tesoro.',
-    perk: 'Salón VIP Dorado, hasta 50% de descuento en aliados selectos y accesos fast-track.'
-  },
-
   // Campechana Soy
-  {
-    id: 'campechana-negra',
-    name: 'Campechana Soy (Negro Mate)',
-    category: 'campechana',
-    colorName: 'Negra',
-    colorType: 'black',
-    rarity: 'essential',
-    imagePath: '/campechana_oro.png', // Filter to black
-    description: 'Edición Esencial femenina en negro mate. Estilo sutil que resalta la muralla histórica.',
-    perk: 'Acceso a la Red de Aliados y 10% de descuento general.'
-  },
-  {
-    id: 'campechana-blanca',
-    name: 'Campechana Soy (Blanco Brillante)',
-    category: 'campechana',
-    colorName: 'Blanca',
-    colorType: 'white',
-    rarity: 'essential',
-    imagePath: '/campechana_oro.png', // Filter to white
-    description: 'Edición Esencial femenina en blanco brillante. Un clásico que simboliza la paz de nuestra costa.',
-    perk: 'Acceso a la Red de Aliados y 10% de descuento general.'
-  },
   {
     id: 'campechana-rosada',
     name: 'Campechana Soy (Rosa Edición Especial)',
@@ -92,8 +35,8 @@ const STICKERS_DATA: StickerInfo[] = [
     colorName: 'Rosada',
     colorType: 'pink',
     rarity: 'special',
-    imagePath: '/campechana_rosada.png', // Shows original pink image
-    description: 'Edición Especial en rosa pastel brillante. Inspirada en los atardeceres campechanos.',
+    imagePath: '/campechana_rosada.png',
+    description: 'Edición Especial en rosa pastel brillante. Inspirada en los atardeceres campechanos y el patrimonio histórico.',
     perk: '15% de descuento en comercios de repostería, moda y spas aliados.'
   },
   {
@@ -103,34 +46,12 @@ const STICKERS_DATA: StickerInfo[] = [
     colorName: 'Dorada',
     colorType: 'gold',
     rarity: 'vip',
-    imagePath: '/campechana_oro.png', // Original gold
+    imagePath: '/campechana_oro.png',
     description: 'Edición VIP femenina en oro texturizado. Símbolo de orgullo peninsular y privilegios exclusivos.',
     perk: 'Salón VIP Dorado, eventos privados y preventas exclusivas.'
   },
 
   // Carmelita Soy
-  {
-    id: 'carmelita-negra',
-    name: 'Carmelita Soy (Negro Mate)',
-    category: 'carmelita',
-    colorName: 'Negra',
-    colorType: 'black',
-    rarity: 'essential',
-    imagePath: '/carmelita_oro.png', // Filter to black
-    description: 'Edición Esencial con el emblemático camarón de Carmen. Vinil de alta resistencia.',
-    perk: 'Acceso a la Red de Aliados y beneficios exclusivos en la isla.'
-  },
-  {
-    id: 'carmelita-blanca',
-    name: 'Carmelita Soy (Blanco Brillante)',
-    category: 'carmelita',
-    colorName: 'Blanca',
-    colorType: 'white',
-    rarity: 'essential',
-    imagePath: '/carmelita_oro.png', // Filter to white
-    description: 'Edición Esencial en blanco de alto brillo. Destaca tu orgullo carmelita en tu automóvil.',
-    perk: 'Acceso a la Red de Aliados y beneficios exclusivos en la isla.'
-  },
   {
     id: 'carmelita-rosada',
     name: 'Carmelita Soy (Rosa Especial)',
@@ -139,7 +60,7 @@ const STICKERS_DATA: StickerInfo[] = [
     colorType: 'pink',
     imagePath: '/carmelita_rosada.png',
     rarity: 'special',
-    description: 'Edición Especial en rosa orquídea. Un color vibrante inspirado en la flora de la Laguna de Términos.',
+    description: 'Edición Especial en rosa orquídea con el emblemático camarón de la Laguna de Términos.',
     perk: '15% de descuento en aliados seleccionados en Ciudad del Carmen.'
   },
   {
@@ -149,7 +70,7 @@ const STICKERS_DATA: StickerInfo[] = [
     colorName: 'Dorada',
     colorType: 'gold',
     rarity: 'vip',
-    imagePath: '/carmelita_oro.png', // Original gold
+    imagePath: '/carmelita_oro.png',
     description: 'Edición VIP en oro cepillado. El máximo estatus para los fundadores y aliados de la isla de Carmen.',
     perk: 'Salón VIP Dorado, cenas a mitad de precio, fast-track y beneficios premium.'
   }
@@ -159,7 +80,7 @@ const Galeria: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<'todos' | 'campechano' | 'campechana' | 'carmelita'>('todos');
-  const [selectedSticker, setSelectedSticker] = useState<StickerInfo>(STICKERS_DATA[2]); // Default to Campechano Gold
+  const [selectedSticker, setSelectedSticker] = useState<StickerInfo>(STICKERS_DATA[1]); // Default to Campechana Gold
   const [simulatorMode, setSimulatorMode] = useState<'car' | 'phone'>('car');
   
   // Simulator state variables for sticker adjustments
@@ -184,12 +105,10 @@ const Galeria: React.FC = () => {
 
     // Normal user logic
     if (user.level === 'silver') {
-      // Silver unlocks essential (white/black) and special (pink)
       return sticker.rarity === 'essential' || sticker.rarity === 'special';
     }
 
     if (user.level === 'white') {
-      // White unlocks only essential
       return sticker.rarity === 'essential';
     }
 
@@ -217,32 +136,24 @@ const Galeria: React.FC = () => {
     setActiveHoverId(null);
   };
 
-  // CSS Filter Helper
+  // CSS Filter Helper - Drop shadows only, clean transparent rendering
   const getFilterStyle = (colorType: 'black' | 'white' | 'gold' | 'pink') => {
     switch (colorType) {
-      case 'black':
-        return {
-          filter: 'brightness(0) drop-shadow(0 4px 6px rgba(0,0,0,0.6))',
-          background: 'none'
-        };
-      case 'white':
-        return {
-          filter: 'brightness(0) invert(1) drop-shadow(0 4px 8px rgba(255,255,255,0.3))',
-          background: 'none'
-        };
       case 'pink':
-        // If it is the default pink image, render normally, otherwise apply filter
         return {
-          filter: 'drop-shadow(0 4px 8px rgba(244,143,177,0.4))',
+          filter: 'drop-shadow(0 4px 10px rgba(244,143,177,0.45))',
           background: 'none'
         };
       case 'gold':
         return {
-          filter: 'drop-shadow(0 6px 12px rgba(212,175,55,0.45))',
+          filter: 'drop-shadow(0 6px 14px rgba(212,175,55,0.5))',
           background: 'none'
         };
       default:
-        return {};
+        return {
+          filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.4))',
+          background: 'none'
+        };
     }
   };
 
@@ -678,7 +589,7 @@ const Galeria: React.FC = () => {
       {/* Category Tabs */}
       <section style={{ marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '8px' }}>
-          {(['todos', 'campechano', 'campechana', 'carmelita'] as const).map(cat => (
+          {(['todos', 'campechana', 'carmelita'] as const).map(cat => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
@@ -695,7 +606,7 @@ const Galeria: React.FC = () => {
                 transition: 'all 0.3s'
               }}
             >
-              {cat === 'todos' ? 'Todas' : cat === 'carmelita' ? 'Carmelita' : cat === 'campechana' ? 'Campechana (Fem)' : 'Campechano (Masc)'}
+              {cat === 'todos' ? 'Todas' : cat === 'carmelita' ? 'Carmelita Soy' : 'Campechana Soy'}
             </button>
           ))}
         </div>
