@@ -71,8 +71,8 @@ const STICKERS_DATA: StickerInfo[] = [
     colorType: 'gold',
     rarity: 'vip',
     imagePath: '/campechana_oro.png',
-    description: 'Edición VIP femenina en oro texturizado. Símbolo de orgullo peninsular y privilegios exclusivos.',
-    perk: 'Salón VIP Dorado, eventos privados y preventas exclusivas.'
+    description: 'Edición VIP de colección en oro texturizado. Símbolo de orgullo peninsular y estatus máximo en la Red.',
+    perk: 'Edición Limitada (Próximamente): Acceso al Salón VIP Dorado, tratos preferenciales y preventas exclusivas.'
   },
 
   // Carmelita Soy
@@ -117,8 +117,8 @@ const STICKERS_DATA: StickerInfo[] = [
     colorType: 'gold',
     rarity: 'vip',
     imagePath: '/carmelita_oro.png',
-    description: 'Edición VIP en oro cepillado. El máximo estatus para los fundadores y aliados de la isla de Carmen.',
-    perk: 'Salón VIP Dorado, cenas a mitad de precio, fast-track y beneficios premium.'
+    description: 'Edición VIP de colección en oro cepillado. El máximo estatus para los fundadores y aliados de la isla de Carmen.',
+    perk: 'Edición Limitada (Próximamente): Salón VIP Dorado, tratos preferenciales y eventos especiales.'
   }
 ];
 
@@ -223,7 +223,7 @@ const Galeria: React.FC = () => {
             textTransform: 'uppercase',
             letterSpacing: '0.05em'
           }}>
-            VIP ORO
+            ORO VIP (PRÓXIMAMENTE)
           </span>
         );
       case 'special':

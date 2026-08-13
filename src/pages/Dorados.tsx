@@ -25,7 +25,7 @@ const Dorados: React.FC = () => {
           </div>
           <h2 style={{ fontSize: '1.3rem', marginBottom: '1rem' }}>Salón VIP Bloqueado</h2>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-            Los beneficios exclusivos (como 50% de descuento en cenas, accesos sin fila y más) están reservados para Miembros Dorados.
+            Los beneficios exclusivos de estatus preferencial, trato VIP y eventos especiales están reservados para Miembros Dorados.
           </p>
         </section>
 
