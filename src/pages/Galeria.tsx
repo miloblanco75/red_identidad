@@ -27,6 +27,30 @@ interface StickerInfo {
 }
 
 const STICKERS_DATA: StickerInfo[] = [
+  // Campechano Soy
+  {
+    id: 'campechano-negra',
+    name: 'Campechano Soy (Negro Mate)',
+    category: 'campechano',
+    colorName: 'Negra',
+    colorType: 'black',
+    rarity: 'essential',
+    imagePath: '/campechano_negra_publicidad.png',
+    description: 'Edición Esencial en corte vinil negro mate. Elegancia y sobriedad para cualquier superficie.',
+    perk: 'Acceso a la Red de Aliados y 10% de descuento general.'
+  },
+  {
+    id: 'campechano-blanca',
+    name: 'Campechano Soy (Blanco Brillante)',
+    category: 'campechano',
+    colorName: 'Blanca',
+    colorType: 'white',
+    rarity: 'essential',
+    imagePath: '/campechano_negra_publicidad.png',
+    description: 'Edición Esencial en blanco brillante. Máximo contraste y visibilidad en vidrios templados.',
+    perk: 'Acceso a la Red de Aliados y 10% de descuento general.'
+  },
+
   // Campechana Soy
   {
     id: 'campechana-rosada',
@@ -52,6 +76,28 @@ const STICKERS_DATA: StickerInfo[] = [
   },
 
   // Carmelita Soy
+  {
+    id: 'carmelita-negra',
+    name: 'Carmelita Soy (Negro Mate)',
+    category: 'carmelita',
+    colorName: 'Negra',
+    colorType: 'black',
+    rarity: 'essential',
+    imagePath: '/carmelita_negra_publicidad.png',
+    description: 'Edición Esencial con el emblemático camarón de Carmen en negro mate.',
+    perk: 'Acceso a la Red de Aliados y beneficios exclusivos en la isla.'
+  },
+  {
+    id: 'carmelita-blanca',
+    name: 'Carmelita Soy (Blanco Brillante)',
+    category: 'carmelita',
+    colorName: 'Blanca',
+    colorType: 'white',
+    rarity: 'essential',
+    imagePath: '/carmelita_negra_publicidad.png',
+    description: 'Edición Esencial en blanco brillante. Destaca tu orgullo carmelita en tu automóvil.',
+    perk: 'Acceso a la Red de Aliados y beneficios exclusivos en la isla.'
+  },
   {
     id: 'carmelita-rosada',
     name: 'Carmelita Soy (Rosa Especial)',
@@ -80,7 +126,7 @@ const Galeria: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<'todos' | 'campechano' | 'campechana' | 'carmelita'>('todos');
-  const [selectedSticker, setSelectedSticker] = useState<StickerInfo>(STICKERS_DATA[1]); // Default to Campechana Gold
+  const [selectedSticker, setSelectedSticker] = useState<StickerInfo>(STICKERS_DATA[0]); // Default to first sticker
   const [simulatorMode, setSimulatorMode] = useState<'car' | 'phone'>('car');
   
   // Simulator state variables for sticker adjustments
@@ -136,9 +182,19 @@ const Galeria: React.FC = () => {
     setActiveHoverId(null);
   };
 
-  // CSS Filter Helper - Drop shadows only, clean transparent rendering
+  // CSS Filter Helper - Drop shadows & clean color tinting for transparent PNGs
   const getFilterStyle = (colorType: 'black' | 'white' | 'gold' | 'pink') => {
     switch (colorType) {
+      case 'black':
+        return {
+          filter: 'brightness(0) drop-shadow(0 4px 10px rgba(0,0,0,0.8))',
+          background: 'none'
+        };
+      case 'white':
+        return {
+          filter: 'brightness(0) invert(1) drop-shadow(0 4px 12px rgba(255,255,255,0.7))',
+          background: 'none'
+        };
       case 'pink':
         return {
           filter: 'drop-shadow(0 4px 10px rgba(244,143,177,0.45))',
@@ -147,11 +203,6 @@ const Galeria: React.FC = () => {
       case 'gold':
         return {
           filter: 'drop-shadow(0 6px 14px rgba(212,175,55,0.5))',
-          background: 'none'
-        };
-      default:
-        return {
-          filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.4))',
           background: 'none'
         };
     }
