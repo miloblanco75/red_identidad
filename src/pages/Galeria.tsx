@@ -137,7 +137,7 @@ const STICKERS_DATA: StickerInfo[] = [
     category: 'carmelita',
     colorName: 'Rosada',
     colorType: 'pink',
-    imagePath: '/carmelita_oro.png', // Filter to pink
+    imagePath: '/carmelita_rosada.png',
     rarity: 'special',
     description: 'Edición Especial en rosa orquídea. Un color vibrante inspirado en la flora de la Laguna de Términos.',
     perk: '15% de descuento en aliados seleccionados en Ciudad del Carmen.'
