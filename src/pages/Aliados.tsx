@@ -36,6 +36,7 @@ interface Ally {
   promotions_given: number;
   facebook_url?: string;
   website_url?: string;
+  logo_url?: string;
 }
 
 const mockAllies: Ally[] = [
@@ -120,7 +121,7 @@ const Aliados: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('allies')
-        .select('id, name, category, discount, lat, lng, promotions_given, facebook_url, website_url, created_at')
+        .select('id, name, category, discount, lat, lng, promotions_given, facebook_url, website_url, logo_url, created_at')
         .order('promotions_given', { ascending: false });
       
       if (error) throw error;
@@ -234,8 +235,15 @@ const Aliados: React.FC = () => {
               <Marker key={partner.id} position={[parseFloat(partner.lat as any), parseFloat(partner.lng as any)]} icon={goldIcon}>
                 <Popup>
                   <div style={{ color: '#121212', minWidth: '160px' }}>
-                    <strong style={{ display: 'block', fontSize: '0.95rem' }}>{partner.name}</strong>
-                    <span style={{ fontSize: '0.75rem', color: '#666' }}>{partner.category}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      {partner.logo_url && (
+                        <img src={partner.logo_url} alt={partner.name} style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }} />
+                      )}
+                      <div>
+                        <strong style={{ display: 'block', fontSize: '0.95rem' }}>{partner.name}</strong>
+                        <span style={{ fontSize: '0.75rem', color: '#666' }}>{partner.category}</span>
+                      </div>
+                    </div>
                     <div style={{ marginTop: '5px', color: '#B8860B', fontWeight: 700, fontSize: '0.85rem' }}>{partner.discount}</div>
                     {(partner.facebook_url || partner.website_url) && (
                       <div style={{ display: 'flex', gap: '8px', marginTop: '8px', paddingTop: '6px', borderTop: '1px solid #eee' }}>
@@ -321,9 +329,17 @@ const Aliados: React.FC = () => {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                      <div style={{ backgroundColor: 'rgba(212,175,55,0.1)', padding: '8px', borderRadius: '10px' }}>
-                        <IconComponent size={18} color="var(--accent-gold)" />
-                      </div>
+                      {item.logo_url ? (
+                        <img 
+                          src={item.logo_url} 
+                          alt={item.name} 
+                          style={{ width: '44px', height: '44px', borderRadius: '12px', objectFit: 'cover', border: '1px solid var(--glass-border)', backgroundColor: 'rgba(255,255,255,0.05)' }} 
+                        />
+                      ) : (
+                        <div style={{ backgroundColor: 'rgba(212,175,55,0.1)', padding: '10px', borderRadius: '12px' }}>
+                          <IconComponent size={20} color="var(--accent-gold)" />
+                        </div>
+                      )}
                       <div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.category}</div>
                         <h4 style={{ fontSize: '1rem', fontWeight: 700 }}>{item.name}</h4>

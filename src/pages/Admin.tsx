@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, Globe, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -30,6 +30,7 @@ const Admin: React.FC = () => {
   const [allyLng, setAllyLng] = useState('');
   const [allyFacebook, setAllyFacebook] = useState('');
   const [allyWebsite, setAllyWebsite] = useState('');
+  const [allyLogo, setAllyLogo] = useState('');
   const [allyPin, setAllyPin] = useState('');
   const [isAddingAlly, setIsAddingAlly] = useState(false);
   const [savedAllies, setSavedAllies] = useState<any[]>([]);
@@ -43,6 +44,7 @@ const Admin: React.FC = () => {
   const [editLng, setEditLng] = useState('');
   const [editFacebook, setEditFacebook] = useState('');
   const [editWebsite, setEditWebsite] = useState('');
+  const [editLogo, setEditLogo] = useState('');
   const [editPin, setEditPin] = useState('');
 
   // Manual state
@@ -153,6 +155,7 @@ const Admin: React.FC = () => {
         lng: parseFloat(allyLng),
         facebook_url: allyFacebook || null,
         website_url: allyWebsite || null,
+        logo_url: allyLogo || null,
         ally_pin: allyPin || null,
         promotions_given: 0
       }]);
@@ -166,6 +169,7 @@ const Admin: React.FC = () => {
       setAllyLng('');
       setAllyFacebook('');
       setAllyWebsite('');
+      setAllyLogo('');
       setAllyPin('');
       fetchSavedAllies(); // Refresh list
     } catch (err: any) {
@@ -224,6 +228,7 @@ const Admin: React.FC = () => {
     setEditLng(ally.lng ? String(ally.lng) : '');
     setEditFacebook(ally.facebook_url || '');
     setEditWebsite(ally.website_url || '');
+    setEditLogo(ally.logo_url || '');
     setEditPin(ally.ally_pin || '');
   };
 
@@ -247,6 +252,7 @@ const Admin: React.FC = () => {
         lng: parseFloat(editLng),
         facebook_url: editFacebook || null,
         website_url: editWebsite || null,
+        logo_url: editLogo || null,
         ally_pin: editPin || null,
       }).eq('id', editingAlly.id);
 
@@ -429,7 +435,7 @@ const Admin: React.FC = () => {
               onClick={() => setShowAllyManual(!showAllyManual)}
               style={{
                 display: 'flex',
-                justify: 'space-between',
+                justifyContent: 'space-between',
                 alignItems: 'center',
                 cursor: 'pointer',
                 userSelect: 'none'
@@ -519,6 +525,19 @@ const Admin: React.FC = () => {
               </div>
             </div>
 
+            {/* URL del Logotipo del Aliado */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>URL del Logotipo (Imagen PNG/JPG)</label>
+              <input 
+                type="url" 
+                value={allyLogo} 
+                onChange={(e) => setAllyLogo(e.target.value)} 
+                placeholder="https://ejemplo.com/logo-comercio.png" 
+                style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.9rem', outline: 'none' }} 
+              />
+              <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '0.4rem' }}>Copia la dirección de la imagen del logotipo de su página web o redes para mostrarlo en la app.</p>
+            </div>
+
             {/* PIN del Aliado */}
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>PIN del Aliado (para su portal)</label>
@@ -559,14 +578,23 @@ const Admin: React.FC = () => {
             ) : (
               savedAllies.map(ally => (
                 <div key={ally.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
-                  <div>
-                    <strong style={{ display: 'block', fontSize: '1rem' }}>{ally.name}</strong>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>{ally.category} • {ally.discount}</span>
-                    <div style={{ display: 'flex', gap: '0.8rem', marginTop: '4px', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.75rem', color: '#4ADE80', fontWeight: 600 }}>🎁 {ally.promotions_given ?? 0} promo(s)</span>
-                      {ally.ally_pin && <span style={{ fontSize: '0.75rem', color: 'var(--accent-gold)' }}>PIN: {ally.ally_pin}</span>}
-                      {ally.facebook_url && <span style={{ fontSize: '0.75rem', color: '#1877F2', fontWeight: 600 }}>🌐 Facebook</span>}
-                      {ally.website_url && <span style={{ fontSize: '0.75rem', color: '#38BDF8', fontWeight: 600 }}>🔗 Web</span>}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                    {ally.logo_url ? (
+                      <img src={ally.logo_url} alt={ally.name} style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', border: '1px solid var(--glass-border)' }} />
+                    ) : (
+                      <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Store size={20} color="var(--accent-gold)" />
+                      </div>
+                    )}
+                    <div>
+                      <strong style={{ display: 'block', fontSize: '1rem' }}>{ally.name}</strong>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>{ally.category} • {ally.discount}</span>
+                      <div style={{ display: 'flex', gap: '0.8rem', marginTop: '4px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.75rem', color: '#4ADE80', fontWeight: 600 }}>🎁 {ally.promotions_given ?? 0} promo(s)</span>
+                        {ally.ally_pin && <span style={{ fontSize: '0.75rem', color: 'var(--accent-gold)' }}>PIN: {ally.ally_pin}</span>}
+                        {ally.facebook_url && <span style={{ fontSize: '0.75rem', color: '#1877F2', fontWeight: 600 }}>🌐 Facebook</span>}
+                        {ally.website_url && <span style={{ fontSize: '0.75rem', color: '#38BDF8', fontWeight: 600 }}>🔗 Web</span>}
+                      </div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '0.4rem' }}>
@@ -638,6 +666,11 @@ const Admin: React.FC = () => {
                   <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Página Web</label>
                   <input type="url" value={editWebsite} onChange={(e) => setEditWebsite(e.target.value)} placeholder="https://minegocio.com" style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.85rem', outline: 'none' }} />
                 </div>
+              </div>
+
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>URL del Logotipo (Imagen PNG/JPG)</label>
+                <input type="url" value={editLogo} onChange={(e) => setEditLogo(e.target.value)} placeholder="https://ejemplo.com/logo.png" style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.85rem', outline: 'none' }} />
               </div>
 
               <div style={{ marginBottom: '1rem' }}>
