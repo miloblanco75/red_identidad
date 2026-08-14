@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -54,6 +54,65 @@ const Admin: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
 
   const ADMIN_PIN = 'RED2024';
+
+  // Helper to process image file upload from device
+  const handleFileUpload = async (file: File, setTargetUrl: (url: string) => void) => {
+    try {
+      // 1. Try uploading to Supabase Storage bucket 'allies-logos'
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+      const filePath = `logos/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('allies-logos')
+        .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+      if (!uploadError && uploadData) {
+        const { data: publicUrlData } = supabase.storage.from('allies-logos').getPublicUrl(filePath);
+        if (publicUrlData?.publicUrl) {
+          setTargetUrl(publicUrlData.publicUrl);
+          return;
+        }
+      }
+
+      // 2. Fallback: Convert to compressed Data URL (canvas max 400px width/height)
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 400;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxDim) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            setTargetUrl(compressedDataUrl);
+          }
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Error processing file:', err);
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -525,17 +584,61 @@ const Admin: React.FC = () => {
               </div>
             </div>
 
-            {/* URL del Logotipo del Aliado */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>URL del Logotipo (Imagen PNG/JPG)</label>
-              <input 
-                type="url" 
-                value={allyLogo} 
-                onChange={(e) => setAllyLogo(e.target.value)} 
-                placeholder="https://ejemplo.com/logo-comercio.png" 
-                style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.9rem', outline: 'none' }} 
-              />
-              <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '0.4rem' }}>Copia la dirección de la imagen del logotipo de su página web o redes para mostrarlo en la app.</p>
+            {/* Logotipo del Aliado (Subir Archivo o URL) */}
+            <div style={{ marginBottom: '1.5rem', backgroundColor: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.6rem', letterSpacing: '0.1em' }}>
+                Logotipo del Comercio
+              </label>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.8rem' }}>
+                {allyLogo ? (
+                  <img src={allyLogo} alt="Preview Logo" style={{ width: '60px', height: '60px', borderRadius: '14px', objectFit: 'cover', border: '2px solid var(--accent-gold)' }} />
+                ) : (
+                  <div style={{ width: '60px', height: '60px', borderRadius: '14px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px dashed var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Upload size={24} color="var(--text-dim)" />
+                  </div>
+                )}
+
+                <div style={{ flex: 1 }}>
+                  <label style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    padding: '10px 16px', 
+                    borderRadius: '12px', 
+                    backgroundColor: 'rgba(212,175,55,0.15)', 
+                    color: 'var(--accent-gold)', 
+                    border: '1px solid var(--accent-gold)', 
+                    fontSize: '0.85rem', 
+                    fontWeight: 700, 
+                    cursor: 'pointer' 
+                  }}>
+                    <Upload size={18} /> Subir Imagen desde el Celular / PC
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleFileUpload(e.target.files[0], setAllyLogo);
+                        }
+                      }} 
+                      style={{ display: 'none' }} 
+                    />
+                  </label>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '6px' }}>Selecciona cualquier imagen PNG, JPG o WEBP de tu galería o archivos.</p>
+                </div>
+              </div>
+
+              <details style={{ marginTop: '0.4rem' }}>
+                <summary style={{ fontSize: '0.75rem', color: 'var(--text-dim)', cursor: 'pointer' }}>o ingresar enlace de URL manual</summary>
+                <input 
+                  type="url" 
+                  value={allyLogo} 
+                  onChange={(e) => setAllyLogo(e.target.value)} 
+                  placeholder="https://ejemplo.com/logo-comercio.png" 
+                  style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: '#FFF', fontSize: '0.85rem', outline: 'none', marginTop: '0.5rem' }} 
+                />
+              </details>
             </div>
 
             {/* PIN del Aliado */}
@@ -668,9 +771,60 @@ const Admin: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>URL del Logotipo (Imagen PNG/JPG)</label>
-                <input type="url" value={editLogo} onChange={(e) => setEditLogo(e.target.value)} placeholder="https://ejemplo.com/logo.png" style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.85rem', outline: 'none' }} />
+              {/* Logotipo del Aliado (Subir Archivo o URL) */}
+              <div style={{ marginBottom: '1rem', backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.8rem', borderRadius: '14px', border: '1px solid var(--glass-border)' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>
+                  Logotipo del Comercio
+                </label>
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.6rem' }}>
+                  {editLogo ? (
+                    <img src={editLogo} alt="Preview Logo" style={{ width: '50px', height: '50px', borderRadius: '12px', objectFit: 'cover', border: '2px solid var(--accent-gold)' }} />
+                  ) : (
+                    <div style={{ width: '50px', height: '50px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px dashed var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Upload size={20} color="var(--text-dim)" />
+                    </div>
+                  )}
+
+                  <div style={{ flex: 1 }}>
+                    <label style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      padding: '8px 12px', 
+                      borderRadius: '10px', 
+                      backgroundColor: 'rgba(212,175,55,0.15)', 
+                      color: 'var(--accent-gold)', 
+                      border: '1px solid var(--accent-gold)', 
+                      fontSize: '0.8rem', 
+                      fontWeight: 700, 
+                      cursor: 'pointer' 
+                    }}>
+                      <Upload size={16} /> Subir Imagen desde el Celular / PC
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleFileUpload(e.target.files[0], setEditLogo);
+                          }
+                        }} 
+                        style={{ display: 'none' }} 
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <details style={{ marginTop: '0.2rem' }}>
+                  <summary style={{ fontSize: '0.7rem', color: 'var(--text-dim)', cursor: 'pointer' }}>o ingresar enlace de URL manual</summary>
+                  <input 
+                    type="url" 
+                    value={editLogo} 
+                    onChange={(e) => setEditLogo(e.target.value)} 
+                    placeholder="https://ejemplo.com/logo.png" 
+                    style={{ width: '100%', padding: '0.6rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: '#FFF', fontSize: '0.8rem', outline: 'none', marginTop: '0.4rem' }} 
+                  />
+                </details>
               </div>
 
               <div style={{ marginBottom: '1rem' }}>
