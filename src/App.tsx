@@ -15,6 +15,7 @@ const Tesoro = React.lazy(() => import('./pages/Tesoro'));
 const Galeria = React.lazy(() => import('./pages/Galeria'));
 const Comercio = React.lazy(() => import('./pages/Comercio'));
 const AliadoPanel = React.lazy(() => import('./pages/AliadoPanel'));
+const EnvelopeStickerDesigner = React.lazy(() => import('./components/EnvelopeStickerDesigner'));
 
 function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -39,6 +40,7 @@ function App() {
             <Route path="/galeria" element={<Galeria />} />
             <Route path="/comercio" element={<Comercio />} />
             <Route path="/aliado-panel" element={<AliadoPanel />} />
+            <Route path="/imprimir-calcomanias" element={<EnvelopeStickerDesigner />} />
           </Routes>
         </React.Suspense>
         <BottomNavigation />

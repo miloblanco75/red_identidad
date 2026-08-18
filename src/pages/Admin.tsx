@@ -3,10 +3,12 @@ import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Tr
 import { supabase } from '../lib/supabase';
 import { QRCodeSVG } from 'qrcode.react';
 
+import EnvelopeStickerDesigner from '../components/EnvelopeStickerDesigner';
+
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
-  const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print'>('codes');
+  const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope'>('codes');
 
   // Print states
   const [printStickers, setPrintStickers] = useState<any[]>([]);
@@ -133,7 +135,7 @@ const Admin: React.FC = () => {
     setErrorMsg('');
 
     try {
-      if (quantity > 1000) throw new Error('Máximo 1000 códigos por lote.');
+      if (quantity > 10000) throw new Error('Máximo 10,000 códigos por lote.');
       if (!prefix) throw new Error('Debes incluir un prefijo.');
       if (startNumber < 1) throw new Error('El número inicial debe ser 1 o mayor.');
       if (codeType === 'tesoro' && level !== 'gold') {
@@ -194,6 +196,29 @@ const Admin: React.FC = () => {
       }
     }
   };
+
+  const handleResetStickerOne = async () => {
+    if (confirm('¿Estás seguro de liberar la Calcomanía #1? Se borrará el teléfono vinculado en la base de datos para que quede como nueva/sin activar.')) {
+      const { error } = await supabase.from('stickers').update({ phone: null, claimed_at: null }).eq('member_number', 1);
+      if (error) {
+        setErrorMsg('Error al liberar Calcomanía #1: ' + error.message);
+      } else {
+        setSuccessMsg('Calcomanía #1 liberada correctamente y lista para ser activada nuevamente.');
+      }
+    }
+  };
+
+  const handleResetAllClaimedStickers = async () => {
+    if (confirm('¿Estás seguro de desvincular TODAS las calcomanías activadas? Todas volverán a estado virgen/nuevo.')) {
+      const { error } = await supabase.from('stickers').update({ phone: null, claimed_at: null }).not('phone', 'is', null);
+      if (error) {
+        setErrorMsg('Error al reiniciar calcomanías: ' + error.message);
+      } else {
+        setSuccessMsg('Todas las calcomanías han sido reiniciadas a estado nuevo/sin reclamar.');
+      }
+    }
+  };
+
 
   const handleAddAlly = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -267,12 +292,12 @@ const Admin: React.FC = () => {
   };
 
   const handleDeleteAlly = async (id: string, name: string) => {
-    if (confirm(`¿Estás seguro de que quieres borrar a ${name}?`)) {
+    if (confirm(`¿Estás seguro de que quieres borrar a ${name}? Esta acción quitará el comercio del mapa y del sistema.`)) {
       const { error } = await supabase.from('allies').delete().eq('id', id);
       if (error) {
-        setErrorMsg('No se pudo borrar. Asegúrate de haber ejecutado el comando SQL de borrado.');
+        setErrorMsg('Error al borrar aliado: ' + error.message);
       } else {
-        setSuccessMsg(`Aliado ${name} borrado.`);
+        setSuccessMsg(`Aliado "${name}" borrado exitosamente.`);
         fetchSavedAllies();
       }
     }
@@ -363,24 +388,30 @@ const Admin: React.FC = () => {
       <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Administra tu Red Identidad.</p>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
         <button 
           onClick={() => { setActiveTab('codes'); setSuccessMsg(''); setErrorMsg(''); }}
-          style={{ flex: 1, padding: '0.8rem', borderRadius: '12px', backgroundColor: activeTab === 'codes' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'codes' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
+          style={{ flex: 1, minWidth: '90px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'codes' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'codes' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
         >
-          <QrCode size={18} /> Códigos
+          <QrCode size={16} /> Códigos
         </button>
         <button 
           onClick={() => { setActiveTab('allies'); setSuccessMsg(''); setErrorMsg(''); }}
-          style={{ flex: 1, padding: '0.8rem', borderRadius: '12px', backgroundColor: activeTab === 'allies' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'allies' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
+          style={{ flex: 1, minWidth: '90px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'allies' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'allies' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
         >
-          <Store size={18} /> Aliados
+          <Store size={16} /> Aliados
         </button>
         <button 
           onClick={() => { setActiveTab('print'); setSuccessMsg(''); setErrorMsg(''); setPrintStickers([]); }}
-          style={{ flex: 1, padding: '0.8rem', borderRadius: '12px', backgroundColor: activeTab === 'print' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'print' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
+          style={{ flex: 1, minWidth: '90px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'print' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'print' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
         >
-          <Printer size={18} /> Imprimir
+          <Printer size={16} /> Tarjetas
+        </button>
+        <button 
+          onClick={() => { setActiveTab('envelope'); setSuccessMsg(''); setErrorMsg(''); }}
+          style={{ flex: 1, minWidth: '110px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'envelope' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'envelope' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+        >
+          <Printer size={16} /> Sobres (7x7)
         </button>
       </div>
 
@@ -447,7 +478,7 @@ const Admin: React.FC = () => {
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Cantidad</label>
                 <input 
-                  type="number" value={quantity} onChange={(e) => setQuantity(parseInt(e.target.value) || 0)} min="1" max="1000" required
+                  type="number" value={quantity} onChange={(e) => setQuantity(parseInt(e.target.value) || 0)} min="1" max="10000" required
                   style={{ width: '100%', padding: '0.9rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }}
                 />
               </div>
@@ -466,15 +497,37 @@ const Admin: React.FC = () => {
             </button>
           </form>
 
-          {/* Botón para limpiar pruebas */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.2rem', marginTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>¿Quieres reiniciar la base para pruebas reales?</span>
-            <button
-              onClick={handleClearUnclaimedCodes}
-              style={{ padding: '0.5rem 0.9rem', borderRadius: '8px', backgroundColor: 'rgba(255,68,68,0.12)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-            >
-              <Trash2 size={14} /> Limpiar códigos no usados
-            </button>
+          {/* Botón para limpiar pruebas y desvincular calcomanías */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.2rem', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Liberar solo Calcomanía #1 (Volver virgen):</span>
+              <button
+                onClick={handleResetStickerOne}
+                style={{ padding: '0.5rem 0.9rem', borderRadius: '8px', backgroundColor: 'rgba(212,175,55,0.15)', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Trash2 size={14} /> Liberar Calcomanía #1
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>¿Limpiar códigos no usados (en blanco)?</span>
+              <button
+                onClick={handleClearUnclaimedCodes}
+                style={{ padding: '0.5rem 0.9rem', borderRadius: '8px', backgroundColor: 'rgba(255,68,68,0.12)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Trash2 size={14} /> Limpiar códigos no usados
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>¿Desvincular TODAS las calcomanías activadas?</span>
+              <button
+                onClick={handleResetAllClaimedStickers}
+                style={{ padding: '0.5rem 0.9rem', borderRadius: '8px', backgroundColor: 'rgba(255,68,68,0.2)', border: '1px solid #FF4444', color: '#FF4444', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Trash2 size={14} /> Liberar TODAS las calcomanías
+              </button>
+            </div>
           </div>
         </section>
       )}
@@ -999,6 +1052,11 @@ const Admin: React.FC = () => {
             </>
           )}
         </>
+      )}
+
+      {/* ─── TAB: IMPRIMIR CALCOMANÍAS SOBRES (7x7 cm) ─── */}
+      {activeTab === 'envelope' && (
+        <EnvelopeStickerDesigner />
       )}
     </div>
   );
