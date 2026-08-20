@@ -345,7 +345,7 @@ const Registro: React.FC = () => {
             cursor: 'pointer'
           }}
         >
-          <Smartphone size={16} color="var(--accent-gold)" /> Instalar App en Pantalla de Inicio
+          <Smartphone size={16} color="var(--accent-gold)" /> Guardar icono en Pantalla de Inicio
         </button>
 
         <button 

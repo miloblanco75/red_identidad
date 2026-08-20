@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, X, Share, PlusSquare, Smartphone } from 'lucide-react';
+import { Bookmark, X, Share, PlusSquare, Smartphone } from 'lucide-react';
 
 export const InstallPwaBanner: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -13,13 +13,19 @@ export const InstallPwaBanner: React.FC = () => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
     if (isStandalone) return;
 
-    // 2. Check if user dismissed banner recently
-    const dismissed = localStorage.getItem('red_identidad_pwa_dismissed');
-    if (dismissed && Date.now() - parseInt(dismissed, 10) < 86400000) { // 24 hours
+    // 2. Check if user already installed or saved icon
+    const isSaved = localStorage.getItem('red_identidad_pwa_installed');
+    if (isSaved === 'true') {
       return;
     }
 
-    // 3. Detect iOS Safari
+    // 3. Check if user dismissed banner recently
+    const dismissed = localStorage.getItem('red_identidad_pwa_dismissed');
+    if (dismissed && Date.now() - parseInt(dismissed, 10) < 604800000) { // 7 days
+      return;
+    }
+
+    // 4. Detect iOS Safari
     const ua = window.navigator.userAgent;
     const isIosDevice = /iPhone|iPad|iPod/.test(ua);
     const isSafari = /Safari/.test(ua) && !/Chrome|CriOS/.test(ua);
@@ -30,7 +36,7 @@ export const InstallPwaBanner: React.FC = () => {
       return;
     }
 
-    // 4. Android / Chrome beforeinstallprompt event listener
+    // 5. Android / Chrome beforeinstallprompt event listener
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
@@ -56,6 +62,7 @@ export const InstallPwaBanner: React.FC = () => {
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
       setShowBanner(false);
+      localStorage.setItem('red_identidad_pwa_installed', 'true');
     }
     setDeferredPrompt(null);
   };
@@ -109,10 +116,10 @@ export const InstallPwaBanner: React.FC = () => {
               />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 800, fontSize: '0.85rem', color: '#FFF', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Smartphone size={14} color="var(--accent-gold)" /> Instalar App Red Identidad
+                  <Smartphone size={14} color="var(--accent-gold)" /> Guardar acceso de inicio
                 </div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  Agrega el icono a tu pantalla de inicio
+                  Añade el icono a tu celular sin descargar nada
                 </div>
               </div>
             </div>
@@ -135,7 +142,7 @@ export const InstallPwaBanner: React.FC = () => {
                   boxShadow: '0 2px 10px rgba(212,175,55,0.3)'
                 }}
               >
-                <Download size={14} /> Instalar
+                <Bookmark size={14} /> Guardar icono
               </button>
 
               <button
@@ -192,7 +199,7 @@ export const InstallPwaBanner: React.FC = () => {
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-gold)', margin: 0 }}>
-                  Instalar en iPhone / iPad
+                  Guardar icono en iPhone / iPad
                 </h3>
                 <button onClick={() => setShowIosGuide(false)} style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer' }}>
                   <X size={22} />
@@ -200,7 +207,7 @@ export const InstallPwaBanner: React.FC = () => {
               </div>
 
               <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', lineHeight: 1.5, marginBottom: '1.2rem' }}>
-                Sigue estos sencillos pasos en Safari para tener el icono de Red Identidad en la pantalla de inicio de tu celular:
+                Guarda el icono directo en tu pantalla de inicio en 3 simples pasos:
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', textAlign: 'left', marginBottom: '1.5rem' }}>
@@ -227,7 +234,11 @@ export const InstallPwaBanner: React.FC = () => {
               </div>
 
               <button
-                onClick={() => setShowIosGuide(false)}
+                onClick={() => {
+                  setShowIosGuide(false);
+                  setShowBanner(false);
+                  localStorage.setItem('red_identidad_pwa_installed', 'true');
+                }}
                 style={{
                   width: '100%',
                   padding: '0.9rem',
@@ -240,7 +251,7 @@ export const InstallPwaBanner: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
-                Entendido
+                ¡Entendido!
               </button>
             </motion.div>
           </div>
@@ -251,3 +262,4 @@ export const InstallPwaBanner: React.FC = () => {
 };
 
 export default InstallPwaBanner;
+
