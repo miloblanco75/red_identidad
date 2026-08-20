@@ -17,6 +17,8 @@ const Comercio = React.lazy(() => import('./pages/Comercio'));
 const AliadoPanel = React.lazy(() => import('./pages/AliadoPanel'));
 const EnvelopeStickerDesigner = React.lazy(() => import('./components/EnvelopeStickerDesigner'));
 
+import InstallPwaBanner from './components/InstallPwaBanner';
+
 function App() {
   const [showSplash, setShowSplash] = useState(true);
 
@@ -28,7 +30,8 @@ function App() {
     <AuthProvider>
       <Router>
         <div className="mobile-container">
-        <React.Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Cargando...</div>}>
+          <InstallPwaBanner />
+          <React.Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Cargando...</div>}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/registro" element={<Registro />} />

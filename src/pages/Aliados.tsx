@@ -151,7 +151,7 @@ const Aliados: React.FC = () => {
     }
   };
 
-  const displayAllies = allies.length > 0 ? allies : mockAllies;
+  const displayAllies = [...allies, ...mockAllies];
   const topAllies = [...displayAllies].sort((a, b) => b.promotions_given - a.promotions_given).slice(0, 5);
   const filteredAllies = selectedCategory === 'Todas'
     ? displayAllies
@@ -237,7 +237,7 @@ const Aliados: React.FC = () => {
                   <div style={{ color: '#121212', minWidth: '160px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                       {partner.logo_url && (
-                        <img src={partner.logo_url} alt={partner.name} style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover' }} />
+                        <img src={partner.logo_url} alt={partner.name} style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#FFF', padding: '2px' }} />
                       )}
                       <div>
                         <strong style={{ display: 'block', fontSize: '0.95rem' }}>{partner.name}</strong>
@@ -333,7 +333,7 @@ const Aliados: React.FC = () => {
                         <img 
                           src={item.logo_url} 
                           alt={item.name} 
-                          style={{ width: '44px', height: '44px', borderRadius: '12px', objectFit: 'cover', border: '1px solid var(--glass-border)', backgroundColor: 'rgba(255,255,255,0.05)' }} 
+                          style={{ width: '44px', height: '44px', borderRadius: '12px', objectFit: 'contain', border: '1px solid var(--glass-border)', backgroundColor: '#FFF', padding: '4px' }} 
                         />
                       ) : (
                         <div style={{ backgroundColor: 'rgba(212,175,55,0.1)', padding: '10px', borderRadius: '12px' }}>

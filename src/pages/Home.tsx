@@ -277,7 +277,7 @@ const Home: React.FC = () => {
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
                         {promo.logo_url ? (
-                          <img src={promo.logo_url} alt={promo.name} style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover', border: '1px solid var(--glass-border)' }} />
+                          <img src={promo.logo_url} alt={promo.name} style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'contain', border: '1px solid var(--glass-border)', backgroundColor: '#FFF', padding: '2px' }} />
                         ) : (
                           <div style={{ backgroundColor: 'rgba(212,175,55,0.1)', padding: '6px', borderRadius: '8px' }}>
                             <IconComponent size={14} color="var(--accent-gold)" />

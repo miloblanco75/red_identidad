@@ -143,7 +143,7 @@ const Admin: React.FC = () => {
       }
 
       const newStickers = [];
-      const csvRows = ['CÓDIGO,ENLACE_QR,NIVEL,TIPO,NUMERO_MIEMBRO'];
+      const csvRows = ['CÓDIGO,ENLACE_WEB,URL_IMAGEN_QR,NIVEL,TIPO,NUMERO_MIEMBRO'];
 
       for (let i = 0; i < quantity; i++) {
         const num = startNumber + i;
@@ -157,7 +157,8 @@ const Admin: React.FC = () => {
 
         const route = codeType === 'tesoro' ? 'tesoro' : 'registro';
         const link = `https://redidentidad.vercel.app/${route}?c=${uniqueCode}`;
-        csvRows.push(`${uniqueCode},${link},${level},${codeType.toUpperCase()},${num}`);
+        const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(link)}`;
+        csvRows.push(`${uniqueCode},${link},${qrImageUrl},${level},${codeType.toUpperCase()},${num}`);
       }
 
       const { error } = await supabase.from('stickers').insert(newStickers);
@@ -231,7 +232,7 @@ const Admin: React.FC = () => {
         throw new Error('Todos los campos son obligatorios.');
       }
 
-      const { error } = await supabase.from('allies').insert([{
+      const fullObj: any = {
         name: allyName,
         category: allyCategory,
         discount: allyDiscount,
@@ -242,9 +243,28 @@ const Admin: React.FC = () => {
         logo_url: allyLogo || null,
         ally_pin: allyPin || null,
         promotions_given: 0
-      }]);
+      };
 
-      if (error) throw error;
+      const { error } = await supabase.from('allies').insert([fullObj]);
+
+      if (error) {
+        // If optional columns do not exist in DB schema, retry with core fields
+        if (error.message?.includes('column') || error.message?.includes('schema cache') || error.code === 'PGRST204') {
+          const coreObj = {
+            name: allyName,
+            category: allyCategory,
+            discount: allyDiscount,
+            lat: parseFloat(allyLat),
+            lng: parseFloat(allyLng),
+            ally_pin: allyPin || null,
+            promotions_given: 0
+          };
+          const { error: fallbackErr } = await supabase.from('allies').insert([coreObj]);
+          if (fallbackErr) throw fallbackErr;
+        } else {
+          throw error;
+        }
+      }
 
       setSuccessMsg(`¡Aliado "${allyName}" agregado exitosamente a la Red!`);
       setAllyName('');
@@ -328,7 +348,7 @@ const Admin: React.FC = () => {
         throw new Error('Todos los campos son obligatorios.');
       }
 
-      const { error } = await supabase.from('allies').update({
+      const fullObj: any = {
         name: editName,
         category: editCategory,
         discount: editDiscount,
@@ -338,9 +358,26 @@ const Admin: React.FC = () => {
         website_url: editWebsite || null,
         logo_url: editLogo || null,
         ally_pin: editPin || null,
-      }).eq('id', editingAlly.id);
+      };
 
-      if (error) throw error;
+      const { error } = await supabase.from('allies').update(fullObj).eq('id', editingAlly.id);
+
+      if (error) {
+        if (error.message?.includes('column') || error.message?.includes('schema cache') || error.code === 'PGRST204') {
+          const coreObj = {
+            name: editName,
+            category: editCategory,
+            discount: editDiscount,
+            lat: parseFloat(editLat),
+            lng: parseFloat(editLng),
+            ally_pin: editPin || null,
+          };
+          const { error: fallbackErr } = await supabase.from('allies').update(coreObj).eq('id', editingAlly.id);
+          if (fallbackErr) throw fallbackErr;
+        } else {
+          throw error;
+        }
+      }
 
       setSuccessMsg(`¡Aliado "${editName}" actualizado exitosamente!`);
       setEditingAlly(null);
@@ -645,7 +682,7 @@ const Admin: React.FC = () => {
               
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.8rem' }}>
                 {allyLogo ? (
-                  <img src={allyLogo} alt="Preview Logo" style={{ width: '60px', height: '60px', borderRadius: '14px', objectFit: 'cover', border: '2px solid var(--accent-gold)' }} />
+                  <img src={allyLogo} alt="Preview Logo" style={{ width: '60px', height: '60px', borderRadius: '14px', objectFit: 'contain', border: '2px solid var(--accent-gold)', backgroundColor: '#FFF', padding: '3px' }} />
                 ) : (
                   <div style={{ width: '60px', height: '60px', borderRadius: '14px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px dashed var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Upload size={24} color="var(--text-dim)" />
@@ -736,7 +773,7 @@ const Admin: React.FC = () => {
                 <div key={ally.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                     {ally.logo_url ? (
-                      <img src={ally.logo_url} alt={ally.name} style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', border: '1px solid var(--glass-border)' }} />
+                      <img src={ally.logo_url} alt={ally.name} style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'contain', border: '1px solid var(--glass-border)', backgroundColor: '#FFF', padding: '2px' }} />
                     ) : (
                       <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Store size={20} color="var(--accent-gold)" />
@@ -832,7 +869,7 @@ const Admin: React.FC = () => {
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.6rem' }}>
                   {editLogo ? (
-                    <img src={editLogo} alt="Preview Logo" style={{ width: '50px', height: '50px', borderRadius: '12px', objectFit: 'cover', border: '2px solid var(--accent-gold)' }} />
+                    <img src={editLogo} alt="Preview Logo" style={{ width: '50px', height: '50px', borderRadius: '12px', objectFit: 'contain', border: '2px solid var(--accent-gold)', backgroundColor: '#FFF', padding: '2px' }} />
                   ) : (
                     <div style={{ width: '50px', height: '50px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px dashed var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Upload size={20} color="var(--text-dim)" />

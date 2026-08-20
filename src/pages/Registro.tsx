@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Crown, QrCode, Star, Phone, Sparkles } from 'lucide-react';
+import { ShieldCheck, Crown, QrCode, Star, Phone, Sparkles, Smartphone } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -321,6 +321,31 @@ const Registro: React.FC = () => {
           }}
         >
           <Sparkles size={16} /> Ver mi Galería de Calcomanías
+        </button>
+
+        <button
+          onClick={() => {
+            localStorage.removeItem('red_identidad_pwa_dismissed');
+            window.location.reload();
+          }}
+          style={{
+            width: '100%',
+            padding: '0.9rem',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            color: '#FFF',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            marginBottom: '0.8rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            cursor: 'pointer'
+          }}
+        >
+          <Smartphone size={16} color="var(--accent-gold)" /> Instalar App en Pantalla de Inicio
         </button>
 
         <button 
