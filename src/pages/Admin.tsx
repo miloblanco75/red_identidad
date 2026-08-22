@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload } from 'lucide-react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -8,7 +8,7 @@ import EnvelopeStickerDesigner from '../components/EnvelopeStickerDesigner';
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
-  const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope'>('codes');
+  const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope' | 'status'>('codes');
 
   // Print states
   const [printStickers, setPrintStickers] = useState<any[]>([]);
@@ -49,6 +49,12 @@ const Admin: React.FC = () => {
   const [editLogo, setEditLogo] = useState('');
   const [editPin, setEditPin] = useState('');
 
+  // States for QR Status Tab
+  const [allStickers, setAllStickers] = useState<any[]>([]);
+  const [isStatusLoading, setIsStatusLoading] = useState(false);
+  const [statusSearch, setStatusSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'claimed' | 'unclaimed'>('all');
+
   // Manual state
   const [showAllyManual, setShowAllyManual] = useState(true);
 
@@ -56,6 +62,42 @@ const Admin: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
 
   const ADMIN_PIN = 'RED2024';
+
+  const fetchStickersStatus = async () => {
+    setIsStatusLoading(true);
+    setErrorMsg('');
+    try {
+      const { data, error } = await supabase
+        .from('stickers')
+        .select('*')
+        .order('member_number', { ascending: true });
+
+      if (error) throw error;
+      if (data) setAllStickers(data);
+    } catch (err: any) {
+      console.error('Error al cargar estatus de calcomanías:', err);
+      setErrorMsg('Error al cargar estatus de calcomanías: ' + (err.message || 'Verifica la conexión a base de datos.'));
+    } finally {
+      setIsStatusLoading(false);
+    }
+  };
+
+  const handleResetSingleSticker = async (stickerId: string, code: string) => {
+    if (confirm(`¿Estás seguro de liberar la calcomanía ${code}? Volverá a estar libre/sin usar.`)) {
+      try {
+        const { error } = await supabase
+          .from('stickers')
+          .update({ phone: null, claimed_at: null })
+          .eq('id', stickerId);
+
+        if (error) throw error;
+        setSuccessMsg(`Calcomanía ${code} liberada correctamente.`);
+        fetchStickersStatus();
+      } catch (err: any) {
+        setErrorMsg('Error al liberar calcomanía: ' + (err.message || ''));
+      }
+    }
+  };
 
   // Helper to process image file upload from device
   const handleFileUpload = async (file: File, setTargetUrl: (url: string) => void) => {
@@ -390,8 +432,12 @@ const Admin: React.FC = () => {
   };
 
   React.useEffect(() => {
-    if (isAuthenticated && activeTab === 'allies') {
-      fetchSavedAllies();
+    if (isAuthenticated) {
+      if (activeTab === 'allies') {
+        fetchSavedAllies();
+      } else if (activeTab === 'status') {
+        fetchStickersStatus();
+      }
     }
   }, [isAuthenticated, activeTab]);
 
@@ -449,6 +495,12 @@ const Admin: React.FC = () => {
           style={{ flex: 1, minWidth: '110px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'envelope' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'envelope' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
         >
           <Printer size={16} /> Sobres (7x7)
+        </button>
+        <button 
+          onClick={() => { setActiveTab('status'); setSuccessMsg(''); setErrorMsg(''); }}
+          style={{ flex: 1, minWidth: '100px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'status' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'status' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+        >
+          <Activity size={16} /> Estatus QR
         </button>
       </div>
 
@@ -1094,6 +1146,228 @@ const Admin: React.FC = () => {
       {/* ─── TAB: IMPRIMIR CALCOMANÍAS SOBRES (7x7 cm) ─── */}
       {activeTab === 'envelope' && (
         <EnvelopeStickerDesigner />
+      )}
+
+      {/* ─── TAB: ESTATUS Y RASTREO DE CÓDIGOS QR / CALCOMANÍAS ─── */}
+      {activeTab === 'status' && (
+        <section className="glass" style={{ padding: '1.5rem', borderRadius: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#FFF', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                <Activity size={22} color="var(--accent-gold)" /> Estatus y Monitoreo de Calcomanías QR
+              </h3>
+              <p style={{ color: 'var(--text-dim)', fontSize: '0.82rem', margin: '4px 0 0 0' }}>
+                Revisa en tiempo real qué calcomanías físicas han sido escaneadas/usadas y cuáles siguen disponibles.
+              </p>
+            </div>
+            <button
+              onClick={fetchStickersStatus}
+              disabled={isStatusLoading}
+              style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)', color: '#FFF', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <RefreshCw size={14} className={isStatusLoading ? 'animate-spin' : ''} /> Actualizar
+            </button>
+          </div>
+
+          {/* Tarjetas resumen de métricas */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Generados</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FFF', marginTop: '4px' }}>{allStickers.length}</div>
+            </div>
+
+            <div style={{ backgroundColor: 'rgba(255, 68, 68, 0.08)', border: '1px solid rgba(255, 68, 68, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', color: '#FF6B6B', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🔴 USADOS / ACTIVADOS</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FF4444', marginTop: '4px' }}>
+                {allStickers.filter(s => !!s.phone).length}
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', color: '#4ADE80', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🟢 DISPONIBLES / VIRGEN</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#4ADE80', marginTop: '4px' }}>
+                {allStickers.filter(s => !s.phone).length}
+              </div>
+            </div>
+          </div>
+
+          {/* Filtros y Buscador */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={18} color="var(--text-dim)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+              <input
+                type="text"
+                placeholder="Buscar por código (ej. RED-0001) o WhatsApp..."
+                value={statusSearch}
+                onChange={(e) => setStatusSearch(e.target.value)}
+                style={{
+                  width: '100%', padding: '0.85rem 1rem 0.85rem 2.8rem',
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  border: '1px solid var(--glass-border)', borderRadius: '12px',
+                  color: '#FFF', fontSize: '0.9rem', outline: 'none'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setStatusFilter('all')}
+                style={{
+                  padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 600,
+                  backgroundColor: statusFilter === 'all' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)',
+                  color: statusFilter === 'all' ? '#121212' : '#FFF', border: 'none', cursor: 'pointer'
+                }}
+              >
+                Todos ({allStickers.length})
+              </button>
+
+              <button
+                onClick={() => setStatusFilter('claimed')}
+                style={{
+                  padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 600,
+                  backgroundColor: statusFilter === 'claimed' ? 'rgba(255, 68, 68, 0.25)' : 'rgba(255,255,255,0.08)',
+                  color: statusFilter === 'claimed' ? '#FF4444' : '#FFF',
+                  border: statusFilter === 'claimed' ? '1px solid #FF4444' : 'none', cursor: 'pointer'
+                }}
+              >
+                🔴 Solo Usados ({allStickers.filter(s => !!s.phone).length})
+              </button>
+
+              <button
+                onClick={() => setStatusFilter('unclaimed')}
+                style={{
+                  padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 600,
+                  backgroundColor: statusFilter === 'unclaimed' ? 'rgba(74, 222, 128, 0.25)' : 'rgba(255,255,255,0.08)',
+                  color: statusFilter === 'unclaimed' ? '#4ADE80' : '#FFF',
+                  border: statusFilter === 'unclaimed' ? '1px solid #4ADE80' : 'none', cursor: 'pointer'
+                }}
+              >
+                🟢 Solo Disponibles ({allStickers.filter(s => !s.phone).length})
+              </button>
+            </div>
+          </div>
+
+          {/* Listado de Calcomanías */}
+          {isStatusLoading ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-dim)' }}>
+              <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 1rem', color: 'var(--accent-gold)' }} />
+              Cargando catálogo de calcomanías...
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+              {allStickers
+                .filter(s => {
+                  const matchSearch =
+                    s.code?.toLowerCase().includes(statusSearch.toLowerCase()) ||
+                    (s.phone && s.phone.includes(statusSearch)) ||
+                    String(s.member_number || '').includes(statusSearch);
+                  if (!matchSearch) return false;
+                  if (statusFilter === 'claimed') return !!s.phone;
+                  if (statusFilter === 'unclaimed') return !s.phone;
+                  return true;
+                })
+                .map((sticker) => {
+                  const isClaimed = !!sticker.phone;
+                  const levelColor = sticker.level === 'gold' ? 'var(--accent-gold)' : sticker.level === 'silver' ? 'var(--accent-silver)' : 'var(--accent-white)';
+
+                  return (
+                    <div
+                      key={sticker.id || sticker.code}
+                      style={{
+                        backgroundColor: isClaimed ? 'rgba(255, 68, 68, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                        border: isClaimed ? '1px solid rgba(255, 68, 68, 0.2)' : '1px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '16px',
+                        padding: '1rem 1.2rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.8rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                          <span style={{ fontSize: '1.1rem', fontWeight: 800, fontFamily: 'monospace', color: '#FFF' }}>
+                            {sticker.code}
+                          </span>
+
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', border: `1px solid ${levelColor}`, color: levelColor, textTransform: 'uppercase' }}>
+                            {sticker.level || 'White'}
+                          </span>
+
+                          {sticker.member_number && (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontFamily: 'monospace' }}>
+                              #{String(sticker.member_number).padStart(4, '0')}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Badge Estado */}
+                        {isClaimed ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(255,68,68,0.15)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.4)', padding: '4px 10px', borderRadius: '100px', fontSize: '0.72rem', fontWeight: 800 }}>
+                            <XCircle size={14} /> USADO / ACTIVADO
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(74,222,128,0.12)', color: '#4ADE80', border: '1px solid rgba(74,222,128,0.3)', padding: '4px 10px', borderRadius: '100px', fontSize: '0.72rem', fontWeight: 800 }}>
+                            <CheckCircle size={14} /> DISPONIBLE / SIN USAR
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Detalles si fue usado */}
+                      {isClaimed && (
+                        <div style={{
+                          backgroundColor: 'rgba(0,0,0,0.25)',
+                          borderRadius: '10px',
+                          padding: '0.8rem',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: '0.8rem',
+                          fontSize: '0.8rem'
+                        }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FFF', fontWeight: 600 }}>
+                              <Smartphone size={15} color="var(--accent-gold)" /> WhatsApp: {sticker.phone}
+                            </div>
+                            {sticker.claimed_at && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '0.75rem' }}>
+                                <Clock size={14} /> Activado el: {new Date(sticker.claimed_at).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })}
+                              </div>
+                            )}
+                          </div>
+
+                          <button
+                            onClick={() => handleResetSingleSticker(sticker.id, sticker.code)}
+                            style={{
+                              padding: '0.4rem 0.8rem',
+                              borderRadius: '8px',
+                              backgroundColor: 'rgba(212,175,55,0.15)',
+                              border: '1px solid var(--accent-gold)',
+                              color: 'var(--accent-gold)',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <RotateCcw size={13} /> Liberar Código
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+              {allStickers.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-dim)', fontSize: '0.9rem' }}>
+                  No se encontraron códigos o la base de datos está vacía.
+                </div>
+              )}
+            </div>
+          )}
+        </section>
       )}
     </div>
   );
