@@ -359,20 +359,10 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                 <div style={{
                   width: '100%',
                   display: 'flex',
-                  justifyContent: 'space-between',
+                  justifyContent: 'flex-end',
                   alignItems: 'flex-end',
                   padding: '0 4px'
                 }}>
-                  <div style={{
-                    fontSize: '12px',
-                    fontWeight: '900',
-                    lineHeight: '1.15',
-                    color: selectedStickerType === 'campechana_rosa' ? '#E91E63' : '#000000',
-                    textAlign: 'left'
-                  }}>
-                    {selectedStickerType === 'campechana_rosa' ? 'ROSA-0001' : selectedStickerType === 'campechana_negra' ? 'NEGR-0001' : 'SOBRE-0001'}
-                  </div>
-
                   <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                     <div style={{ fontSize: '22px', fontWeight: '900', lineHeight: '0.9', color: '#000000' }}>
                       {priceNumber}
@@ -426,8 +416,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                     {selectedStickerType === 'campechana_rosa' ? '🌸 ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 NEGRA' : headerText}
                   </div>
                   <StickerQRCode value={stickerItem.url || qrUrl} level={selectedStickerType} size={42} />
-                  <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: '4.5px', fontWeight: '800', color: '#000' }}>
-                    <div style={{ fontWeight: '900', color: selectedStickerType === 'campechana_rosa' ? '#E91E63' : '#000' }}>{stickerItem.code}</div>
+                  <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', fontSize: '4.5px', fontWeight: '800', color: '#000' }}>
                     <div style={{ textAlign: 'right' }}>
                       <span style={{ fontSize: '8px', fontWeight: '900' }}>{priceNumber}</span><br />
                       <span>{priceSubtext}</span>
@@ -625,11 +614,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
               <StickerQRCode value={stickerItem.url || qrUrl} level={selectedStickerType} size={stickerSizeCm <= 3.2 ? 65 : 100} />
             </div>
 
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-              <div style={{ fontSize: `${stickerSizeCm <= 3.2 ? 5 : 7.5}pt`, fontWeight: '900', lineHeight: '1', color: selectedStickerType === 'campechana_rosa' ? '#E91E63' : '#000000' }}>
-                <div>{stickerItem.code}</div>
-              </div>
-
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end' }}>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: `${stickerSizeCm <= 3.2 ? 9 : 13}pt`, fontWeight: '900', lineHeight: '0.9' }}>
                   {priceNumber}
