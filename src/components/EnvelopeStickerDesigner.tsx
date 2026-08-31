@@ -319,75 +319,69 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                   color: '#000000',
                   borderRadius: '14px',
                   boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
-                  padding: '14px',
+                  padding: '10px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   fontFamily: 'system-ui, -apple-system, sans-serif',
                   position: 'relative',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  border: selectedStickerType === 'campechana_rosa' ? '3px solid #FD80BF' : '3px solid #333'
                 }}
               >
-                {useExactImage ? (
-                  <img
-                    src="/qr_calcomania_sobre.jpg"
-                    alt="Calcomanía Oficial Red Identidad"
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }}
+                <div style={{
+                  width: '100%',
+                  backgroundColor: selectedStickerType === 'campechana_rosa' ? '#FD80BF' : '#121212',
+                  color: '#FFFFFF',
+                  fontSize: '13px',
+                  fontWeight: '900',
+                  letterSpacing: '0.04em',
+                  textAlign: 'center',
+                  padding: '4px 0',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px'
+                }}>
+                  {selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : headerText}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: 'auto' }}>
+                  <StickerQRCode
+                    value={qrUrl}
+                    level={selectedStickerType}
+                    size={130}
                   />
-                ) : (
-                  <>
-                    <div style={{
-                      fontSize: '14px',
-                      fontWeight: '900',
-                      letterSpacing: '0.04em',
-                      textAlign: 'center',
-                      color: selectedStickerType === 'campechana_rosa' ? '#FF5C9D' : '#000000',
-                      marginTop: '2px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px'
-                    }}>
-                      {selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : headerText}
-                    </div>
+                </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: 'auto' }}>
-                      <StickerQRCode
-                        value={qrUrl}
-                        level={selectedStickerType}
-                        size={120}
-                      />
-                    </div>
+                <div style={{
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-end',
+                  padding: '0 4px'
+                }}>
+                  <div style={{
+                    fontSize: '12px',
+                    fontWeight: '900',
+                    lineHeight: '1.15',
+                    color: selectedStickerType === 'campechana_rosa' ? '#E91E63' : '#000000',
+                    textAlign: 'left'
+                  }}>
+                    {selectedStickerType === 'campechana_rosa' ? 'ROSA-0001' : selectedStickerType === 'campechana_negra' ? 'NEGR-0001' : 'SOBRE-0001'}
+                  </div>
 
-                    <div style={{
-                      width: '100%',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-end',
-                      padding: '0 2px'
-                    }}>
-                      <div style={{
-                        fontSize: '11px',
-                        fontWeight: '900',
-                        lineHeight: '1.15',
-                        color: selectedStickerType === 'campechana_rosa' ? '#E91E63' : '#000000',
-                        textAlign: 'left'
-                      }}>
-                        {selectedStickerType === 'campechana_rosa' ? 'ROSA-0001' : selectedStickerType === 'campechana_negra' ? 'NEGR-0001' : 'SOBRE-0001'}
-                      </div>
-
-                      <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                        <div style={{ fontSize: '24px', fontWeight: '900', lineHeight: '0.9', color: '#000000' }}>
-                          {priceNumber}
-                        </div>
-                        <div style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.05em', color: '#000000', marginTop: '2px' }}>
-                          {priceSubtext}
-                        </div>
-                      </div>
+                  <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <div style={{ fontSize: '22px', fontWeight: '900', lineHeight: '0.9', color: '#000000' }}>
+                      {priceNumber}
                     </div>
-                  </>
-                )}
+                    <div style={{ fontSize: '10px', fontWeight: '800', letterSpacing: '0.05em', color: '#000000', marginTop: '2px' }}>
+                      {priceSubtext}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
