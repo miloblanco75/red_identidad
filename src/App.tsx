@@ -39,6 +39,7 @@ function App() {
             <Route path="/dorados" element={<Dorados />} />
             <Route path="/fundadores" element={<Fundadores />} />
             <Route path="/admin-red" element={<Admin />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/tesoro" element={<Tesoro />} />
             <Route path="/galeria" element={<Galeria />} />
             <Route path="/comercio" element={<Comercio />} />

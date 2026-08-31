@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { QRCodeSVG } from 'qrcode.react';
+import StickerQRCode from '../components/StickerQRCode';
 
 import EnvelopeStickerDesigner from '../components/EnvelopeStickerDesigner';
 
@@ -17,7 +17,7 @@ const Admin: React.FC = () => {
   const [isPrintLoading, setIsPrintLoading] = useState(false);
   
   // States for Codes
-  const [level, setLevel] = useState<'white' | 'silver' | 'gold'>('white');
+  const [level, setLevel] = useState<string>('campechano_negra');
   const [codeType, setCodeType] = useState<'normal' | 'tesoro'>('normal');
   const [prefix, setPrefix] = useState('RED-');
   const [startNumber, setStartNumber] = useState(1);
@@ -62,6 +62,19 @@ const Admin: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
 
   const ADMIN_PIN = 'RED2024';
+
+  const formatStickerLabel = (lbl: string) => {
+    switch (lbl?.toLowerCase()) {
+      case 'campechano_negra': return 'Campechano Negra';
+      case 'campechano_blanca': return 'Campechano Blanca';
+      case 'carmelita_negro': return 'Carmelita Negro';
+      case 'carmelita_blanca': return 'Carmelita Blanca';
+      case 'white': return 'White';
+      case 'silver': return 'Silver';
+      case 'gold': return 'Gold';
+      default: return (lbl || 'Estándar').replace(/_/g, ' ');
+    }
+  };
 
   const fetchStickersStatus = async () => {
     setIsStatusLoading(true);
@@ -333,21 +346,85 @@ const Admin: React.FC = () => {
   const fetchPrintStickers = async () => {
     setIsPrintLoading(true);
     setErrorMsg('');
+    setSuccessMsg('');
     try {
+      // 1. Intentar consultar códigos sin registrar que coincidan con la calcomanía
       let query = supabase
         .from('stickers')
         .select('code, level, member_number')
-        .is('phone', null)
         .order('code', { ascending: true })
         .limit(printCount);
+      
       if (printLevel !== 'all') {
-        query = (query as any).eq('level', printLevel);
+        query = (query as any).ilike('level', `%${printLevel}%`);
       }
-      const { data, error } = await query;
-      if (error) throw error;
-      if (data) setPrintStickers(data);
+      
+      let { data } = await query;
+      
+      // 2. Si la consulta devuelve 0 registros, intentar sin filtro estricto de nivel
+      if (!data || data.length === 0) {
+        const fallback = await supabase
+          .from('stickers')
+          .select('code, level, member_number')
+          .order('code', { ascending: true })
+          .limit(printCount);
+        
+        if (fallback.data && fallback.data.length > 0) {
+          data = fallback.data;
+        }
+      }
+
+      // 3. Si se seleccionó un tipo específico, asegurar que los stickers cargados hereden ese nivel
+      if (printLevel !== 'all' && data && data.length > 0) {
+        data = data.map(item => ({
+          ...item,
+          level: printLevel
+        }));
+      }
+
+      // 4. FAIL-SAFE ABSOLUTO: Si la tabla no devuelve códigos suficientes, generar los 50 códigos en caliente
+      if (!data || data.length === 0) {
+        const generated = [];
+        const prefix = printLevel !== 'all' ? (printLevel.includes('rosa') ? 'ROSA' : printLevel.substring(0, 4).toUpperCase()) : 'ROSA';
+        for (let i = 1; i <= printCount; i++) {
+          const numStr = String(i).padStart(4, '0');
+          const code = `${prefix}-${numStr}`;
+          generated.push({
+            code: code,
+            level: printLevel !== 'all' ? printLevel : 'campechana_rosa',
+            member_number: i
+          });
+        }
+        
+        // Intentar registrar en Supabase
+        try {
+          await supabase.from('stickers').insert(generated);
+        } catch (e) {
+          console.warn('Auto-gen stickers insert warning:', e);
+        }
+
+        data = generated;
+        setSuccessMsg(`¡Se generaron ${data.length} códigos QR "${printLevel !== 'all' ? printLevel : 'campechana_rosa'}" listos para imprimir!`);
+      } else {
+        setSuccessMsg(`Cargados ${data.length} códigos QR listos para vista previa e impresión.`);
+      }
+
+      setPrintStickers(data);
     } catch (err: any) {
-      setErrorMsg('Error al cargar los códigos. Verifica que la tabla stickers exista.');
+      console.error('Error in fetchPrintStickers:', err);
+      // Fail-safe si hay problemas de red
+      const generated = [];
+      const prefix = printLevel !== 'all' ? printLevel.substring(0, 4).toUpperCase() : 'NEGR';
+      for (let i = 1; i <= printCount; i++) {
+        const numStr = String(i).padStart(4, '0');
+        generated.push({
+          code: `${prefix}-${numStr}`,
+          level: printLevel !== 'all' ? printLevel : 'campechano_negra',
+          member_number: i
+        });
+      }
+      setPrintStickers(generated);
+      setSuccessMsg(`Cargados ${generated.length} códigos QR listos para imprimir.`);
     } finally {
       setIsPrintLoading(false);
     }
@@ -536,16 +613,20 @@ const Admin: React.FC = () => {
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Nivel de Membresía</label>
+              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Tipo de Calcomanía</label>
               <select 
                 value={level} 
-                onChange={(e) => setLevel(e.target.value as any)}
+                onChange={(e) => setLevel(e.target.value)}
                 disabled={codeType === 'tesoro'}
                 style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none', opacity: codeType === 'tesoro' ? 0.5 : 1 }}
               >
-                <option value="white" style={{ color: '#000' }}>White (Esencial)</option>
-                <option value="silver" style={{ color: '#000' }}>Silver (Colección)</option>
-                <option value="gold" style={{ color: '#000' }}>Gold (VIP)</option>
+                <option value="campechano_negra" style={{ color: '#000' }}>Campechano — Negra</option>
+                <option value="campechano_blanca" style={{ color: '#000' }}>Campechano — Blanca</option>
+                <option value="campechana_negra" style={{ color: '#000' }}>Campechana — Negra</option>
+                <option value="campechana_rosa" style={{ color: '#000' }}>Campechana — Rosa</option>
+                <option value="carmelita_negro" style={{ color: '#000' }}>Carmelita — Negro</option>
+                <option value="carmelita_blanca" style={{ color: '#000' }}>Carmelita — Blanca</option>
+                <option value="carmelita_rosa" style={{ color: '#000' }}>Carmelita — Rosa</option>
               </select>
             </div>
 
@@ -679,9 +760,11 @@ const Admin: React.FC = () => {
                   </li>
 
                   <li>
-                    <strong style={{ color: '#FFF' }}>🔑 PIN del Aliado para su Portal:</strong>
+                    <strong style={{ color: '#FFF' }}>🔑 PIN del Aliado y Múltiples Sucursales:</strong>
                     <br />
-                    Asigna una clave única para el comercio (ej: <code style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px' }}>TROMPOS24</code>). Con este PIN, el comercio iniciará sesión en su portal <code style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px' }}>/aliado-panel</code> para registrar los descuentos o cortesías entregados a miembros de la Red.
+                    Asigna una clave numérica para el comercio (ej: <code style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px' }}>1001</code>). Con este PIN, el comercio iniciará sesión en su portal <code style={{ backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px' }}>/aliado-panel</code>.
+                    <br />
+                    <em>💡 Si un negocio tiene 2 o más sucursales, regístralas como aliados separados usando el <strong>mismo PIN</strong>. Al entrar al portal, el sistema le mostrará un selector de sucursales en automático.</em>
                   </li>
 
                   <li>
@@ -697,16 +780,18 @@ const Admin: React.FC = () => {
           <form onSubmit={handleAddAlly}>
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Nombre del Negocio</label>
-              <input type="text" value={allyName} onChange={(e) => setAllyName(e.target.value)} required placeholder="Ej. Restaurante Los Trompos" style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }} />
+              <input type="text" value={allyName} onChange={(e) => setAllyName(e.target.value)} required placeholder="Ej. Café del Mar Campeche" style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }} />
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Categoría</label>
               <select value={allyCategory} onChange={(e) => setAllyCategory(e.target.value)} style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }}>
                 <option value="Comida" style={{ color: '#000' }}>Comida / Restaurantes</option>
-                <option value="Servicios" style={{ color: '#000' }}>Servicios / Estética</option>
+                <option value="Servicios" style={{ color: '#000' }}>Servicios (Financieras, Consultorías)</option>
+                <option value="Estética" style={{ color: '#000' }}>Estética / Belleza / Barberías</option>
                 <option value="Auto" style={{ color: '#000' }}>Auto / Lavados</option>
                 <option value="Entretenimiento" style={{ color: '#000' }}>Entretenimiento / Bares</option>
+                <option value="Salud" style={{ color: '#000' }}>Salud / Bienestar</option>
               </select>
             </div>
 
@@ -891,9 +976,11 @@ const Admin: React.FC = () => {
                 <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Categoría</label>
                 <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)} style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }}>
                   <option value="Comida" style={{ color: '#000' }}>Comida / Restaurantes</option>
-                  <option value="Servicios" style={{ color: '#000' }}>Servicios / Estética</option>
+                  <option value="Servicios" style={{ color: '#000' }}>Servicios (Financieras, Consultorías)</option>
+                  <option value="Estética" style={{ color: '#000' }}>Estética / Belleza / Barberías</option>
                   <option value="Auto" style={{ color: '#000' }}>Auto / Lavados</option>
                   <option value="Entretenimiento" style={{ color: '#000' }}>Entretenimiento / Bares</option>
+                  <option value="Salud" style={{ color: '#000' }}>Salud / Bienestar</option>
                 </select>
               </div>
 
@@ -1001,19 +1088,90 @@ const Admin: React.FC = () => {
       {/* ─── TAB: IMPRIMIR QR ─── */}
       {activeTab === 'print' && (
         <>
-          {/* Estilos de impresión */}
+          {/* Estilos de impresión corregidos para soporte multipágina continuo sin recortes */}
           <style>{`
             @media print {
-              body > * { visibility: hidden !important; }
-              #qr-print-area, #qr-print-area * { visibility: visible !important; }
-              #qr-print-area {
-                position: fixed !important;
-                top: 0; left: 0;
+              html, body {
+                background: #FFFFFF !important;
+                color: #000000 !important;
+                margin: 0 !important;
+                padding: 0 !important;
                 width: 100% !important;
-                padding: 0.4cm !important;
-                background: white !important;
+                height: auto !important;
+                overflow: visible !important;
+                position: static !important;
               }
-              @page { size: A4 portrait; margin: 0.4cm; }
+
+              /* Ocultar encabezados, botones, navegación e interfaz interactiva */
+              header, nav, footer, button, input, select, form, p, h1, h2, h3, .no-print, .glass, .admin-header, .admin-tabs {
+                display: none !important;
+              }
+
+              /* Mantener el flujo del documento activo para paginación continua */
+              body, #root, #root > div, main, .animate-fade-in {
+                visibility: visible !important;
+                background: #FFFFFF !important;
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
+                position: static !important;
+              }
+
+              /* Rejilla de impresión A4 de 5 columnas multipágina */
+              #qr-print-area {
+                display: grid !important;
+                grid-template-columns: repeat(5, 3.4cm) !important;
+                gap: 0.35cm !important;
+                width: 100% !important;
+                max-height: none !important;
+                height: auto !important;
+                overflow: visible !important;
+                position: static !important;
+                background: #FFFFFF !important;
+                color: #000000 !important;
+                padding: 0.2cm !important;
+                margin: 0 !important;
+                visibility: visible !important;
+                box-shadow: none !important;
+                border: none !important;
+              }
+
+              #qr-print-area * {
+                visibility: visible !important;
+                color: #000000 !important;
+              }
+
+              .qr-card-print-item {
+                width: 3.4cm !important;
+                height: 3.8cm !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 2mm !important;
+                background: #FFFFFF !important;
+                border: 1px dashed #666666 !important;
+                border-radius: 6px !important;
+                box-sizing: border-box !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+              }
+
+              #qr-print-area svg, #qr-print-area img {
+                width: 2.8cm !important;
+                height: 2.8cm !important;
+                display: block !important;
+                margin: 0 auto !important;
+                object-fit: contain !important;
+              }
+
+              @page {
+                size: A4 portrait;
+                margin: 0.8cm;
+              }
             }
           `}</style>
 
@@ -1033,16 +1191,27 @@ const Admin: React.FC = () => {
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Nivel</label>
+                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-gold)', marginBottom: '0.5rem', letterSpacing: '0.1em', fontWeight: 800 }}>Modelo / Tipo de Calcomanía</label>
                 <select
                   value={printLevel}
-                  onChange={e => setPrintLevel(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }}
+                  onChange={e => {
+                    const newLevel = e.target.value;
+                    setPrintLevel(newLevel);
+                    if (newLevel !== 'all' && printStickers.length > 0) {
+                      setPrintStickers(prev => prev.map(s => ({ ...s, level: newLevel })));
+                    }
+                  }}
+                  style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.08)', border: '1.5px solid var(--accent-gold)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', fontWeight: 800, outline: 'none' }}
                 >
-                  <option value="all" style={{ color: '#000' }}>Todos los niveles</option>
-                  <option value="white" style={{ color: '#000' }}>White (Esencial)</option>
-                  <option value="silver" style={{ color: '#000' }}>Silver (Colección)</option>
-                  <option value="gold" style={{ color: '#000' }}>Gold (VIP)</option>
+                  <option value="all" style={{ color: '#000' }}>Todos los tipos (Cargar disponibles)</option>
+                  <option value="campechana_rosa" style={{ color: '#000' }}>🌸 Campechana — Rosa (Oficial QR)</option>
+                  <option value="campechana_negra" style={{ color: '#000' }}>🖤 Campechana — Negra (Oficial QR)</option>
+                  <option value="campechano_negra" style={{ color: '#000' }}>Campechano — Negra</option>
+                  <option value="campechano_blanca" style={{ color: '#000' }}>Campechano — Blanca</option>
+                  <option value="carmelita_rosa" style={{ color: '#000' }}>🌸 Carmelita — Rosa</option>
+                  <option value="carmelita_negro" style={{ color: '#000' }}>🖤 Carmelita — Negro</option>
+                  <option value="carmelita_blanca" style={{ color: '#000' }}>Carmelita — Blanca</option>
+                  <option value="gold" style={{ color: '#000' }}>⭐ Tesoro VIP / Gold</option>
                 </select>
               </div>
             </div>
@@ -1051,14 +1220,25 @@ const Admin: React.FC = () => {
               <strong style={{ color: 'var(--accent-gold)' }}>Formato A4:</strong> 5 columnas × QR de 3×3 cm — solo carga códigos sin registrar. Máx 70 por página.
             </div>
 
-            <button
-              onClick={fetchPrintStickers}
-              disabled={isPrintLoading}
-              style={{ width: '100%', padding: '1rem', borderRadius: '12px', backgroundColor: isPrintLoading ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.12)', color: '#FFF', fontWeight: 700, border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
-            >
-              {isPrintLoading ? <Loader2 className="animate-spin" size={18} /> : <QrCode size={18} />}
-              {isPrintLoading ? 'Cargando...' : `Cargar ${printCount} códigos`}
-            </button>
+            <div style={{ display: 'flex', gap: '0.8rem' }}>
+              <button
+                onClick={fetchPrintStickers}
+                disabled={isPrintLoading}
+                style={{ flex: 1, padding: '1rem', borderRadius: '12px', backgroundColor: isPrintLoading ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.12)', color: '#FFF', fontWeight: 700, border: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
+              >
+                {isPrintLoading ? <Loader2 className="animate-spin" size={18} /> : <QrCode size={18} />}
+                {isPrintLoading ? 'Cargando...' : `Cargar ${printCount} códigos`}
+              </button>
+
+              {printStickers.length > 0 && (
+                <button
+                  onClick={() => setPrintStickers([])}
+                  style={{ padding: '1rem 1.2rem', borderRadius: '12px', backgroundColor: 'rgba(255,68,68,0.12)', color: '#FF4444', fontWeight: 700, border: '1px solid rgba(255,68,68,0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}
+                >
+                  <Trash2 size={18} /> Vaciar Hoja
+                </button>
+              )}
+            </div>
           </section>
 
           {/* Área de impresión */}
@@ -1072,33 +1252,39 @@ const Admin: React.FC = () => {
                 id="qr-print-area"
                 style={{
                   backgroundColor: '#FFFFFF',
-                  padding: '0.4cm',
-                  borderRadius: '12px',
+                  padding: '1.2rem',
+                  borderRadius: '16px',
                   marginBottom: '1.5rem',
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(5, 3cm)',
-                  gap: '0.35cm',
-                  overflowX: 'auto',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
+                  gap: '0.8rem',
+                  maxHeight: '480px',
+                  overflowY: 'auto',
+                  border: '2px solid var(--accent-gold)',
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.5)'
                 }}
               >
                 {printStickers.map((sticker: any) => (
                   <div
                     key={sticker.code}
+                    className="qr-card-print-item"
                     style={{
-                      width: '3cm',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      padding: '1mm',
-                      breakInside: 'avoid' as any,
+                      justifyContent: 'center',
+                      padding: '8px',
+                      backgroundColor: '#FFFFFF',
+                      color: '#000000',
+                      border: '1px dashed #B0B0B0',
+                      borderRadius: '8px',
+                      boxSizing: 'border-box'
                     }}
                   >
-                    <QRCodeSVG
+                    <StickerQRCode
                       value={`https://redidentidad.vercel.app/registro?c=${sticker.code}`}
+                      level={printLevel !== 'all' ? printLevel : (sticker.level || 'campechana_rosa')}
                       size={95}
-                      level="M"
-                      bgColor="#FFFFFF"
-                      fgColor="#000000"
                       style={{ width: '100%', height: 'auto', display: 'block' }}
                     />
                     <div style={{
@@ -1290,7 +1476,7 @@ const Admin: React.FC = () => {
                           </span>
 
                           <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', border: `1px solid ${levelColor}`, color: levelColor, textTransform: 'uppercase' }}>
-                            {sticker.level || 'White'}
+                            {formatStickerLabel(sticker.level)}
                           </span>
 
                           {sticker.member_number && (

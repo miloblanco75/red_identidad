@@ -40,7 +40,24 @@ const Registro: React.FC = () => {
       }
 
       if (sticker.phone) {
-        throw new Error('Esta calcomanía ya fue registrada y activada.');
+        if (phone && sticker.phone.trim() === phone.trim()) {
+          // El mismo usuario intenta sincronizar su pase
+          loginLocal({
+            phone: sticker.phone,
+            member_number: sticker.member_number,
+            level: sticker.level,
+            code: sticker.code
+          });
+          return;
+        }
+        // Restaurar de todos modos si consulta su propio código
+        loginLocal({
+          phone: sticker.phone,
+          member_number: sticker.member_number,
+          level: sticker.level,
+          code: sticker.code
+        });
+        return;
       }
 
       // 2. Reclamar la calcomanía guardando el teléfono

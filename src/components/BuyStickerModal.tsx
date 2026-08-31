@@ -1,48 +1,77 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShoppingBag, CheckCircle2, MessageCircle, MapPin } from 'lucide-react';
+import { X, ShoppingBag, CheckCircle2, MessageCircle, User, Phone, Store } from 'lucide-react';
 
 interface BuyStickerModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialSticker?: string;
 }
 
-export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClose }) => {
-  const [selectedEdition, setSelectedEdition] = useState<'negra' | 'blanca' | 'plata' | 'oro'>('negra');
-  const [city, setCity] = useState<'Campeche' | 'Ciudad del Carmen'>('Campeche');
-  const [name, setName] = useState('');
-  const [phone] = useState('');
-  const [address, setAddress] = useState('');
-  const [quantity] = useState(1);
+export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClose, initialSticker }) => {
+  const [activeTab, setActiveTab] = useState<'whatsapp' | 'stores'>('whatsapp');
+  const [selectedSticker, setSelectedSticker] = useState<string>(initialSticker || 'campechano_negra');
+  const [fullName, setFullName] = useState('');
+  const [userPhone, setUserPhone] = useState('');
   const [isOrdered, setIsOrdered] = useState(false);
 
-  const pricePerUnit = 90;
-  const totalPrice = pricePerUnit * quantity;
+  React.useEffect(() => {
+    if (initialSticker) {
+      setSelectedSticker(initialSticker);
+    }
+  }, [initialSticker]);
 
-  const editions = [
-    { id: 'negra', name: 'Negra Mate', badge: 'Popular', color: '#1E1E1E', border: '#444', desc: 'Vinil de alta resistencia mate con corte de precisión.' },
-    { id: 'blanca', name: 'Blanca Premium', badge: 'Alta Visibilidad', color: '#F5F5F7', border: '#FFF', desc: 'Destaca en cristal templado y cristales polarizados oscuros.' },
-    { id: 'plata', name: 'Plata Reflejante', badge: 'Reflejante 3M', color: '#C0C0C0', border: '#C0C0C0', desc: 'Refleja la luz de noche, visibilidad máxima.' },
-    { id: 'oro', name: 'Oro VIP', badge: 'VIP Dorado', color: '#D4AF37', border: '#D4AF37', desc: 'Edición especial para miembros distinguidos.' },
+  const ADMIN_PHONE = '9811971305';
+  const pricePerUnit = 90;
+
+  // Catálogo exacto de 7 distintivos
+  const stickerOptions = [
+    { id: 'campechano_blanca', label: 'Campechano — Blanca', tag: 'Blanca', bg: '#FFF', color: '#000' },
+    { id: 'campechano_negra', label: 'Campechano — Negra', tag: 'Negra', bg: '#333', color: '#FFF' },
+    
+    { id: 'carmelita_blanca', label: 'Carmelita — Blanca', tag: 'Blanca', bg: '#FFF', color: '#000' },
+    { id: 'carmelita_negra', label: 'Carmelita — Negra', tag: 'Negra', bg: '#333', color: '#FFF' },
+    { id: 'carmelita_rosa', label: 'Carmelita — Rosa', tag: 'Rosa', bg: '#FF69B4', color: '#FFF' },
+
+    { id: 'campechana_negra', label: 'Campechana — Negra', tag: 'Negra', bg: '#333', color: '#FFF' },
+    { id: 'campechana_rosa', label: 'Campechana — Rosa', tag: 'Rosa', bg: '#FF69B4', color: '#FFF' },
+  ];
+
+  // Puntos de Venta Físicos
+  const physicalStores = [
+    {
+      city: 'San Francisco de Campeche',
+      name: 'Módulo Central Centro Histórico',
+      address: 'Calle 59 entre 12 y 14, Centro Histórico',
+      hours: 'Lunes a Sábado: 10:00 AM - 7:00 PM',
+      phone: '9811971305'
+    },
+    {
+      city: 'Ciudad del Carmen',
+      name: 'Módulo Isla de Carmen',
+      address: 'Av. Concordia por Calle 56, Carmen',
+      hours: 'Lunes a Sábado: 10:00 AM - 6:00 PM',
+      phone: '9811971305'
+    }
   ];
 
   const handleWhatsAppOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    const edName = editions.find(e => e.id === selectedEdition)?.name || 'Negra Mate';
-    
-    const message = `¡Hola! 👋 Quiero comprar mi Calcomanía Oficial de Red Identidad.\n\n` +
-      `📦 *Detalles del Pedido:*\n` +
-      `• Edición: ${edName}\n` +
-      `• Cantidad: ${quantity} unidad(es)\n` +
-      `• Total: $${totalPrice} MXN\n` +
-      `• Ciudad: ${city}\n` +
-      (name ? `• Nombre: ${name}\n` : '') +
-      (phone ? `• Teléfono: ${phone}\n` : '') +
-      (address ? `• Dirección/Entrega: ${address}\n` : '') +
-      `\nQuedo atento para coordinar el pago y la entrega. ¡Gracias!`;
+    if (!fullName.trim() || !userPhone.trim()) return;
+
+    const chosenOption = stickerOptions.find(s => s.id === selectedSticker);
+    const chosenName = chosenOption ? chosenOption.label : 'Campechano — Negra';
+
+    const message = `¡Hola! 👋 Me interesa adquirir mi distintivo oficial.\n\n` +
+      `📋 *Mis Datos de Contacto:*\n` +
+      `• Nombre: ${fullName.trim()}\n` +
+      `• Teléfono: ${userPhone.trim()}\n` +
+      `• Distintivo Elegido: ${chosenName}\n` +
+      `• Precio: $${pricePerUnit} MXN\n\n` +
+      `Quedo atento para comunicarnos y coordinar la entrega. ¡Muchas gracias!`;
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/529811234567?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/52${ADMIN_PHONE}?text=${encodedMessage}`;
     
     window.open(whatsappUrl, '_blank');
     setIsOrdered(true);
@@ -65,25 +94,25 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '1rem'
+          padding: '0.8rem'
         }}
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.9, y: 20 }}
+          initial={{ scale: 0.95, y: 15 }}
           animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.9, y: 20 }}
+          exit={{ scale: 0.95, y: 15 }}
           onClick={(e) => e.stopPropagation()}
           className="glass premium-glow-gold"
           style={{
             width: '100%',
             maxWidth: '460px',
-            maxHeight: '90vh',
+            maxHeight: '92vh',
             overflowY: 'auto',
-            borderRadius: '24px',
-            padding: '1.5rem',
-            backgroundColor: '#161618',
-            border: '1px solid rgba(212,175,55,0.3)',
+            borderRadius: '22px',
+            padding: '1.2rem',
+            backgroundColor: '#141416',
+            border: '1px solid rgba(212,175,55,0.35)',
             position: 'relative'
           }}
         >
@@ -92,208 +121,294 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
             onClick={onClose}
             style={{
               position: 'absolute',
-              top: '1rem',
-              right: '1rem',
+              top: '0.9rem',
+              right: '0.9rem',
               backgroundColor: 'rgba(255,255,255,0.1)',
               border: 'none',
               borderRadius: '50%',
-              width: '32px',
-              height: '32px',
+              width: '30px',
+              height: '30px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#FFF'
+              color: '#FFF',
+              cursor: 'pointer'
             }}
           >
-            <X size={18} />
+            <X size={16} />
           </button>
 
           {isOrdered ? (
-            <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-              <div style={{ backgroundColor: 'rgba(212, 175, 55, 0.15)', width: '64px', height: '64px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                <CheckCircle2 size={36} color="var(--accent-gold)" />
+            <div style={{ textAlign: 'center', padding: '1.5rem 0.5rem' }}>
+              <div style={{ backgroundColor: 'rgba(212, 175, 55, 0.15)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.2rem', border: '1px solid var(--accent-gold)' }}>
+                <CheckCircle2 size={32} color="var(--accent-gold)" />
               </div>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>¡Pedido Iniciado!</h3>
-              <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-                Hemos abierto WhatsApp con los datos de tu orden para coordinar la entrega o envío de tu calcomanía.
+              <h3 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.4rem' }}>¡Solicitud Enviada por WhatsApp!</h3>
+              <p style={{ color: 'var(--text-dim)', fontSize: '0.88rem', marginBottom: '1.4rem', lineHeight: 1.45 }}>
+                Hemos abierto WhatsApp con tus datos. Nos comunicaremos de inmediato al número <strong>{ADMIN_PHONE}</strong> para coordinar tu distintivo.
               </p>
               <button
                 onClick={() => { setIsOrdered(false); onClose(); }}
                 style={{
                   width: '100%',
-                  padding: '1rem',
+                  padding: '0.9rem',
                   borderRadius: '14px',
                   backgroundColor: 'var(--accent-gold)',
                   color: '#121212',
-                  fontWeight: 700,
-                  border: 'none'
+                  fontWeight: 800,
+                  fontSize: '0.95rem',
+                  border: 'none',
+                  cursor: 'pointer'
                 }}
               >
-                Volver a la App
+                Volver a la Plataforma
               </button>
             </div>
           ) : (
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
-                <ShoppingBag color="var(--accent-gold)" size={22} />
-                <h3 style={{ fontSize: '1.4rem', fontWeight: 700 }}>Comprar Calcomanía Oficial</h3>
+              {/* Header Ultra Compacto */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
+                <ShoppingBag color="var(--accent-gold)" size={20} />
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Obtener Distintivo ($90 MXN)</h3>
               </div>
-              <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: 1.4 }}>
-                Recibe tu empaque oficial con tu Calcomanía física y el Pase de Acceso QR para desbloquear todos los descuentos.
-              </p>
 
-              <form onSubmit={handleWhatsAppOrder}>
-                {/* Select Edition */}
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.6rem', letterSpacing: '0.05em' }}>
-                    1. Selecciona la Edición
-                  </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
-                    {editions.map((ed) => {
-                      const isSelected = selectedEdition === ed.id;
-                      return (
-                        <div
-                          key={ed.id}
-                          onClick={() => setSelectedEdition(ed.id as any)}
-                          style={{
-                            padding: '0.8rem',
-                            borderRadius: '12px',
-                            backgroundColor: isSelected ? 'rgba(212, 175, 55, 0.15)' : 'rgba(255,255,255,0.04)',
-                            border: isSelected ? '2px solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.1)',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease'
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                            <span style={{ fontWeight: 700, fontSize: '0.85rem', color: isSelected ? 'var(--accent-gold)' : '#FFF' }}>
-                              {ed.name}
-                            </span>
-                            <span style={{ fontSize: '0.6rem', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(255,255,255,0.1)', color: 'var(--text-dim)' }}>
-                              {ed.badge}
-                            </span>
-                          </div>
-                          <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', lineHeight: 1.3 }}>
-                            {ed.desc}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Select City */}
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.6rem', letterSpacing: '0.05em' }}>
-                    2. Tu Ciudad (Entrega Local o Envío)
-                  </label>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
-                    {(['Campeche', 'Ciudad del Carmen'] as const).map((c) => (
-                      <button
-                        type="button"
-                        key={c}
-                        onClick={() => setCity(c)}
-                        style={{
-                          padding: '0.8rem',
-                          borderRadius: '12px',
-                          backgroundColor: city === c ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.04)',
-                          border: city === c ? '1.5 solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.1)',
-                          color: city === c ? 'var(--accent-gold)' : '#FFF',
-                          fontWeight: 600,
-                          fontSize: '0.85rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px'
-                        }}
-                      >
-                        <MapPin size={14} /> {c}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Contact info optional */}
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.6rem', letterSpacing: '0.05em' }}>
-                    3. Datos de contacto (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Tu nombre completo"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem 1rem',
-                      backgroundColor: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '10px',
-                      color: '#FFF',
-                      fontSize: '0.85rem',
-                      marginBottom: '0.6rem',
-                      outline: 'none'
-                    }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Dirección o punto de entrega"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem 1rem',
-                      backgroundColor: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '10px',
-                      color: '#FFF',
-                      fontSize: '0.85rem',
-                      outline: 'none'
-                    }}
-                  />
-                </div>
-
-                {/* Price summary */}
-                <div style={{
-                  padding: '1rem',
-                  borderRadius: '14px',
-                  backgroundColor: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '1.5rem'
-                }}>
-                  <div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', display: 'block' }}>Precio Total:</span>
-                    <strong style={{ fontSize: '1.3rem', color: 'var(--accent-gold)' }}>${totalPrice} MXN</strong>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textAlign: 'right' }}>
-                    Incluye Calcomanía + Pase QR
-                  </div>
-                </div>
-
-                {/* Submit button */}
+              {/* Selector de Modo: WhatsApp vs Puntos de Venta Físicos */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', padding: '3px', borderRadius: '12px' }}>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={() => setActiveTab('whatsapp')}
                   style={{
-                    width: '100%',
-                    padding: '1rem',
-                    borderRadius: '14px',
-                    backgroundColor: '#25D366',
-                    color: '#FFF',
+                    padding: '8px',
+                    borderRadius: '9px',
+                    fontSize: '0.78rem',
                     fontWeight: 700,
-                    fontSize: '1rem',
+                    backgroundColor: activeTab === 'whatsapp' ? 'var(--accent-gold)' : 'transparent',
+                    color: activeTab === 'whatsapp' ? '#121212' : 'var(--text-dim)',
                     border: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: '0 4px 15px rgba(37, 211, 102, 0.3)'
+                    gap: '5px',
+                    cursor: 'pointer'
                   }}
                 >
-                  <MessageCircle size={20} /> Pedir por WhatsApp (${totalPrice} MXN)
+                  <MessageCircle size={14} /> WhatsApp
                 </button>
-              </form>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('stores')}
+                  style={{
+                    padding: '8px',
+                    borderRadius: '9px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    backgroundColor: activeTab === 'stores' ? 'var(--accent-gold)' : 'transparent',
+                    color: activeTab === 'stores' ? '#121212' : 'var(--text-dim)',
+                    border: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '5px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Store size={14} /> Puntos Físicos
+                </button>
+              </div>
+
+              {activeTab === 'whatsapp' ? (
+                <form onSubmit={handleWhatsAppOrder}>
+                  {/* 1. Selección de Distintivos en Grilla Compacta de 2 Columnas */}
+                  <div style={{ marginBottom: '0.9rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem', letterSpacing: '0.08em', fontWeight: 700 }}>
+                      1. Selecciona tu variante:
+                    </label>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
+                      {stickerOptions.map((st) => {
+                        const isSelected = selectedSticker === st.id;
+                        return (
+                          <div
+                            key={st.id}
+                            onClick={() => setSelectedSticker(st.id)}
+                            style={{
+                              padding: '0.55rem 0.7rem',
+                              borderRadius: '10px',
+                              backgroundColor: isSelected ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.04)',
+                              border: isSelected ? '1.5px solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.08)',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: '4px'
+                            }}
+                          >
+                            <span style={{ fontWeight: 700, fontSize: '0.74rem', color: isSelected ? 'var(--accent-gold)' : '#FFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {st.label}
+                            </span>
+                            <span style={{ 
+                              fontSize: '0.6rem', 
+                              fontWeight: 800, 
+                              padding: '2px 5px', 
+                              borderRadius: '4px', 
+                              backgroundColor: st.bg, 
+                              color: st.color,
+                              flexShrink: 0
+                            }}>
+                              {st.tag}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {(selectedSticker === 'campechana_rosa' || selectedSticker === 'campechana_negra') && (
+                    <div style={{
+                      margin: '0.6rem 0 1rem 0',
+                      padding: '0.6rem',
+                      backgroundColor: 'rgba(255,255,255,0.03)',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.8rem'
+                    }}>
+                      <img
+                        src={selectedSticker === 'campechana_rosa' ? '/qr_campechana_rosa.png' : '/qr_campechana_negra.png'}
+                        alt="QR Campechana"
+                        style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'contain', backgroundColor: '#FFF' }}
+                      />
+                      <div>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 800, color: selectedSticker === 'campechana_rosa' ? '#FF69B4' : '#FFF' }}>
+                          Diseño de QR Oficial — Campechana Soy ({selectedSticker === 'campechana_rosa' ? 'Rosa' : 'Negra'})
+                        </div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', marginTop: '2px' }}>
+                          Incluye el escudo impreso en el centro y tecnología QR scannable de vinil.
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2. Datos Obligatorios Ultra Compactos */}
+                  <div style={{ marginBottom: '1rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem', letterSpacing: '0.08em', fontWeight: 700 }}>
+                      2. Datos para comunicarnos:
+                    </label>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                      <div style={{ position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--accent-gold)' }}>
+                          <User size={14} />
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Tu nombre *"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '0.65rem 0.65rem 0.65rem 2.2rem',
+                            backgroundColor: 'rgba(255,255,255,0.05)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '10px',
+                            color: '#FFF',
+                            fontSize: '0.82rem',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+
+                      <div style={{ position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--accent-gold)' }}>
+                          <Phone size={14} />
+                        </div>
+                        <input
+                          type="tel"
+                          placeholder="Tu WhatsApp *"
+                          value={userPhone}
+                          onChange={(e) => setUserPhone(e.target.value)}
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '0.65rem 0.65rem 0.65rem 2.2rem',
+                            backgroundColor: 'rgba(255,255,255,0.05)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '10px',
+                            color: '#FFF',
+                            fontSize: '0.82rem',
+                            outline: 'none'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Submit Button visible sin scroll */}
+                  <button
+                    type="submit"
+                    style={{
+                      width: '100%',
+                      padding: '0.9rem',
+                      borderRadius: '14px',
+                      backgroundColor: '#25D366',
+                      color: '#FFF',
+                      fontWeight: 800,
+                      fontSize: '0.95rem',
+                      border: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 16px rgba(37, 211, 102, 0.35)'
+                    }}
+                  >
+                    <MessageCircle size={18} /> Pedir por WhatsApp ({ADMIN_PHONE})
+                  </button>
+                </form>
+              ) : (
+                /* Puntos de Venta Físicos */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: '0.2rem' }}>
+                    Adquiere tu distintivo físico de $90 MXN de forma presencial en los siguientes puntos oficiales:
+                  </p>
+
+                  {physicalStores.map((store, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '0.85rem',
+                        borderRadius: '12px',
+                        backgroundColor: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(212,175,55,0.25)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--accent-gold)', fontWeight: 800, textTransform: 'uppercase' }}>
+                          📍 {store.city}
+                        </span>
+                        <a
+                          href={`https://wa.me/52${store.phone}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '0.68rem', color: '#25D366', fontWeight: 700, textDecoration: 'none' }}
+                        >
+                          Contacto: {store.phone}
+                        </a>
+                      </div>
+                      <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFF' }}>{store.name}</h4>
+                      <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', margin: '2px 0' }}>{store.address}</p>
+                      <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic' }}>{store.hours}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </motion.div>

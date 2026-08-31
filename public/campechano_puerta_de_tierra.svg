@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+  <g fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Main Outer Fortress Outline & Battlements -->
+    <path stroke-width="22" d="
+      M 155 80
+      H 195 V 115 H 240 V 80 H 285 V 115 H 330 V 80 H 375 V 115 H 420 V 80 H 460
+      V 400
+      M 155 80
+      V 380
+      C 155 410, 140 430, 120 440
+    " />
+
+    <!-- Inner Archway / Puerta de Tierra Curved Arch -->
+    <path stroke-width="22" d="
+      M 125 435
+      C 150 400, 180 340, 240 260
+      C 290 195, 360 170, 460 170
+    " />
+
+    <!-- Right Arch Pillar / Wall Sweep -->
+    <path stroke-width="22" d="
+      M 460 215
+      C 370 215, 320 280, 335 440
+    " />
+  </g>
+
+  <!-- Typography: CAMPECHANO SOY -->
+  <text x="300" y="535" text-anchor="middle" font-family="'Montserrat', 'Arial Black', sans-serif" font-size="52" fill="#000000" letter-spacing="3">
+    <tspan font-weight="900">CAMPECHANO</tspan>
+    <tspan font-weight="300"> SOY</tspan>
+  </text>
+</svg>

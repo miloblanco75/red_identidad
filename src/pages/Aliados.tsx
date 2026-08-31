@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Utensils, Car, Zap, Loader2, Wine, HeartPulse, Building2, MapPin, Globe, CreditCard } from 'lucide-react';
+import { Utensils, Car, Loader2, Wine, HeartPulse, Building2, MapPin, Globe, CreditCard, Briefcase, Sparkles } from 'lucide-react';
 import L from 'leaflet';
 import { supabase } from '../lib/supabase';
 import { motion } from 'framer-motion';
@@ -42,14 +42,14 @@ interface Ally {
 const mockAllies: Ally[] = [
   {
     id: 'mock-1',
-    name: 'Los Trompos Campeche',
+    name: 'Café del Mar Campeche',
     category: 'Comida',
     discount: '15% de Descuento en Consumo Total',
     lat: 19.8438,
     lng: -90.5312,
     promotions_given: 120,
-    facebook_url: 'https://facebook.com/lostrompos',
-    website_url: 'https://lostrompos.com.mx'
+    facebook_url: 'https://facebook.com',
+    website_url: ''
   },
   {
     id: 'mock-2',
@@ -111,7 +111,7 @@ const Aliados: React.FC = () => {
   const [mapZoom, setMapZoom] = useState<number>(12);
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
 
-  const categories = ['Todas', 'Comida', 'Auto', 'Servicios', 'Entretenimiento', 'Salud'];
+  const categories = ['Todas', 'Comida', 'Auto', 'Servicios', 'Estética', 'Entretenimiento', 'Salud'];
 
   useEffect(() => {
     fetchAllies();
@@ -144,7 +144,8 @@ const Aliados: React.FC = () => {
     switch (category) {
       case 'Comida': return Utensils;
       case 'Auto': return Car;
-      case 'Servicios': return Zap;
+      case 'Servicios': return Briefcase;
+      case 'Estética': return Sparkles;
       case 'Entretenimiento': return Wine;
       case 'Salud': return HeartPulse;
       default: return Building2;
