@@ -67,6 +67,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
           .from('stickers')
           .select('code')
           .is('phone', null)
+          .neq('level', 'archivado')
           .order('code', { ascending: true })
           .limit(totalQuantity);
 

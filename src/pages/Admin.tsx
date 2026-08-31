@@ -83,6 +83,7 @@ const Admin: React.FC = () => {
       const { data, error } = await supabase
         .from('stickers')
         .select('*')
+        .neq('level', 'archivado')
         .order('member_number', { ascending: true });
 
       if (error) throw error;
