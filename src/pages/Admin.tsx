@@ -212,7 +212,9 @@ const Admin: React.FC = () => {
 
         const route = codeType === 'tesoro' ? 'tesoro' : 'registro';
         const link = `https://redidentidad.vercel.app/${route}?c=${uniqueCode}`;
-        const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(link)}`;
+        const isRosaLevel = level.toLowerCase().includes('rosa') || level.toLowerCase().includes('pink');
+        const qrColorParam = isRosaLevel ? '&color=253-128-191' : '';
+        const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400${qrColorParam}&data=${encodeURIComponent(link)}`;
         csvRows.push(`${uniqueCode},${link},${qrImageUrl},${level},${codeType.toUpperCase()},${num}`);
       }
 

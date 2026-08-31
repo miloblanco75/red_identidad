@@ -10,15 +10,29 @@ interface StickerQRCodeProps {
 }
 
 export const StickerQRCode: React.FC<StickerQRCodeProps> = ({
-  value,
+  value = '',
   level = '',
   size = 100,
   style,
   className,
 }) => {
   const normLevel = (level || '').toLowerCase().replace(/-/g, '_');
-  const isRosa = normLevel.includes('rosa') || normLevel.includes('rosada') || normLevel.includes('pink');
-  const isCampechanaOrNegra = normLevel.includes('campechana') || normLevel.includes('campechano') || normLevel.includes('negra');
+  const normValue = (value || '').toLowerCase();
+
+  const isRosa = 
+    normLevel.includes('rosa') || 
+    normLevel.includes('rosada') || 
+    normLevel.includes('pink') || 
+    normValue.includes('rosa');
+
+  const isNegra = 
+    !isRosa && (
+      normLevel.includes('negra') || 
+      normLevel.includes('campechana') || 
+      normLevel.includes('campechano') || 
+      normValue.includes('negr') ||
+      normValue.includes('camp')
+    );
 
   if (isRosa) {
     return (
@@ -40,7 +54,7 @@ export const StickerQRCode: React.FC<StickerQRCodeProps> = ({
     );
   }
 
-  if (isCampechanaOrNegra) {
+  if (isNegra) {
     return (
       <img
         src="/qr_campechana_negra.png"
