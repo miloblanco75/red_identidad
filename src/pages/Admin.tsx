@@ -83,11 +83,21 @@ const Admin: React.FC = () => {
       const { data, error } = await supabase
         .from('stickers')
         .select('*')
-        .neq('level', 'archivado')
-        .order('member_number', { ascending: true });
+        .order('member_number', { ascending: true })
+        .range(0, 5000);
 
       if (error) throw error;
-      if (data) setAllStickers(data);
+      if (data) {
+        const officialStickers = data.filter(s => {
+          if (s.phone) return true;
+          const lvl = (s.level || '').toLowerCase();
+          if (lvl === 'white' || lvl === 'archivado') return false;
+          const code = (s.code || '').toUpperCase();
+          if (code.startsWith('PRUE') || (code.startsWith('RED-') && lvl !== 'gold' && lvl !== 'silver')) return false;
+          return true;
+        });
+        setAllStickers(officialStickers);
+      }
     } catch (err: any) {
       console.error('Error al cargar estatus de calcomanías:', err);
       setErrorMsg('Error al cargar estatus de calcomanías: ' + (err.message || 'Verifica la conexión a base de datos.'));
