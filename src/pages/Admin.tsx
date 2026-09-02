@@ -80,24 +80,36 @@ const Admin: React.FC = () => {
     setIsStatusLoading(true);
     setErrorMsg('');
     try {
-      const { data, error } = await supabase
-        .from('stickers')
-        .select('*')
-        .order('member_number', { ascending: true })
-        .range(0, 5000);
+      let allFetched: any[] = [];
+      let from = 0;
+      const step = 1000;
 
-      if (error) throw error;
-      if (data) {
-        const officialStickers = data.filter(s => {
-          if (s.phone) return true;
-          const lvl = (s.level || '').toLowerCase();
-          if (lvl === 'white' || lvl === 'archivado') return false;
-          const code = (s.code || '').toUpperCase();
-          if (code.startsWith('PRUE') || (code.startsWith('RED-') && lvl !== 'gold' && lvl !== 'silver')) return false;
-          return true;
-        });
-        setAllStickers(officialStickers);
+      while (true) {
+        const { data, error } = await supabase
+          .from('stickers')
+          .select('*')
+          .order('member_number', { ascending: true })
+          .range(from, from + step - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        allFetched = allFetched.concat(data);
+        if (data.length < step) break;
+        from += step;
       }
+
+      const officialPrefixes = ['TULIA', 'CB-', 'CN-', 'CRN-', 'CRB-'];
+      const officialGoldSilver = ['RED-001', 'RED-002', 'RED-GOLD3ESBY', 'RED-GOLD376MF', 'RED-TESORO2U5BU'];
+
+      const officialStickers = allFetched.filter(s => {
+        const code = (s.code || '').toUpperCase();
+        if (s.phone) return true;
+        if (officialGoldSilver.includes(code)) return true;
+        const lvl = (s.level || '').toLowerCase();
+        if (lvl === 'white' || lvl === 'archivado') return false;
+        return officialPrefixes.some(p => code.startsWith(p));
+      });
+      setAllStickers(officialStickers);
     } catch (err: any) {
       console.error('Error al cargar estatus de calcomanías:', err);
       setErrorMsg('Error al cargar estatus de calcomanías: ' + (err.message || 'Verifica la conexión a base de datos.'));
