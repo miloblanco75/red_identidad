@@ -24,9 +24,9 @@ const Registro: React.FC = () => {
     if (!codeStr) return false;
     const clean = codeStr.trim().toUpperCase();
     if (clean === 'DEMO' || clean.includes('DEMO')) return true;
-    if (clean === '9' || clean === '009' || clean === '0009') return true;
-    if (clean.endsWith('0009') || clean.endsWith('009') || clean.endsWith('-009') || clean.endsWith('-0009')) return true;
-    if (clean === 'RED-JV7AC') return true;
+    if (clean.startsWith('SOBRE-')) return true;
+    if (clean.startsWith('ROSA-')) return true;
+    if (clean.startsWith('NEGR-')) return true;
     return false;
   };
 
