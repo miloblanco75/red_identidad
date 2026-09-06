@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import StickerQRCode from '../components/StickerQRCode';
 
@@ -30,6 +30,7 @@ const Admin: React.FC = () => {
   const [allyDiscount, setAllyDiscount] = useState('');
   const [allyLat, setAllyLat] = useState('');
   const [allyLng, setAllyLng] = useState('');
+  const [isDigital, setIsDigital] = useState(false);
   const [allyFacebook, setAllyFacebook] = useState('');
   const [allyWebsite, setAllyWebsite] = useState('');
   const [allyLogo, setAllyLogo] = useState('');
@@ -44,6 +45,7 @@ const Admin: React.FC = () => {
   const [editDiscount, setEditDiscount] = useState('');
   const [editLat, setEditLat] = useState('');
   const [editLng, setEditLng] = useState('');
+  const [editIsDigital, setEditIsDigital] = useState(false);
   const [editFacebook, setEditFacebook] = useState('');
   const [editWebsite, setEditWebsite] = useState('');
   const [editLogo, setEditLogo] = useState('');
@@ -308,16 +310,19 @@ const Admin: React.FC = () => {
     setErrorMsg('');
 
     try {
-      if (!allyName || !allyCategory || !allyDiscount || !allyLat || !allyLng) {
-        throw new Error('Todos los campos son obligatorios.');
+      if (!allyName || !allyCategory || !allyDiscount || (!isDigital && (!allyLat || !allyLng))) {
+        throw new Error('Por favor completa todos los campos obligatorios.');
       }
+
+      const parsedLat = !isDigital && allyLat ? parseFloat(allyLat) : null;
+      const parsedLng = !isDigital && allyLng ? parseFloat(allyLng) : null;
 
       const fullObj: any = {
         name: allyName,
         category: allyCategory,
         discount: allyDiscount,
-        lat: parseFloat(allyLat),
-        lng: parseFloat(allyLng),
+        lat: parsedLat,
+        lng: parsedLng,
         facebook_url: allyFacebook || null,
         website_url: allyWebsite || null,
         logo_url: allyLogo || null,
@@ -334,8 +339,8 @@ const Admin: React.FC = () => {
             name: allyName,
             category: allyCategory,
             discount: allyDiscount,
-            lat: parseFloat(allyLat),
-            lng: parseFloat(allyLng),
+            lat: parsedLat,
+            lng: parsedLng,
             ally_pin: allyPin || null,
             promotions_given: 0
           };
@@ -351,6 +356,7 @@ const Admin: React.FC = () => {
       setAllyDiscount('');
       setAllyLat('');
       setAllyLng('');
+      setIsDigital(false);
       setAllyFacebook('');
       setAllyWebsite('');
       setAllyLogo('');
@@ -472,8 +478,10 @@ const Admin: React.FC = () => {
     setEditName(ally.name || '');
     setEditCategory(ally.category || 'Comida');
     setEditDiscount(ally.discount || '');
-    setEditLat(ally.lat ? String(ally.lat) : '');
-    setEditLng(ally.lng ? String(ally.lng) : '');
+    const isNoLoc = ally.lat === null || ally.lat === undefined || ally.lng === null || ally.lng === undefined;
+    setEditIsDigital(isNoLoc);
+    setEditLat(ally.lat != null ? String(ally.lat) : '');
+    setEditLng(ally.lng != null ? String(ally.lng) : '');
     setEditFacebook(ally.facebook_url || '');
     setEditWebsite(ally.website_url || '');
     setEditLogo(ally.logo_url || '');
@@ -488,16 +496,19 @@ const Admin: React.FC = () => {
     setSuccessMsg('');
 
     try {
-      if (!editName || !editCategory || !editDiscount || !editLat || !editLng) {
-        throw new Error('Todos los campos son obligatorios.');
+      if (!editName || !editCategory || !editDiscount || (!editIsDigital && (!editLat || !editLng))) {
+        throw new Error('Por favor completa todos los campos obligatorios.');
       }
+
+      const parsedLat = !editIsDigital && editLat ? parseFloat(editLat) : null;
+      const parsedLng = !editIsDigital && editLng ? parseFloat(editLng) : null;
 
       const fullObj: any = {
         name: editName,
         category: editCategory,
         discount: editDiscount,
-        lat: parseFloat(editLat),
-        lng: parseFloat(editLng),
+        lat: parsedLat,
+        lng: parsedLng,
         facebook_url: editFacebook || null,
         website_url: editWebsite || null,
         logo_url: editLogo || null,
@@ -512,8 +523,8 @@ const Admin: React.FC = () => {
             name: editName,
             category: editCategory,
             discount: editDiscount,
-            lat: parseFloat(editLat),
-            lng: parseFloat(editLng),
+            lat: parsedLat,
+            lng: parsedLng,
             ally_pin: editPin || null,
           };
           const { error: fallbackErr } = await supabase.from('allies').update(coreObj).eq('id', editingAlly.id);
@@ -906,23 +917,46 @@ const Admin: React.FC = () => {
               <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '0.4rem' }}>El aliado usará este PIN para acceder a su portal y registrar promociones dadas.</p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Latitud</label>
-                <input type="number" step="any" value={allyLat} onChange={(e) => setAllyLat(e.target.value)} required placeholder="19.8301" style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }} />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Longitud</label>
-                <input type="number" step="any" value={allyLng} onChange={(e) => setAllyLng(e.target.value)} required placeholder="-90.5349" style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }} />
-              </div>
+            {/* Checkbox Negocio Digital */}
+            <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.8rem', backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.9rem 1rem', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+              <input
+                type="checkbox"
+                id="isDigital"
+                checked={isDigital}
+                onChange={(e) => setIsDigital(e.target.checked)}
+                style={{ width: '18px', height: '18px', accentColor: 'var(--accent-gold)', cursor: 'pointer' }}
+              />
+              <label htmlFor="isDigital" style={{ fontSize: '0.9rem', color: '#FFF', fontWeight: 600, cursor: 'pointer' }}>
+                🌐 Negocio Digital / Sin Local Físico (Servicios en Línea, E-commerce)
+              </label>
             </div>
 
-            <div style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-              <strong>Tip:</strong> Busca el lugar en Google Maps en tu computadora, haz clic derecho en el punto rojo y verás los números de latitud y longitud para copiarlos aquí.
-            </div>
+            {!isDigital ? (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Latitud</label>
+                    <input type="number" step="any" value={allyLat} onChange={(e) => setAllyLat(e.target.value)} required={!isDigital} placeholder="19.8301" style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Longitud</label>
+                    <input type="number" step="any" value={allyLng} onChange={(e) => setAllyLng(e.target.value)} required={!isDigital} placeholder="-90.5349" style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }} />
+                  </div>
+                </div>
 
-            <button type="submit" disabled={isAddingAlly} style={{ width: '100%', padding: '1rem', borderRadius: '12px', backgroundColor: isAddingAlly ? 'rgba(255,255,255,0.1)' : 'var(--accent-gold)', color: isAddingAlly ? '#FFF' : '#121212', fontWeight: 700, border: 'none', display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem' }}>
-              {isAddingAlly ? <Loader2 className="animate-spin" /> : <MapPin />} Publicar en el Mapa
+                <div style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.8rem', color: 'var(--text-dim)' }}>
+                  <strong>Tip:</strong> Busca el lugar en Google Maps en tu computadora, haz clic derecho en el punto rojo y verás los números de latitud y longitud para copiarlos aquí.
+                </div>
+              </>
+            ) : (
+              <div style={{ padding: '1rem', backgroundColor: 'rgba(212,175,55,0.1)', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.85rem', color: 'var(--accent-gold)', border: '1px solid rgba(212,175,55,0.2)' }}>
+                ℹ️ Este comercio aparecerá como <strong>Digital / En Línea</strong> y no requerirá ubicación en el mapa.
+              </div>
+            )}
+
+            <button type="submit" disabled={isAddingAlly} style={{ width: '100%', padding: '1rem', borderRadius: '12px', backgroundColor: isAddingAlly ? 'rgba(255,255,255,0.1)' : 'var(--accent-gold)', color: isAddingAlly ? '#FFF' : '#121212', fontWeight: 700, border: 'none', display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '2rem', cursor: 'pointer' }}>
+              {isAddingAlly ? <Loader2 className="animate-spin" /> : isDigital ? <Globe /> : <MapPin />}
+              {isDigital ? 'Guardar Aliado Digital' : 'Publicar en el Mapa'}
             </button>
           </form>
 
@@ -946,6 +980,7 @@ const Admin: React.FC = () => {
                       <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>{ally.category} • {ally.discount}</span>
                       <div style={{ display: 'flex', gap: '0.8rem', marginTop: '4px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '0.75rem', color: '#4ADE80', fontWeight: 600 }}>🎁 {ally.promotions_given ?? 0} promo(s)</span>
+                        {(!ally.lat || !ally.lng) && <span style={{ fontSize: '0.75rem', color: '#C084FC', fontWeight: 600 }}>🌐 Digital</span>}
                         {ally.ally_pin && <span style={{ fontSize: '0.75rem', color: 'var(--accent-gold)' }}>PIN: {ally.ally_pin}</span>}
                         {ally.facebook_url && <span style={{ fontSize: '0.75rem', color: '#1877F2', fontWeight: 600 }}>🌐 Facebook</span>}
                         {ally.website_url && <span style={{ fontSize: '0.75rem', color: '#38BDF8', fontWeight: 600 }}>🔗 Web</span>}
@@ -1086,16 +1121,32 @@ const Admin: React.FC = () => {
                 <input type="text" value={editPin} onChange={(e) => setEditPin(e.target.value.toUpperCase())} placeholder="Ej. TROMPOS24" style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '12px', color: 'var(--accent-gold)', fontSize: '0.95rem', outline: 'none' }} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1.5rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Latitud</label>
-                  <input type="number" step="any" value={editLat} onChange={(e) => setEditLat(e.target.value)} required style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Longitud</label>
-                  <input type="number" step="any" value={editLng} onChange={(e) => setEditLng(e.target.value)} required style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }} />
-                </div>
+              {/* Checkbox Negocio Digital */}
+              <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.8rem', backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.8rem', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                <input
+                  type="checkbox"
+                  id="editIsDigital"
+                  checked={editIsDigital}
+                  onChange={(e) => setEditIsDigital(e.target.checked)}
+                  style={{ width: '16px', height: '16px', accentColor: 'var(--accent-gold)', cursor: 'pointer' }}
+                />
+                <label htmlFor="editIsDigital" style={{ fontSize: '0.85rem', color: '#FFF', fontWeight: 600, cursor: 'pointer' }}>
+                  🌐 Negocio Digital / Sin Local Físico
+                </label>
               </div>
+
+              {!editIsDigital && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1.5rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Latitud</label>
+                    <input type="number" step="any" value={editLat} onChange={(e) => setEditLat(e.target.value)} required={!editIsDigital} style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Longitud</label>
+                    <input type="number" step="any" value={editLng} onChange={(e) => setEditLng(e.target.value)} required={!editIsDigital} style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }} />
+                  </div>
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '0.8rem' }}>
                 <button type="button" onClick={() => setEditingAlly(null)} style={{ flex: 1, padding: '0.8rem', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.1)', color: '#FFF', fontWeight: 600, border: 'none', cursor: 'pointer' }}>

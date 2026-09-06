@@ -31,8 +31,8 @@ interface Ally {
   name: string;
   category: string;
   discount: string;
-  lat: number;
-  lng: number;
+  lat?: number | null;
+  lng?: number | null;
   promotions_given: number;
   facebook_url?: string;
   website_url?: string;
@@ -92,6 +92,15 @@ const mockAllies: Ally[] = [
     promotions_given: 88,
     discount: 'Inscripción Gratis y 10% en Mensualidad',
     facebook_url: 'https://facebook.com'
+  },
+  {
+    id: 'mock-6',
+    name: 'Diseño & Software Digital Campeche',
+    category: 'Servicios',
+    promotions_given: 64,
+    discount: '20% OFF en Desarrollo de Páginas Web y Tiendas Online',
+    facebook_url: 'https://facebook.com',
+    website_url: 'https://ejemplo.com'
   }
 ];
 
@@ -216,7 +225,9 @@ const Aliados: React.FC = () => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
-          {displayAllies.map(partner => {
+          {displayAllies
+            .filter(partner => partner.lat != null && partner.lng != null && !isNaN(Number(partner.lat)) && !isNaN(Number(partner.lng)))
+            .map(partner => {
             const goldIcon = L.divIcon({
               className: 'custom-gold-marker',
               html: `<div style="
@@ -310,6 +321,7 @@ const Aliados: React.FC = () => {
           ) : (
             filteredAllies.map((item) => {
               const IconComponent = getCategoryIcon(item.category);
+              const isDigitalAlly = !item.lat || !item.lng || isNaN(Number(item.lat)) || isNaN(Number(item.lng));
               return (
                 <motion.div
                   key={item.id}
@@ -347,6 +359,11 @@ const Aliados: React.FC = () => {
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexShrink: 0 }}>
+                      {isDigitalAlly && (
+                        <span style={{ backgroundColor: 'rgba(168,85,247,0.2)', color: '#C084FC', padding: '2px 7px', borderRadius: '6px', fontSize: '0.6rem', fontWeight: 800 }}>
+                          🌐 DIGITAL
+                        </span>
+                      )}
                       {isNewAlly((item as any).created_at) && (
                         <span style={{ backgroundColor: 'rgba(74,222,128,0.15)', color: '#4ADE80', padding: '2px 7px', borderRadius: '6px', fontSize: '0.6rem', fontWeight: 800 }}>
                           🆕 NUEVO
@@ -420,23 +437,47 @@ const Aliados: React.FC = () => {
                     </span>
                     
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button
-                        onClick={() => handleLocateAlly(item)}
-                        style={{
-                          backgroundColor: 'rgba(255,255,255,0.05)',
-                          color: '#FFF',
-                          padding: '6px 12px',
-                          borderRadius: '8px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          border: '1px solid var(--glass-border)'
-                        }}
-                      >
-                        <MapPin size={12} /> Ubicar
-                      </button>
+                      {!isDigitalAlly ? (
+                        <button
+                          onClick={() => handleLocateAlly(item)}
+                          style={{
+                            backgroundColor: 'rgba(255,255,255,0.05)',
+                            color: '#FFF',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            border: '1px solid var(--glass-border)',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <MapPin size={12} /> Ubicar
+                        </button>
+                      ) : item.website_url ? (
+                        <a
+                          href={item.website_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            backgroundColor: 'rgba(212,175,55,0.15)',
+                            color: 'var(--accent-gold)',
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            border: '1px solid rgba(212,175,55,0.3)',
+                            textDecoration: 'none'
+                          }}
+                        >
+                          <Globe size={12} /> Visitar Web
+                        </a>
+                      ) : null}
                       <button
                         onClick={() => navigate('/registro')}
                         style={{
@@ -449,7 +490,8 @@ const Aliados: React.FC = () => {
                           display: 'flex',
                           alignItems: 'center',
                           gap: '4px',
-                          border: '1px solid rgba(212,175,55,0.3)'
+                          border: '1px solid rgba(212,175,55,0.3)',
+                          cursor: 'pointer'
                         }}
                       >
                         <CreditCard size={12} /> Ver mi Pase
