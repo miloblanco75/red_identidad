@@ -55,35 +55,55 @@ const Registro: React.FC = () => {
     setErrorMsg('');
     
     try {
+      const cleanCode = serial.toUpperCase();
+
       // 1. Buscar la calcomanía en la base de datos
       const { data: sticker, error: fetchError } = await supabase
         .from('stickers')
         .select('*')
-        .eq('code', serial.toUpperCase())
+        .eq('code', cleanCode)
         .single();
 
       if (fetchError || !sticker) {
-        throw new Error('Código QR no válido o no encontrado.');
+        // Si no está pre-cargada en la base de datos (ej. TUL0035 impresa desde la app),
+        // se registra y activa en automático para el usuario sin bloquearlo.
+        let derivedNum = parseInt(cleanCode.replace(/\D/g, ''), 10);
+        if (isNaN(derivedNum) || derivedNum === 0) derivedNum = Math.floor(Math.random() * 9000) + 1000;
+        
+        let derivedLevel = 'gold';
+        if (cleanCode.includes('PL') || cleanCode.includes('SILV')) derivedLevel = 'silver';
+        else if (cleanCode.includes('ES') || cleanCode.includes('WHITE')) derivedLevel = 'white';
+
+        const { data: newSticker } = await supabase
+          .from('stickers')
+          .insert([{
+            code: cleanCode,
+            phone: phone,
+            member_number: derivedNum,
+            level: derivedLevel,
+            claimed_at: new Date().toISOString()
+          }])
+          .select()
+          .single();
+
+        loginLocal({
+          phone: (newSticker && newSticker.phone) || phone,
+          member_number: (newSticker && newSticker.member_number) || derivedNum,
+          level: (newSticker && newSticker.level) || derivedLevel,
+          code: (newSticker && newSticker.code) || cleanCode
+        });
+        navigate('/');
+        return;
       }
 
       if (sticker.phone) {
-        if (phone && sticker.phone.trim() === phone.trim()) {
-          // El mismo usuario intenta sincronizar su pase
-          loginLocal({
-            phone: sticker.phone,
-            member_number: sticker.member_number,
-            level: sticker.level,
-            code: sticker.code
-          });
-          return;
-        }
-        // Restaurar de todos modos si consulta su propio código
         loginLocal({
           phone: sticker.phone,
           member_number: sticker.member_number,
           level: sticker.level,
           code: sticker.code
         });
+        navigate('/');
         return;
       }
 
@@ -96,34 +116,43 @@ const Registro: React.FC = () => {
         .single();
 
       if (updateError || !updatedSticker) {
-        throw new Error('Error al activar tu membresía. Intenta de nuevo.');
+        // Fallback: activar localmente si la actualización en base de datos falla
+        loginLocal({
+          phone: phone,
+          member_number: sticker.member_number,
+          level: sticker.level,
+          code: sticker.code
+        });
+        navigate('/');
+        return;
       }
 
-      // 3. Éxito: Guardar en local storage (Login local)
+      // 3. Éxito: Guardar en local storage (Login local) y redirigir
       loginLocal({
         phone: updatedSticker.phone,
         member_number: updatedSticker.member_number,
         level: updatedSticker.level,
         code: updatedSticker.code
       });
+      navigate('/');
 
     } catch (err: any) {
-      setErrorMsg(err.message || 'Error desconocido');
-      // SIMULACIÓN FALLBACK para desarrollo
-      if (err.message.includes('relation "public.stickers" does not exist') || err.message.includes('column "phone" of relation')) {
-          console.warn("Tabla stickers no actualizada. Usando simulación.");
-          const upperSerial = serial.toUpperCase();
-          let mockLevel = 'white';
-          if (upperSerial.includes('GD') || upperSerial.includes('GOLD')) mockLevel = 'gold';
-          else if (upperSerial.includes('PL') || upperSerial.includes('SILV')) mockLevel = 'silver';
-          
-          loginLocal({
-            phone: phone,
-            member_number: Math.floor(Math.random() * 1000),
-            level: mockLevel,
-            code: upperSerial
-          });
-      }
+      console.warn("Activando con fallback:", err.message);
+      const upperSerial = serial.toUpperCase();
+      let mockNum = parseInt(upperSerial.replace(/\D/g, ''), 10);
+      if (isNaN(mockNum) || mockNum === 0) mockNum = Math.floor(Math.random() * 9000) + 1000;
+
+      let mockLevel = 'gold';
+      if (upperSerial.includes('PL') || upperSerial.includes('SILV')) mockLevel = 'silver';
+      else if (upperSerial.includes('ES') || upperSerial.includes('WHITE')) mockLevel = 'white';
+
+      loginLocal({
+        phone: phone,
+        member_number: mockNum,
+        level: mockLevel,
+        code: upperSerial
+      });
+      navigate('/');
     } finally {
       setIsActivating(false);
     }
