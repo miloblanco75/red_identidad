@@ -18,11 +18,36 @@ const Registro: React.FC = () => {
   const [isActivating, setIsActivating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const isFounder = user?.code.toUpperCase().includes('FD') || serial.toUpperCase().includes('FD');
+  const isDemoCode = (codeStr: string) => {
+    if (!codeStr) return false;
+    const clean = codeStr.trim().toUpperCase();
+    if (clean === 'DEMO' || clean.includes('DEMO')) return true;
+    if (clean === '9' || clean === '009' || clean === '0009') return true;
+    if (clean.endsWith('0009') || clean.endsWith('009') || clean.endsWith('-009') || clean.endsWith('-0009')) return true;
+    if (clean === 'RED-JV7AC') return true;
+    return false;
+  };
+
+  const handleActivateDemo = (overridePhone?: string) => {
+    loginLocal({
+      phone: overridePhone || phone || '9810000000',
+      member_number: 9,
+      level: 'gold',
+      code: 'PASE-DEMO-009'
+    });
+    navigate('/');
+  };
 
   const handleActivate = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!serial || !phone) return;
+    if (!serial) return;
+    
+    if (isDemoCode(serial) || isDemoCode(codeParam)) {
+      handleActivateDemo(phone);
+      return;
+    }
+
+    if (!phone) return;
     
     setIsActivating(true);
     setErrorMsg('');
@@ -128,6 +153,49 @@ const Registro: React.FC = () => {
 
         <section className="glass" style={{ padding: '2rem', borderRadius: '24px', textAlign: 'left' }}>
           
+          {isDemoCode(codeParam || serial) && (
+            <div style={{
+              backgroundColor: 'rgba(212, 175, 55, 0.12)',
+              border: '1px solid var(--accent-gold)',
+              borderRadius: '18px',
+              padding: '1.25rem',
+              marginBottom: '1.5rem',
+              textAlign: 'center'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '0.4rem' }}>
+                <Sparkles size={20} color="var(--accent-gold)" />
+                <span style={{ color: 'var(--accent-gold)', fontWeight: 800, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Modo Demostración POS
+                </span>
+              </div>
+              <p style={{ color: 'var(--text-dim)', fontSize: '0.82rem', margin: '0 0 1rem 0', lineHeight: 1.4 }}>
+                Has escaneado el QR de exhibición del Punto de Venta. Puedes acceder libremente para probar la experiencia de Red Identidad.
+              </p>
+              <button
+                type="button"
+                onClick={() => handleActivateDemo()}
+                style={{
+                  width: '100%',
+                  padding: '0.85rem',
+                  borderRadius: '12px',
+                  backgroundColor: 'var(--accent-gold)',
+                  color: '#121212',
+                  fontWeight: 800,
+                  fontSize: '0.9rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 15px rgba(212, 175, 55, 0.3)'
+                }}
+              >
+                <Sparkles size={16} /> Entrar en Modo Demo (Sin registro)
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleActivate}>
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>
@@ -215,6 +283,12 @@ const Registro: React.FC = () => {
             </div>
           )}
         </div>
+
+        {user.code?.includes('DEMO') && (
+          <div style={{ backgroundColor: 'rgba(212, 175, 55, 0.15)', border: '1px solid var(--accent-gold)', padding: '0.6rem 1rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.8rem', color: 'var(--accent-gold)', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <Sparkles size={16} /> Pase de Demostración Activo (Vista Previa POS)
+          </div>
+        )}
 
         {/* Digital Wallet Card */}
         <motion.div 
