@@ -18,6 +18,8 @@ const Registro: React.FC = () => {
   const [isActivating, setIsActivating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  const isFounder = user?.code.toUpperCase().includes('FD') || serial.toUpperCase().includes('FD');
+
   const isDemoCode = (codeStr: string) => {
     if (!codeStr) return false;
     const clean = codeStr.trim().toUpperCase();
