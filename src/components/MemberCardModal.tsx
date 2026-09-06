@@ -18,6 +18,12 @@ interface MemberCardModalProps {
 export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose }) => {
   const getLevelInfo = (level: string) => {
     switch (level?.toLowerCase()) {
+      case 'campechana_rosa':
+      case 'rosa':
+        return { name: 'CAMPECHANA SOY (ROSA VIP)', color: '#FF5C9D', icon: Crown, bg: 'rgba(255,92,157,0.2)' };
+      case 'campechana_negra':
+      case 'negra':
+        return { name: 'CAMPECHANA SOY (NEGRA VIP)', color: '#D4AF37', icon: Crown, bg: 'rgba(212,175,55,0.2)' };
       case 'gold':
         return { name: 'VIP DORADO', color: '#D4AF37', icon: Crown, bg: 'rgba(212,175,55,0.15)' };
       case 'silver':

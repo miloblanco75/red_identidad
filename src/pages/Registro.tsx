@@ -70,9 +70,11 @@ const Registro: React.FC = () => {
         let derivedNum = parseInt(cleanCode.replace(/\D/g, ''), 10);
         if (isNaN(derivedNum) || derivedNum === 0) derivedNum = Math.floor(Math.random() * 9000) + 1000;
         
-        let derivedLevel = 'gold';
+        let derivedLevel = 'campechana_rosa';
         if (cleanCode.includes('PL') || cleanCode.includes('SILV')) derivedLevel = 'silver';
         else if (cleanCode.includes('ES') || cleanCode.includes('WHITE')) derivedLevel = 'white';
+        else if (cleanCode.includes('NEGR')) derivedLevel = 'campechana_negra';
+        else if (cleanCode.includes('TUL') || cleanCode.includes('ROSA')) derivedLevel = 'campechana_rosa';
 
         const { data: newSticker } = await supabase
           .from('stickers')
@@ -142,9 +144,10 @@ const Registro: React.FC = () => {
       let mockNum = parseInt(upperSerial.replace(/\D/g, ''), 10);
       if (isNaN(mockNum) || mockNum === 0) mockNum = Math.floor(Math.random() * 9000) + 1000;
 
-      let mockLevel = 'gold';
+      let mockLevel = 'campechana_rosa';
       if (upperSerial.includes('PL') || upperSerial.includes('SILV')) mockLevel = 'silver';
       else if (upperSerial.includes('ES') || upperSerial.includes('WHITE')) mockLevel = 'white';
+      else if (upperSerial.includes('NEGR')) mockLevel = 'campechana_negra';
 
       loginLocal({
         phone: phone,
@@ -159,11 +162,15 @@ const Registro: React.FC = () => {
   };
 
   const getLevelInfo = (levelStr: string) => {
-    switch (levelStr) {
+    switch (levelStr?.toLowerCase()) {
       case 'white': return { name: 'Esencial', color: 'var(--accent-white)', glow: 'premium-glow-white', progress: 30 };
       case 'silver': return { name: 'Colección', color: 'var(--accent-silver)', glow: 'premium-glow-silver', progress: 70 };
-      case 'gold': return { name: 'VIP Dorado', color: 'var(--accent-gold)', glow: 'premium-glow-gold', progress: 100 };
-      default: return { name: '', color: '', glow: '', progress: 0 };
+      case 'campechana_rosa':
+      case 'rosa': return { name: 'Campechana Soy (Rosa VIP)', color: '#FF5C9D', glow: 'premium-glow-gold', progress: 100 };
+      case 'campechana_negra':
+      case 'negra': return { name: 'Campechana Soy (Negra VIP)', color: '#D4AF37', glow: 'premium-glow-gold', progress: 100 };
+      case 'gold':
+      default: return { name: 'VIP Dorado', color: 'var(--accent-gold)', glow: 'premium-glow-gold', progress: 100 };
     }
   };
 
