@@ -1422,13 +1422,21 @@ const Admin: React.FC = () => {
                 Revisa en tiempo real qué calcomanías físicas han sido escaneadas/usadas y cuáles siguen disponibles.
               </p>
             </div>
-            <button
-              onClick={fetchStickersStatus}
-              disabled={isStatusLoading}
-              style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)', color: '#FFF', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-              <RefreshCw size={14} className={isStatusLoading ? 'animate-spin' : ''} /> Actualizar
-            </button>
+            <div style={{ display: 'flex', gap: '0.6rem' }}>
+              <button
+                onClick={fetchStickersStatus}
+                disabled={isStatusLoading}
+                style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid var(--glass-border)', color: '#FFF', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <RefreshCw size={14} className={isStatusLoading ? 'animate-spin' : ''} /> Actualizar
+              </button>
+              <button
+                onClick={handleClearUnclaimedCodes}
+                style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Trash2 size={14} /> Limpiar Sin Reclamar
+              </button>
+            </div>
           </div>
 
           {/* Tarjetas resumen de métricas */}
