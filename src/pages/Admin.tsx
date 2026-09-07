@@ -243,8 +243,13 @@ const Admin: React.FC = () => {
         csvRows.push(`${uniqueCode},${link},${qrImageUrl},${level},${codeType.toUpperCase()},${num}`);
       }
 
-      const { error } = await supabase.from('stickers').insert(newStickers);
-      if (error) throw error;
+      const { error } = await supabase.from('stickers').upsert(newStickers, { onConflict: 'code', ignoreDuplicates: true });
+      if (error) {
+        if (error.message?.includes('unique constraint') || error.message?.includes('duplicate key') || error.code === '23505') {
+          throw new Error(`El rango de códigos (${firstCode} a ${lastCode}) ya contiene números registrados. Por favor incrementa el número inicial "Inicio desde" (por ejemplo a ${startNumber + quantity}) o presiona el botón "Auto" arriba del campo.`);
+        }
+        throw error;
+      }
 
       const csvContent = csvRows.join('\n');
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -264,6 +269,26 @@ const Admin: React.FC = () => {
       setErrorMsg(err.message || 'Error al generar los códigos.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleAutoCalcNextNumber = async () => {
+    try {
+      const { data } = await supabase
+        .from('stickers')
+        .select('member_number')
+        .order('member_number', { ascending: false })
+        .limit(1);
+
+      if (data && data.length > 0 && data[0].member_number) {
+        const nextNum = Number(data[0].member_number) + 1;
+        setStartNumber(nextNum);
+        setSuccessMsg(`Número libre calculado automáticamente: ${nextNum}`);
+      } else {
+        setStartNumber(1);
+      }
+    } catch (e) {
+      setStartNumber(100);
     }
   };
 
@@ -693,7 +718,10 @@ const Admin: React.FC = () => {
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Inicio desde</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', letterSpacing: '0.1em', margin: 0 }}>Inicio desde</label>
+                  <button type="button" onClick={handleAutoCalcNextNumber} style={{ background: 'none', border: 'none', color: 'var(--accent-gold)', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}>⚡ Auto</button>
+                </div>
                 <input 
                   type="number" value={startNumber} onChange={(e) => setStartNumber(parseInt(e.target.value) || 1)} min="1" required
                   style={{ width: '100%', padding: '0.9rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '12px', color: 'var(--accent-gold)', fontWeight: 700, fontSize: '1rem', outline: 'none' }}
