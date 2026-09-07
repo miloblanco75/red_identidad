@@ -15,11 +15,11 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
   const [bottomLeftText, setBottomLeftText] = useState<string>('ESCANEA Y CONÓCENOS');
   const [priceNumber] = useState<string>('90');
   const [priceSubtext] = useState<string>('PESOS');
-  const [qrUrl] = useState<string>('https://facebook.com/redidentidad');
+  const [qrUrl, setQrUrl] = useState<string>('https://www.facebook.com/profile.php?id=61589711656219');
 
   // Quantity & Code Source settings
   const [totalQuantity, setTotalQuantity] = useState<number>(95);
-  const [codeMode, setCodeMode] = useState<'auto' | 'db' | 'static'>('auto');
+  const [codeMode, setCodeMode] = useState<'auto' | 'db' | 'static'>('static');
   const [envelopeStickers, setEnvelopeStickers] = useState<Array<{ code: string; url: string }>>([]);
   const [isLoadingStickers, setIsLoadingStickers] = useState<boolean>(false);
 
@@ -501,10 +501,25 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
               onChange={(e) => setCodeMode(e.target.value as any)}
               style={{ width: '100%', padding: '0.65rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#FFF', fontSize: '0.82rem', outline: 'none' }}
             >
-              <option value="auto" style={{ color: '#000' }}>Generar Secuencia</option>
+              <option value="static" style={{ color: '#000' }}>🌐 Link Facebook Oficial (Nativo y Sin Caducidad)</option>
+              <option value="auto" style={{ color: '#000' }}>Generar Secuencia Registro</option>
               <option value="db" style={{ color: '#000' }}>Cargar de Base de Datos</option>
-              <option value="static" style={{ color: '#000' }}>Imagen/QR Fijo</option>
             </select>
+
+            {codeMode === 'static' && (
+              <div style={{ marginTop: '0.8rem' }}>
+                <label style={{ display: 'block', fontSize: '0.68rem', textTransform: 'uppercase', color: '#D4AF37', marginBottom: '0.3rem', fontWeight: 700 }}>
+                  Enlace QR (Facebook Red Identidad)
+                </label>
+                <input
+                  type="url"
+                  value={qrUrl}
+                  onChange={(e) => setQrUrl(e.target.value)}
+                  placeholder="https://www.facebook.com/profile.php?id=61589711656219"
+                  style={{ width: '100%', padding: '0.6rem 0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.4)', borderRadius: '8px', color: '#FFF', fontSize: '0.82rem', outline: 'none' }}
+                />
+              </div>
+            )}
           </div>
 
           <div style={{ marginBottom: '1.2rem' }}>
