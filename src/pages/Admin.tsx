@@ -1405,7 +1405,11 @@ const Admin: React.FC = () => {
                     }}
                   >
                     <StickerQRCode
-                      value={`https://redidentidad.vercel.app/registro?c=${sticker.code}`}
+                      value={
+                        ((printLevel !== 'all' ? printLevel : sticker.level)?.toLowerCase().includes('campechana') || (printLevel !== 'all' ? printLevel : sticker.level)?.toLowerCase().includes('sobre'))
+                          ? 'https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr'
+                          : `https://redidentidad.vercel.app/registro?c=${sticker.code}`
+                      }
                       level={printLevel !== 'all' ? printLevel : (sticker.level || 'campechana_rosa')}
                       size={95}
                       style={{ width: '100%', height: 'auto', display: 'block' }}

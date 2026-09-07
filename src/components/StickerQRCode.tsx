@@ -39,8 +39,8 @@ export const StickerQRCode: React.FC<StickerQRCodeProps> = ({
 
   let targetUrl = OFFICIAL_FACEBOOK_URL;
 
-  if (isEnvelopeOrCampechana) {
-    // Todos los sobres y calcomanías de Campechana llevan obligatoriamente a Facebook
+  if (isEnvelopeOrCampechana || normValue.includes('registro?c=rosa') || normValue.includes('registro?c=negr') || normValue.includes('registro?c=sobre')) {
+    // Si es sobre o Campechana, NUNCA ir al registro, SIEMPRE ir a Facebook
     targetUrl = OFFICIAL_FACEBOOK_URL;
   } else if (value && value.startsWith('http')) {
     targetUrl = value;
