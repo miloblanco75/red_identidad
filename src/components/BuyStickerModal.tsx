@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, CheckCircle2, MessageCircle, User, Phone, Store } from 'lucide-react';
+import StickerQRCode from './StickerQRCode';
 
 interface BuyStickerModalProps {
   isOpen: boolean;
@@ -275,10 +276,10 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                       alignItems: 'center',
                       gap: '0.8rem'
                     }}>
-                      <img
-                        src={selectedSticker === 'campechana_rosa' ? '/qr_campechana_rosa.png' : '/qr_campechana_negra.png'}
-                        alt="QR Campechana"
-                        style={{ width: '56px', height: '56px', borderRadius: '8px', objectFit: 'contain', backgroundColor: '#FFF' }}
+                      <StickerQRCode
+                        value="PASE-DEMO-001"
+                        level={selectedSticker}
+                        size={56}
                       />
                       <div>
                         <div style={{ fontSize: '0.78rem', fontWeight: 800, color: selectedSticker === 'campechana_rosa' ? '#FF69B4' : '#FFF' }}>
