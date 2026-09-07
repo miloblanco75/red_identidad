@@ -25,23 +25,24 @@ export const StickerQRCode: React.FC<StickerQRCodeProps> = ({
     normLevel.includes('pink') || 
     normValue.includes('rosa');
 
-  const isCampechanaOrSobre = 
-    normLevel.includes('campechana') || 
-    normValue.includes('campechana') ||
-    normLevel.includes('sobre') ||
-    normValue.includes('sobre');
+  const isSobre = 
+    normLevel.includes('sobre') || 
+    normValue.includes('sobre') ||
+    normLevel.includes('envelope');
 
-  // Enlace oficial de Facebook de Red Identidad
+  // Enlace oficial de Facebook de Red Identidad para sobres
   const OFFICIAL_FACEBOOK_URL = 'https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr';
 
-  let targetUrl = OFFICIAL_FACEBOOK_URL;
+  let targetUrl = '';
 
-  if (isCampechanaOrSobre) {
-    targetUrl = OFFICIAL_FACEBOOK_URL;
-  } else if (value && value.startsWith('http')) {
+  if (value && value.startsWith('http')) {
     targetUrl = value;
+  } else if (isSobre) {
+    targetUrl = OFFICIAL_FACEBOOK_URL;
   } else if (value) {
     targetUrl = `https://redidentidad.vercel.app/registro?c=${encodeURIComponent(value)}`;
+  } else {
+    targetUrl = `https://redidentidad.vercel.app/registro?c=TUL0035`;
   }
 
   const qrFgColor = isRosa ? '#FF5C9D' : '#000000';
