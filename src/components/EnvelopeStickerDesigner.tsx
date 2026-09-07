@@ -15,7 +15,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
   const [bottomLeftText, setBottomLeftText] = useState<string>('ESCANEA Y CONÓCENOS');
   const [priceNumber] = useState<string>('90');
   const [priceSubtext] = useState<string>('PESOS');
-  const [qrUrl, setQrUrl] = useState<string>('https://www.facebook.com/profile.php?id=61589711656219');
+  const [qrUrl, setQrUrl] = useState<string>('https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr');
 
   // Quantity & Code Source settings
   const [totalQuantity, setTotalQuantity] = useState<number>(95);
@@ -53,7 +53,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
       const code = `${prefix}-${String(i + 1).padStart(4, '0')}`;
       return {
         code: code,
-        url: `https://redidentidad.vercel.app/registro?c=${code}`
+        url: qrUrl || 'https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr'
       };
     });
     setEnvelopeStickers(list);
@@ -515,7 +515,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                   type="url"
                   value={qrUrl}
                   onChange={(e) => setQrUrl(e.target.value)}
-                  placeholder="https://www.facebook.com/profile.php?id=61589711656219"
+                  placeholder="https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr"
                   style={{ width: '100%', padding: '0.6rem 0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.4)', borderRadius: '8px', color: '#FFF', fontSize: '0.82rem', outline: 'none' }}
                 />
               </div>

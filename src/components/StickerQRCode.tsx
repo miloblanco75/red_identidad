@@ -25,15 +25,19 @@ export const StickerQRCode: React.FC<StickerQRCodeProps> = ({
     normLevel.includes('pink') || 
     normValue.includes('rosa');
 
-  const isCampechana = 
+  const isCampechanaOrSobre = 
     normLevel.includes('campechana') || 
-    normValue.includes('campechana');
+    normValue.includes('campechana') ||
+    normLevel.includes('sobre') ||
+    normValue.includes('sobre');
 
-  // Garantizar que todos los stickers de Campechana lleven al Facebook oficial
-  let targetUrl = 'https://www.facebook.com/profile.php?id=61589711656219';
+  // Enlace oficial de Facebook de Red Identidad
+  const OFFICIAL_FACEBOOK_URL = 'https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr';
 
-  if (isCampechana) {
-    targetUrl = 'https://www.facebook.com/profile.php?id=61589711656219';
+  let targetUrl = OFFICIAL_FACEBOOK_URL;
+
+  if (isCampechanaOrSobre) {
+    targetUrl = OFFICIAL_FACEBOOK_URL;
   } else if (value && value.startsWith('http')) {
     targetUrl = value;
   } else if (value) {
