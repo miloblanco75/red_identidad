@@ -70,11 +70,11 @@ const Registro: React.FC = () => {
         let derivedNum = parseInt(cleanCode.replace(/\D/g, ''), 10);
         if (isNaN(derivedNum) || derivedNum === 0) derivedNum = Math.floor(Math.random() * 9000) + 1000;
         
-        let derivedLevel = 'campechana_rosa';
+        let derivedLevel = 'gold';
         if (cleanCode.includes('PL') || cleanCode.includes('SILV')) derivedLevel = 'silver';
         else if (cleanCode.includes('ES') || cleanCode.includes('WHITE')) derivedLevel = 'white';
-        else if (cleanCode.includes('NEGR')) derivedLevel = 'campechana_negra';
-        else if (cleanCode.includes('TUL') || cleanCode.includes('ROSA')) derivedLevel = 'campechana_rosa';
+        else if (cleanCode.includes('NEGR') || cleanCode.startsWith('CN-')) derivedLevel = 'campechana_negra';
+        else if (cleanCode.includes('ROSA') || cleanCode.startsWith('CRN-') || cleanCode.startsWith('CB-')) derivedLevel = 'campechana_rosa';
 
         const { data: newSticker } = await supabase
           .from('stickers')

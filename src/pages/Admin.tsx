@@ -100,7 +100,7 @@ const Admin: React.FC = () => {
         from += step;
       }
 
-      const officialPrefixes = ['TULIA', 'CB-', 'CN-', 'CRN-', 'CRB-'];
+      const officialPrefixes = ['CB-', 'CN-', 'CRN-', 'CRB-'];
       const officialGoldSilver = ['RED-001', 'RED-002', 'RED-GOLD3ESBY', 'RED-GOLD376MF', 'RED-TESORO2U5BU'];
 
       const officialStickers = allFetched.filter(s => {
