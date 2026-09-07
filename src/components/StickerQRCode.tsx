@@ -2,7 +2,7 @@ import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 
 interface StickerQRCodeProps {
-  value: string;
+  value?: string;
   level?: string;
   size?: number;
   style?: React.CSSProperties;
@@ -25,10 +25,20 @@ export const StickerQRCode: React.FC<StickerQRCodeProps> = ({
     normLevel.includes('pink') || 
     normValue.includes('rosa');
 
-  // Garantizar que la URL sea directa a la plataforma sin pasar por acortadores externos
-  const targetUrl = value.startsWith('http') 
-    ? value 
-    : `https://redidentidad.vercel.app/registro?c=${encodeURIComponent(value || 'TUL0035')}`;
+  const isCampechana = 
+    normLevel.includes('campechana') || 
+    normValue.includes('campechana');
+
+  // Garantizar que todos los stickers de Campechana lleven al Facebook oficial
+  let targetUrl = 'https://www.facebook.com/profile.php?id=61589711656219';
+
+  if (isCampechana) {
+    targetUrl = 'https://www.facebook.com/profile.php?id=61589711656219';
+  } else if (value && value.startsWith('http')) {
+    targetUrl = value;
+  } else if (value) {
+    targetUrl = `https://redidentidad.vercel.app/registro?c=${encodeURIComponent(value)}`;
+  }
 
   const qrFgColor = isRosa ? '#FF5C9D' : '#000000';
 
