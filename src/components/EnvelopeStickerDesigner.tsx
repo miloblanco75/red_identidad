@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Printer, ArrowLeft, ZoomIn, ShieldCheck, RefreshCw } from 'lucide-react';
 import StickerQRCode from './StickerQRCode';
-import { supabase } from '../lib/supabase';
 
 interface EnvelopeStickerDesignerProps {
   onBack?: () => void;
@@ -62,44 +61,12 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
   const fetchEnvelopeStickers = async () => {
     setIsLoadingStickers(true);
     try {
-      if (codeMode === 'db') {
-        const { data } = await supabase
-          .from('stickers')
-          .select('code')
-          .is('phone', null)
-          .neq('level', 'archivado')
-          .order('code', { ascending: true })
-          .limit(totalQuantity);
-
-        if (data && data.length > 0) {
-          const mapped = data.map(item => ({
-            code: item.code,
-            url: `https://redidentidad.vercel.app/registro?c=${item.code}`
-          }));
-
-          const prefix = selectedStickerType === 'campechana_rosa' ? 'ROSA' : selectedStickerType === 'campechana_negra' ? 'NEGR' : 'SOBRE';
-          while (mapped.length < totalQuantity) {
-            const nextIndex = mapped.length + 1;
-            const code = `${prefix}-${String(nextIndex).padStart(4, '0')}`;
-            mapped.push({
-              code: code,
-              url: `https://redidentidad.vercel.app/registro?c=${code}`
-            });
-          }
-          setEnvelopeStickers(mapped);
-        } else {
-          generateSequentialCodes(totalQuantity);
-        }
-      } else if (codeMode === 'auto') {
-        generateSequentialCodes(totalQuantity);
-      } else {
-        const prefix = selectedStickerType === 'campechana_rosa' ? 'ROSA' : selectedStickerType === 'campechana_negra' ? 'NEGR' : 'RED';
-        const mapped = Array.from({ length: totalQuantity }).map((_, i) => ({
-          code: `${prefix}-${String(i + 1).padStart(4, '0')}`,
-          url: qrUrl
-        }));
-        setEnvelopeStickers(mapped);
-      }
+      const prefix = selectedStickerType === 'campechana_rosa' ? 'ROSA' : selectedStickerType === 'campechana_negra' ? 'NEGR' : 'SOBRE';
+      const mapped = Array.from({ length: totalQuantity }).map((_, i) => ({
+        code: `${prefix}-${String(i + 1).padStart(4, '0')}`,
+        url: qrUrl || 'https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr'
+      }));
+      setEnvelopeStickers(mapped);
     } catch (e) {
       generateSequentialCodes(totalQuantity);
     } finally {

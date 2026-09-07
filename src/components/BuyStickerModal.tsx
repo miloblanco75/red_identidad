@@ -277,7 +277,7 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                       gap: '0.8rem'
                     }}>
                       <StickerQRCode
-                        value="PASE-DEMO-001"
+                        value="https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr"
                         level={selectedSticker}
                         size={56}
                       />
