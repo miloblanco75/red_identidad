@@ -267,6 +267,24 @@ const Admin: React.FC = () => {
     }
   };
 
+  const handleClearCampechanaRosaNegraCodes = async () => {
+    if (confirm('¿Estás seguro de borrar ÚNICAMENTE los códigos sin reclamar de Campechana Rosa y Campechana Negra? Las demás calcomanías y las activadas por usuarios NO se borrarán.')) {
+      try {
+        const { error } = await supabase
+          .from('stickers')
+          .delete()
+          .is('phone', null)
+          .or('level.eq.campechana_rosa,level.eq.campechana_negra,level.eq.rosa,level.eq.negra,code.ilike.ROSA%,code.ilike.NEGR%,code.ilike.CRN%,code.ilike.CN%');
+
+        if (error) throw error;
+        setSuccessMsg('Códigos sin reclamar de Campechana Rosa y Negra eliminados correctamente.');
+        fetchStickersStatus();
+      } catch (err: any) {
+        setErrorMsg('Error al eliminar códigos: ' + (err.message || ''));
+      }
+    }
+  };
+
   const handleClearUnclaimedCodes = async () => {
     if (confirm('¿Estás seguro de borrar TODOS los códigos sin reclamar (de prueba)? Las calcomanías activadas por usuarios NO se borrarán.')) {
       const { error } = await supabase.from('stickers').delete().is('phone', null);
@@ -1431,10 +1449,10 @@ const Admin: React.FC = () => {
                 <RefreshCw size={14} className={isStatusLoading ? 'animate-spin' : ''} /> Actualizar
               </button>
               <button
-                onClick={handleClearUnclaimedCodes}
+                onClick={handleClearCampechanaRosaNegraCodes}
                 style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
               >
-                <Trash2 size={14} /> Limpiar Sin Reclamar
+                <Trash2 size={14} /> Limpiar Campechana Rosa / Negra
               </button>
             </div>
           </div>
