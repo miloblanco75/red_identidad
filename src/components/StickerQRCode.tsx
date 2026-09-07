@@ -28,7 +28,7 @@ export const StickerQRCode: React.FC<StickerQRCodeProps> = ({
   // Garantizar que la URL sea directa a la plataforma sin pasar por acortadores externos
   const targetUrl = value.startsWith('http') 
     ? value 
-    : `https://red-identidad.vercel.app/registro?c=${encodeURIComponent(value || 'TUL0035')}`;
+    : `https://redidentidad.vercel.app/registro?c=${encodeURIComponent(value || 'TUL0035')}`;
 
   const qrFgColor = isRosa ? '#FF5C9D' : '#000000';
 
