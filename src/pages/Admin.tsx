@@ -243,6 +243,9 @@ const Admin: React.FC = () => {
         csvRows.push(`${uniqueCode},${link},${qrImageUrl},${level},${codeType.toUpperCase()},${num}`);
       }
 
+      const firstCode = `${prefix.toUpperCase()}${String(startNumber).padStart(4, '0')}`;
+      const lastCode = `${prefix.toUpperCase()}${String(startNumber + quantity - 1).padStart(4, '0')}`;
+
       const { error } = await (supabase.from('stickers') as any).upsert(newStickers, { onConflict: 'code', ignoreDuplicates: true });
       if (error) {
         if (error.message?.includes('unique constraint') || error.message?.includes('duplicate key') || error.code === '23505') {
@@ -261,8 +264,6 @@ const Admin: React.FC = () => {
       linkEl.click();
       document.body.removeChild(linkEl);
 
-      const firstCode = `${prefix.toUpperCase()}${String(startNumber).padStart(4, '0')}`;
-      const lastCode = `${prefix.toUpperCase()}${String(startNumber + quantity - 1).padStart(4, '0')}`;
       setSuccessMsg(`¡${quantity} códigos secuenciales generados (${firstCode} a ${lastCode})!`);
       setStartNumber(startNumber + quantity);
     } catch (err: any) {
