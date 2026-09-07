@@ -52,7 +52,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
       const code = `${prefix}-${String(i + 1).padStart(4, '0')}`;
       return {
         code: code,
-        url: qrUrl || 'https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr'
+        url: `https://redidentidad.vercel.app/registro?c=${code}`
       };
     });
     setEnvelopeStickers(list);
@@ -62,10 +62,13 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
     setIsLoadingStickers(true);
     try {
       const prefix = selectedStickerType === 'campechana_rosa' ? 'ROSA' : selectedStickerType === 'campechana_negra' ? 'NEGR' : 'SOBRE';
-      const mapped = Array.from({ length: totalQuantity }).map((_, i) => ({
-        code: `${prefix}-${String(i + 1).padStart(4, '0')}`,
-        url: qrUrl || 'https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr'
-      }));
+      const mapped = Array.from({ length: totalQuantity }).map((_, i) => {
+        const code = `${prefix}-${String(i + 1).padStart(4, '0')}`;
+        return {
+          code: code,
+          url: codeMode === 'static' ? qrUrl : `https://redidentidad.vercel.app/registro?c=${code}`
+        };
+      });
       setEnvelopeStickers(mapped);
     } catch (e) {
       generateSequentialCodes(totalQuantity);

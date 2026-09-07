@@ -25,30 +25,10 @@ export const StickerQRCode: React.FC<StickerQRCodeProps> = ({
     normLevel.includes('pink') || 
     normValue.includes('rosa');
 
-  const isEnvelopeOrCampechana = 
-    normLevel.includes('campechana') ||
-    normLevel.includes('sobre') ||
-    normLevel.includes('envelope') ||
-    normValue.includes('campechana') ||
-    normValue.includes('sobre') ||
-    normValue.includes('rosa') ||
-    normValue.includes('negr');
-
-  // Enlace oficial de Facebook de Red Identidad para sobres y Campechana
-  const OFFICIAL_FACEBOOK_URL = 'https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr';
-
-  let targetUrl = OFFICIAL_FACEBOOK_URL;
-
-  if (isEnvelopeOrCampechana || normValue.includes('registro?c=rosa') || normValue.includes('registro?c=negr') || normValue.includes('registro?c=sobre')) {
-    // Si es sobre o Campechana, NUNCA ir al registro, SIEMPRE ir a Facebook
-    targetUrl = OFFICIAL_FACEBOOK_URL;
-  } else if (value && value.startsWith('http')) {
-    targetUrl = value;
-  } else if (value) {
-    targetUrl = `https://redidentidad.vercel.app/registro?c=${encodeURIComponent(value)}`;
-  } else {
-    targetUrl = OFFICIAL_FACEBOOK_URL;
-  }
+  // Garantizar que la URL sea directa a la plataforma de registro
+  const targetUrl = value.startsWith('http') 
+    ? value 
+    : `https://redidentidad.vercel.app/registro?c=${encodeURIComponent(value || 'TUL0035')}`;
 
   const qrFgColor = isRosa ? '#FF5C9D' : '#000000';
 
