@@ -243,7 +243,7 @@ const Admin: React.FC = () => {
         csvRows.push(`${uniqueCode},${link},${qrImageUrl},${level},${codeType.toUpperCase()},${num}`);
       }
 
-      const { error } = await supabase.from('stickers').upsert(newStickers, { onConflict: 'code', ignoreDuplicates: true });
+      const { error } = await (supabase.from('stickers') as any).upsert(newStickers, { onConflict: 'code', ignoreDuplicates: true });
       if (error) {
         if (error.message?.includes('unique constraint') || error.message?.includes('duplicate key') || error.code === '23505') {
           throw new Error(`El rango de códigos (${firstCode} a ${lastCode}) ya contiene números registrados. Por favor incrementa el número inicial "Inicio desde" (por ejemplo a ${startNumber + quantity}) o presiona el botón "Auto" arriba del campo.`);
