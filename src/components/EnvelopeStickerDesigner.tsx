@@ -14,11 +14,11 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
   const [bottomLeftText, setBottomLeftText] = useState<string>('ESCANEA Y CONÓCENOS');
   const [priceNumber] = useState<string>('90');
   const [priceSubtext] = useState<string>('PESOS');
-  const [qrUrl, setQrUrl] = useState<string>('https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr');
+  const [qrUrl, setQrUrl] = useState<string>('https://redidentidad.vercel.app/registro?c=PASE-DEMO-001');
 
   // Quantity & Code Source settings
   const [totalQuantity, setTotalQuantity] = useState<number>(95);
-  const [codeMode, setCodeMode] = useState<'auto' | 'db' | 'static'>('static');
+  const [codeMode, setCodeMode] = useState<'auto' | 'db' | 'static'>('auto');
   const [envelopeStickers, setEnvelopeStickers] = useState<Array<{ code: string; url: string }>>([]);
   const [isLoadingStickers, setIsLoadingStickers] = useState<boolean>(false);
 
@@ -471,21 +471,21 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
               onChange={(e) => setCodeMode(e.target.value as any)}
               style={{ width: '100%', padding: '0.65rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#FFF', fontSize: '0.82rem', outline: 'none' }}
             >
-              <option value="static" style={{ color: '#000' }}>🌐 Link Facebook Oficial (Nativo y Sin Caducidad)</option>
-              <option value="auto" style={{ color: '#000' }}>Generar Secuencia Registro</option>
+              <option value="auto" style={{ color: '#000' }}>⚡ Secuencia Demo Registro (Recomendado)</option>
+              <option value="static" style={{ color: '#000' }}>🌐 Enlace Fijo Personalizado</option>
               <option value="db" style={{ color: '#000' }}>Cargar de Base de Datos</option>
             </select>
 
             {codeMode === 'static' && (
               <div style={{ marginTop: '0.8rem' }}>
                 <label style={{ display: 'block', fontSize: '0.68rem', textTransform: 'uppercase', color: '#D4AF37', marginBottom: '0.3rem', fontWeight: 700 }}>
-                  Enlace QR (Facebook Red Identidad)
+                  Enlace QR Personalizado
                 </label>
                 <input
                   type="url"
                   value={qrUrl}
                   onChange={(e) => setQrUrl(e.target.value)}
-                  placeholder="https://www.facebook.com/share/1DHyrzvtjh/?mibextid=wwXIfr"
+                  placeholder="https://redidentidad.vercel.app/registro?c=PASE-DEMO-001"
                   style={{ width: '100%', padding: '0.6rem 0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.4)', borderRadius: '8px', color: '#FFF', fontSize: '0.82rem', outline: 'none' }}
                 />
               </div>
