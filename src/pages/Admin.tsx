@@ -358,8 +358,8 @@ const Admin: React.FC = () => {
         throw new Error('Por favor completa todos los campos obligatorios.');
       }
 
-      const parsedLat = !isDigital && allyLat ? parseFloat(allyLat) : null;
-      const parsedLng = !isDigital && allyLng ? parseFloat(allyLng) : null;
+      const parsedLat = (!isDigital && allyLat) ? (parseFloat(allyLat) || 0) : 0;
+      const parsedLng = (!isDigital && allyLng) ? (parseFloat(allyLng) || 0) : 0;
 
       const fullObj: any = {
         name: allyName,
@@ -522,10 +522,10 @@ const Admin: React.FC = () => {
     setEditName(ally.name || '');
     setEditCategory(ally.category || 'Comida');
     setEditDiscount(ally.discount || '');
-    const isNoLoc = ally.lat === null || ally.lat === undefined || ally.lng === null || ally.lng === undefined;
+    const isNoLoc = ally.lat === null || ally.lat === undefined || ally.lng === null || ally.lng === undefined || (Number(ally.lat) === 0 && Number(ally.lng) === 0);
     setEditIsDigital(isNoLoc);
-    setEditLat(ally.lat != null ? String(ally.lat) : '');
-    setEditLng(ally.lng != null ? String(ally.lng) : '');
+    setEditLat(ally.lat != null && Number(ally.lat) !== 0 ? String(ally.lat) : '');
+    setEditLng(ally.lng != null && Number(ally.lng) !== 0 ? String(ally.lng) : '');
     setEditFacebook(ally.facebook_url || '');
     setEditWebsite(ally.website_url || '');
     setEditLogo(ally.logo_url || '');
@@ -544,8 +544,8 @@ const Admin: React.FC = () => {
         throw new Error('Por favor completa todos los campos obligatorios.');
       }
 
-      const parsedLat = !editIsDigital && editLat ? parseFloat(editLat) : null;
-      const parsedLng = !editIsDigital && editLng ? parseFloat(editLng) : null;
+      const parsedLat = (!editIsDigital && editLat) ? (parseFloat(editLat) || 0) : 0;
+      const parsedLng = (!editIsDigital && editLng) ? (parseFloat(editLng) || 0) : 0;
 
       const fullObj: any = {
         name: editName,
@@ -1027,7 +1027,7 @@ const Admin: React.FC = () => {
                       <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>{ally.category} • {ally.discount}</span>
                       <div style={{ display: 'flex', gap: '0.8rem', marginTop: '4px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '0.75rem', color: '#4ADE80', fontWeight: 600 }}>🎁 {ally.promotions_given ?? 0} promo(s)</span>
-                        {(!ally.lat || !ally.lng) && <span style={{ fontSize: '0.75rem', color: '#C084FC', fontWeight: 600 }}>🌐 Digital</span>}
+                        {(!ally.lat || !ally.lng || (Number(ally.lat) === 0 && Number(ally.lng) === 0)) && <span style={{ fontSize: '0.75rem', color: '#C084FC', fontWeight: 600 }}>🌐 Digital</span>}
                         {ally.ally_pin && <span style={{ fontSize: '0.75rem', color: 'var(--accent-gold)' }}>PIN: {ally.ally_pin}</span>}
                         {ally.facebook_url && <span style={{ fontSize: '0.75rem', color: '#1877F2', fontWeight: 600 }}>🌐 Facebook</span>}
                         {ally.website_url && <span style={{ fontSize: '0.75rem', color: '#38BDF8', fontWeight: 600 }}>🔗 Web</span>}

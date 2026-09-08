@@ -226,7 +226,7 @@ const Aliados: React.FC = () => {
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
           {displayAllies
-            .filter(partner => partner.lat != null && partner.lng != null && !isNaN(Number(partner.lat)) && !isNaN(Number(partner.lng)))
+            .filter(partner => partner.lat != null && partner.lng != null && !isNaN(Number(partner.lat)) && !isNaN(Number(partner.lng)) && Number(partner.lat) !== 0 && Number(partner.lng) !== 0)
             .map(partner => {
             const goldIcon = L.divIcon({
               className: 'custom-gold-marker',
@@ -321,7 +321,7 @@ const Aliados: React.FC = () => {
           ) : (
             filteredAllies.map((item) => {
               const IconComponent = getCategoryIcon(item.category);
-              const isDigitalAlly = !item.lat || !item.lng || isNaN(Number(item.lat)) || isNaN(Number(item.lng));
+              const isDigitalAlly = !item.lat || !item.lng || isNaN(Number(item.lat)) || isNaN(Number(item.lng)) || (Number(item.lat) === 0 && Number(item.lng) === 0);
               return (
                 <motion.div
                   key={item.id}
