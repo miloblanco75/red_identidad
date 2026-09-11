@@ -14,7 +14,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { UploadStickerPhotoModal } from '../components/UploadStickerPhotoModal';
-import StickerQRCode from '../components/StickerQRCode';
 
 interface StickerInfo {
   id: string;
@@ -97,8 +96,8 @@ const STICKERS_DATA: StickerInfo[] = [
     colorName: 'Negra',
     colorType: 'black',
     rarity: 'essential',
-    imagePath: '/qr_campechana_negra.png',
-    description: 'Edición Campechana Negra mate en corte vinil con QR oficial integrado.',
+    imagePath: '/campechana_rosada.png',
+    description: 'Edición Campechana Negra mate oficial en vinil automotriz de alta resistencia.',
     perk: 'Acceso a la Red de Aliados y descuentos en todo el estado.'
   },
   {
@@ -108,8 +107,8 @@ const STICKERS_DATA: StickerInfo[] = [
     colorName: 'Rosa',
     colorType: 'pink',
     rarity: 'special',
-    imagePath: '/qr_campechana_rosa.png',
-    description: 'Edición Campechana Rosa de colección con QR oficial inspirada en la calidez campechana.',
+    imagePath: '/campechana_rosada.png',
+    description: 'Edición Campechana Rosa oficial en vinil de colección inspirada en la calidez campechana.',
     perk: 'Acceso a la Red de Aliados y descuentos en todo el estado.'
   }
 ];
@@ -437,20 +436,16 @@ const Galeria: React.FC = () => {
                     zIndex: 10
                   }}
                 >
-                  {selectedSticker.imagePath.includes('qr_campechana') || selectedSticker.category === 'campechana' ? (
-                    <StickerQRCode level={selectedSticker.id} size={90} />
-                  ) : (
-                    <img 
-                      src={selectedSticker.imagePath} 
-                      alt="Sticker Preview"
-                      style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        objectFit: 'contain',
-                        ...getFilterStyle(selectedSticker.colorType)
-                      }}
-                    />
-                  )}
+                  <img 
+                    src={selectedSticker.imagePath} 
+                    alt="Sticker Preview"
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'contain',
+                      ...getFilterStyle(selectedSticker.colorType)
+                    }}
+                  />
                 </motion.div>
                 
                 <div style={{ position: 'absolute', bottom: '8px', fontSize: '0.65rem', color: selectedSticker.colorType === 'black' ? '#475569' : 'rgba(255,255,255,0.4)', pointerEvents: 'none', fontWeight: 600 }}>
@@ -514,9 +509,6 @@ const Galeria: React.FC = () => {
                       marginTop: '30px'
                     }}
                   >
-                  {selectedSticker.imagePath.includes('qr_campechana') || selectedSticker.category === 'campechana' ? (
-                    <StickerQRCode level={selectedSticker.id} size={75} />
-                  ) : (
                     <img 
                       src={selectedSticker.imagePath} 
                       alt="Sticker Preview"
@@ -527,7 +519,6 @@ const Galeria: React.FC = () => {
                         ...getFilterStyle(selectedSticker.colorType)
                       }}
                     />
-                  )}
                   </motion.div>
                 </div>
               </div>
@@ -733,20 +724,16 @@ const Galeria: React.FC = () => {
                     marginBottom: '0.8rem',
                     transform: 'translateZ(20px)'
                   }}>
-                    {sticker.imagePath.includes('qr_campechana') || sticker.category === 'campechana' ? (
-                      <StickerQRCode level={sticker.id} size={70} />
-                    ) : (
-                      <img
-                        src={sticker.imagePath}
-                        alt={sticker.name}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain',
-                          ...getFilterStyle(sticker.colorType)
-                        }}
-                      />
-                    )}
+                    <img
+                      src={sticker.imagePath}
+                      alt={sticker.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        ...getFilterStyle(sticker.colorType)
+                      }}
+                    />
                   </div>
 
                   {/* Details with Contrast Colors */}
