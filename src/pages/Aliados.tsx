@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Utensils, Car, Loader2, Wine, HeartPulse, Building2, MapPin, Globe, CreditCard, Briefcase, Sparkles, Navigation } from 'lucide-react';
+import { 
+  Utensils, Car, Loader2, Wine, HeartPulse, Building2, MapPin, 
+  Globe, CreditCard, Briefcase, Sparkles, Navigation, 
+  AlertCircle, X, Compass, RotateCcw 
+} from 'lucide-react';
 import L from 'leaflet';
 import { supabase } from '../lib/supabase';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 const FacebookIcon = ({ size = 14, color = '#1877F2' }: { size?: number; color?: string }) => (
@@ -37,78 +41,93 @@ interface Ally {
   facebook_url?: string;
   website_url?: string;
   logo_url?: string;
+  created_at?: string;
 }
 
-const mockAllies: Ally[] = [
+export type Zone = 'todas' | 'campeche' | 'carmen' | 'digitales';
+
+export interface ZoneOption {
+  id: Zone;
+  label: string;
+  shortLabel: string;
+  icon: string;
+  center?: [number, number];
+  zoom?: number;
+}
+
+export const ZONES: ZoneOption[] = [
   {
-    id: 'mock-1',
-    name: 'Café del Mar Campeche',
-    category: 'Comida',
-    discount: '15% de Descuento en Consumo Total',
-    lat: 19.8438,
-    lng: -90.5312,
-    promotions_given: 120,
-    facebook_url: 'https://facebook.com',
-    website_url: ''
+    id: 'todas',
+    label: 'Todo el Estado',
+    shortLabel: 'Todo el Estado',
+    icon: '📍',
+    center: [19.25, -91.1],
+    zoom: 9
   },
   {
-    id: 'mock-2',
-    name: 'AutoLavado Fast El Carmen',
-    category: 'Auto',
-    lat: 18.6481,
-    lng: -91.8219,
-    promotions_given: 95,
-    discount: 'Lavado Gratis en tu 3ra Visita',
-    facebook_url: 'https://facebook.com',
-    website_url: 'https://autolavadofast.com'
+    id: 'campeche',
+    label: 'San Francisco de Campeche',
+    shortLabel: 'Campeche Capital',
+    icon: '🏛️',
+    center: [19.8301, -90.5349],
+    zoom: 13
   },
   {
-    id: 'mock-3',
-    name: 'Club 59 Lounge',
-    category: 'Entretenimiento',
-    lat: 19.8471,
-    lng: -90.5381,
-    promotions_given: 210,
-    discount: 'Shot de Bienvenida de Cortesía',
-    facebook_url: 'https://facebook.com'
+    id: 'carmen',
+    label: 'Ciudad del Carmen',
+    shortLabel: 'Cd. del Carmen',
+    icon: '🏖️',
+    center: [18.6481, -91.8219],
+    zoom: 13
   },
   {
-    id: 'mock-4',
-    name: 'Spa Sentidos',
-    category: 'Salud',
-    lat: 19.8291,
-    lng: -90.5422,
-    promotions_given: 45,
-    discount: '20% OFF en Masaje Relajante',
-    facebook_url: 'https://facebook.com',
-    website_url: 'https://spasentidos.com'
-  },
-  {
-    id: 'mock-5',
-    name: 'Gimnasio Master Fitness',
-    category: 'Servicios',
-    lat: 19.8355,
-    lng: -90.5288,
-    promotions_given: 88,
-    discount: 'Inscripción Gratis y 10% en Mensualidad',
-    facebook_url: 'https://facebook.com'
-  },
-  {
-    id: 'mock-6',
-    name: 'Diseño & Software Digital Campeche',
-    category: 'Servicios',
-    promotions_given: 64,
-    discount: '20% OFF en Desarrollo de Páginas Web y Tiendas Online',
-    facebook_url: 'https://facebook.com',
-    website_url: 'https://ejemplo.com'
+    id: 'digitales',
+    label: 'Digitales / A Domicilio',
+    shortLabel: 'Solo Digitales',
+    icon: '🌐'
   }
 ];
+
+// Cálculo de distancia con fórmula de Haversine
+export function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+export function formatDistance(km: number): string {
+  if (km < 1) {
+    return `${Math.round(km * 1000)} m`;
+  }
+  return `${km.toFixed(1)} km`;
+}
+
+export function getAllyZone(ally: Ally): 'campeche' | 'carmen' | 'digitales' {
+  const isDigital = !ally.lat || !ally.lng || isNaN(Number(ally.lat)) || isNaN(Number(ally.lng)) || (Number(ally.lat) === 0 && Number(ally.lng) === 0);
+  if (isDigital) return 'digitales';
+  const lng = Number(ally.lng);
+  const nameLower = (ally.name || '').toLowerCase();
+  if (lng < -91.2 || nameLower.includes('carmen')) {
+    return 'carmen';
+  }
+  return 'campeche';
+}
 
 function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
   useEffect(() => {
-    map.setView(center, zoom);
-  }, [center, zoom]);
+    if (map && typeof (map as any).flyTo === 'function') {
+      (map as any).flyTo(center, zoom, { duration: 1.2 });
+    } else if (map) {
+      map.setView(center, zoom);
+    }
+  }, [center, zoom, map]);
   return null;
 }
 
@@ -119,6 +138,13 @@ const Aliados: React.FC = () => {
   const [mapCenter, setMapCenter] = useState<[number, number]>([19.8301, -90.5349]);
   const [mapZoom, setMapZoom] = useState<number>(12);
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
+  const [selectedZone, setSelectedZone] = useState<Zone>('todas');
+
+  // Estados de Geolocalización "Cerca de Mí"
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isLocating, setIsLocating] = useState<boolean>(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
+  const [sortByProximity, setSortByProximity] = useState<boolean>(false);
 
   const categories = ['Todas', 'Comida', 'Auto', 'Servicios', 'Estética', 'Entretenimiento', 'Salud'];
 
@@ -161,20 +187,132 @@ const Aliados: React.FC = () => {
     }
   };
 
-  const displayAllies = [...allies, ...mockAllies];
-  const topAllies = [...displayAllies].sort((a, b) => b.promotions_given - a.promotions_given).slice(0, 5);
-  const filteredAllies = selectedCategory === 'Todas'
-    ? displayAllies
-    : displayAllies.filter(item => item.category === selectedCategory);
+  const handleSelectZone = (zoneId: Zone) => {
+    setSelectedZone(zoneId);
+    setSortByProximity(false);
+    setGeoError(null);
 
-  const handleLocateAlly = (ally: Ally) => {
-    setMapCenter([parseFloat(ally.lat as any), parseFloat(ally.lng as any)]);
-    setMapZoom(16);
-    const mapElement = document.getElementById('map-section');
-    if (mapElement) {
-      mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const zoneData = ZONES.find(z => z.id === zoneId);
+    if (zoneData && zoneData.center && zoneData.zoom) {
+      setMapCenter(zoneData.center);
+      setMapZoom(zoneData.zoom);
     }
   };
+
+  const handleNearMe = () => {
+    setGeoError(null);
+
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setGeoError('Tu navegador o dispositivo no tiene activada la geolocalización.');
+      return;
+    }
+
+    setIsLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setUserLocation({ lat, lng });
+        setMapCenter([lat, lng]);
+        setMapZoom(14);
+        setSortByProximity(true);
+        setIsLocating(false);
+        setGeoError(null);
+
+        // Si está en Campeche o Carmen, sincronizar visualmente la zona
+        if (lng < -91.2) {
+          setSelectedZone('carmen');
+        } else {
+          setSelectedZone('campeche');
+        }
+
+        const mapElement = document.getElementById('map-section');
+        if (mapElement) {
+          mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      },
+      (error) => {
+        setIsLocating(false);
+        let msg = 'No pudimos acceder a tu ubicación actual.';
+        if (error.code === error.PERMISSION_DENIED) {
+          msg = 'El permiso de ubicación GPS está desactivado o denegado en tu navegador.';
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          msg = 'La señal de GPS no está disponible en tu dispositivo en este momento.';
+        } else if (error.code === error.TIMEOUT) {
+          msg = 'Se agotó el tiempo esperando la respuesta de tu ubicación GPS.';
+        }
+        setGeoError(msg);
+      },
+      { enableHighAccuracy: true, timeout: 9000, maximumAge: 60000 }
+    );
+  };
+
+  const handleLocateAlly = (ally: Ally) => {
+    if (ally.lat && ally.lng) {
+      setMapCenter([parseFloat(ally.lat as any), parseFloat(ally.lng as any)]);
+      setMapZoom(16);
+      const mapElement = document.getElementById('map-section');
+      if (mapElement) {
+        mapElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  };
+
+  // Ícono personalizado del socio / usuario en el mapa con pulso brillante
+  const userMarkerIcon = L.divIcon({
+    className: 'custom-user-marker',
+    html: `
+      <div style="position: relative; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;">
+        <div style="position: absolute; width: 26px; height: 26px; border-radius: 50%; background: rgba(59, 130, 246, 0.4); animation: ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+        <div style="width: 16px; height: 16px; border-radius: 50%; background-color: #2563EB; border: 3px solid #FFFFFF; box-shadow: 0 0 15px rgba(37, 99, 235, 1); position: relative; z-index: 2;"></div>
+      </div>
+    `,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+    popupAnchor: [0, -13]
+  });
+
+  // Procesamiento y cálculo de distancias
+  const displayAllies = allies;
+  const enrichedAllies = displayAllies.map(item => {
+    const isDigital = !item.lat || !item.lng || isNaN(Number(item.lat)) || isNaN(Number(item.lng)) || (Number(item.lat) === 0 && Number(item.lng) === 0);
+    const zone = getAllyZone(item);
+    let distanceKm: number | null = null;
+    if (userLocation && !isDigital) {
+      distanceKm = calculateDistanceKm(userLocation.lat, userLocation.lng, Number(item.lat), Number(item.lng));
+    }
+    return {
+      ...item,
+      _zone: zone,
+      _distanceKm: distanceKm,
+      _isDigital: isDigital
+    };
+  });
+
+  // Filtrar por Categoría
+  let filteredAllies = selectedCategory === 'Todas'
+    ? enrichedAllies
+    : enrichedAllies.filter(item => item.category === selectedCategory);
+
+  // Filtrar por Zona
+  if (selectedZone !== 'todas') {
+    filteredAllies = filteredAllies.filter(item => item._zone === selectedZone);
+  }
+
+  // Ordenar por proximidad si el usuario activó "Cerca de mí"
+  if (sortByProximity && userLocation) {
+    filteredAllies = [...filteredAllies].sort((a, b) => {
+      if (a._distanceKm !== null && b._distanceKm !== null) {
+        return a._distanceKm - b._distanceKm;
+      }
+      if (a._distanceKm !== null) return -1;
+      if (b._distanceKm !== null) return 1;
+      return 0;
+    });
+  }
+
+  const topAllies = [...displayAllies].sort((a, b) => b.promotions_given - a.promotions_given).slice(0, 5);
 
   return (
     <div className="animate-fade-in" style={{ padding: '1.5rem', paddingBottom: '100px' }}>
@@ -200,108 +338,345 @@ const Aliados: React.FC = () => {
         </p>
       </div>
 
-      {/* Map Section */}
+      {/* ── FILTRO POR ZONA ── */}
+      <div style={{ marginBottom: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+          <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--accent-gold)', fontWeight: 800, letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <Compass size={14} /> Seleccionar Zona de Campeche
+          </span>
+          {selectedZone !== 'todas' && (
+            <button
+              onClick={() => handleSelectZone('todas')}
+              style={{
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: 'var(--text-dim)',
+                fontSize: '0.7rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <RotateCcw size={12} /> Ver todo el estado
+            </button>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.3rem' }}>
+          {ZONES.map((zone) => {
+            const isSelected = selectedZone === zone.id;
+            return (
+              <button
+                key={zone.id}
+                onClick={() => handleSelectZone(zone.id)}
+                style={{
+                  padding: '0.6rem 1rem',
+                  borderRadius: '14px',
+                  backgroundColor: isSelected ? 'var(--accent-gold)' : 'rgba(255,255,255,0.05)',
+                  color: isSelected ? '#121212' : '#FFF',
+                  fontSize: '0.8rem',
+                  fontWeight: isSelected ? 800 : 600,
+                  whiteSpace: 'nowrap',
+                  border: isSelected ? 'none' : '1px solid var(--glass-border)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: isSelected ? '0 4px 15px rgba(212,175,55,0.3)' : 'none'
+                }}
+              >
+                <span>{zone.icon}</span>
+                <span>{zone.shortLabel}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── MAP SECTION CON BOTÓN "CERCA DE MÍ" ── */}
       <div 
         id="map-section"
         style={{ 
-          height: '300px', 
+          height: '340px', 
           width: '100%', 
           borderRadius: '24px', 
           overflow: 'hidden', 
-          marginBottom: '2rem',
-          border: '1px solid var(--glass-border)',
+          marginBottom: '1rem',
+          border: '1.5px solid rgba(212,175,55,0.35)',
           zIndex: 1,
-          position: 'relative'
+          position: 'relative',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
         }}
       >
+        {/* Botón flotante: Cerca de Mí */}
+        <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 1000 }}>
+          <button
+            onClick={handleNearMe}
+            disabled={isLocating}
+            style={{
+              padding: '0.65rem 1rem',
+              borderRadius: '100px',
+              backgroundColor: sortByProximity ? '#22C55E' : 'rgba(18, 18, 24, 0.9)',
+              color: sortByProximity ? '#121212' : 'var(--accent-gold)',
+              border: sortByProximity ? '2px solid #FFF' : '1.5px solid var(--accent-gold)',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: isLocating ? 'not-allowed' : 'pointer',
+              boxShadow: sortByProximity 
+                ? '0 0 20px rgba(34,197,94,0.6)' 
+                : '0 6px 20px rgba(0,0,0,0.6)',
+              backdropFilter: 'blur(8px)',
+              transition: 'all 0.25s ease'
+            }}
+          >
+            {isLocating ? (
+              <>
+                <Loader2 size={15} className="animate-spin" /> Buscando GPS...
+              </>
+            ) : sortByProximity ? (
+              <>
+                <Navigation size={14} color="#121212" /> Cerca de mí (Activo)
+              </>
+            ) : (
+              <>
+                <Navigation size={14} color="var(--accent-gold)" /> 📍 Cerca de mí
+              </>
+            )}
+          </button>
+        </div>
+
         {loading && allies.length === 0 && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 1000, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Loader2 className="animate-spin" color="var(--accent-gold)" />
           </div>
         )}
+
         <MapContainer center={mapCenter} zoom={mapZoom} style={{ height: '100%', width: '100%' }}>
           <ChangeView center={mapCenter} zoom={mapZoom} />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
+
+          {/* Marcador del usuario (si tiene ubicación activa) */}
+          {userLocation && (
+            <Marker position={[userLocation.lat, userLocation.lng]} icon={userMarkerIcon}>
+              <Popup>
+                <div style={{ color: '#121212', textAlign: 'center', padding: '4px' }}>
+                  <strong style={{ display: 'block', fontSize: '0.9rem', color: '#1D4ED8' }}>
+                    📍 ¡Aquí estás tú!
+                  </strong>
+                  <span style={{ fontSize: '0.75rem', color: '#666' }}>
+                    Mostrando los aliados ordenados por cercanía a ti
+                  </span>
+                </div>
+              </Popup>
+            </Marker>
+          )}
+
           {displayAllies
             .filter(partner => partner.lat != null && partner.lng != null && !isNaN(Number(partner.lat)) && !isNaN(Number(partner.lng)) && Number(partner.lat) !== 0 && Number(partner.lng) !== 0)
             .map(partner => {
-            const goldIcon = L.divIcon({
-              className: 'custom-gold-marker',
-              html: `<div style="
-                background-color: #D4AF37;
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                border: 3px solid #FFF;
-                box-shadow: 0 0 15px rgba(212, 175, 55, 1);
-              "></div>`,
-              iconSize: [24, 24],
-              iconAnchor: [12, 12],
-              popupAnchor: [0, -12]
-            });
+              const goldIcon = L.divIcon({
+                className: 'custom-gold-marker',
+                html: `<div style="
+                  background-color: #D4AF37;
+                  width: 24px;
+                  height: 24px;
+                  border-radius: 50%;
+                  border: 3px solid #FFF;
+                  box-shadow: 0 0 15px rgba(212, 175, 55, 1);
+                "></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+                popupAnchor: [0, -12]
+              });
 
-            return (
-              <Marker key={partner.id} position={[parseFloat(partner.lat as any), parseFloat(partner.lng as any)]} icon={goldIcon}>
-                <Popup>
-                  <div style={{ color: '#121212', minWidth: '160px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                      {partner.logo_url && (
-                        <img src={partner.logo_url} alt={partner.name} style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#FFF', padding: '2px' }} />
+              return (
+                <Marker key={partner.id} position={[parseFloat(partner.lat as any), parseFloat(partner.lng as any)]} icon={goldIcon}>
+                  <Popup>
+                    <div style={{ color: '#121212', minWidth: '160px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        {partner.logo_url && (
+                          <img src={partner.logo_url} alt={partner.name} style={{ width: '28px', height: '28px', borderRadius: '6px', objectFit: 'contain', backgroundColor: '#FFF', padding: '2px' }} />
+                        )}
+                        <div>
+                          <strong style={{ display: 'block', fontSize: '0.95rem' }}>{partner.name}</strong>
+                          <span style={{ fontSize: '0.75rem', color: '#666' }}>{partner.category}</span>
+                        </div>
+                      </div>
+                      <div style={{ marginTop: '5px', color: '#B8860B', fontWeight: 700, fontSize: '0.85rem' }}>{partner.discount}</div>
+                      
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${partner.lat},${partner.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '6px',
+                          marginTop: '8px',
+                          padding: '7px 10px',
+                          backgroundColor: '#1a73e8',
+                          color: '#FFF',
+                          borderRadius: '8px',
+                          fontSize: '0.76rem',
+                          fontWeight: 700,
+                          textDecoration: 'none',
+                          boxShadow: '0 2px 6px rgba(26,115,232,0.35)'
+                        }}
+                      >
+                        <Navigation size={13} color="#FFF" /> Cómo llegar en Google Maps ↗
+                      </a>
+
+                      {(partner.facebook_url || partner.website_url) && (
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '8px', paddingTop: '6px', borderTop: '1px solid #eee' }}>
+                          {partner.facebook_url && (
+                            <a href={partner.facebook_url} target="_blank" rel="noopener noreferrer" style={{ color: '#1877F2', fontSize: '0.72rem', fontWeight: 700, textDecoration: 'none' }}>
+                              Facebook ↗
+                            </a>
+                          )}
+                          {partner.website_url && (
+                            <a href={partner.website_url} target="_blank" rel="noopener noreferrer" style={{ color: '#0066CC', fontSize: '0.72rem', fontWeight: 700, textDecoration: 'none' }}>
+                              Sitio Web ↗
+                            </a>
+                          )}
+                        </div>
                       )}
-                      <div>
-                        <strong style={{ display: 'block', fontSize: '0.95rem' }}>{partner.name}</strong>
-                        <span style={{ fontSize: '0.75rem', color: '#666' }}>{partner.category}</span>
-                      </div>
                     </div>
-                    <div style={{ marginTop: '5px', color: '#B8860B', fontWeight: 700, fontSize: '0.85rem' }}>{partner.discount}</div>
-                    
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${partner.lat},${partner.lng}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '6px',
-                        marginTop: '8px',
-                        padding: '7px 10px',
-                        backgroundColor: '#1a73e8',
-                        color: '#FFF',
-                        borderRadius: '8px',
-                        fontSize: '0.76rem',
-                        fontWeight: 700,
-                        textDecoration: 'none',
-                        boxShadow: '0 2px 6px rgba(26,115,232,0.35)'
-                      }}
-                    >
-                      <Navigation size={13} color="#FFF" /> Cómo llegar en Google Maps ↗
-                    </a>
-
-                    {(partner.facebook_url || partner.website_url) && (
-                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px', paddingTop: '6px', borderTop: '1px solid #eee' }}>
-                        {partner.facebook_url && (
-                          <a href={partner.facebook_url} target="_blank" rel="noopener noreferrer" style={{ color: '#1877F2', fontSize: '0.72rem', fontWeight: 700, textDecoration: 'none' }}>
-                            Facebook ↗
-                          </a>
-                        )}
-                        {partner.website_url && (
-                          <a href={partner.website_url} target="_blank" rel="noopener noreferrer" style={{ color: '#0066CC', fontSize: '0.72rem', fontWeight: 700, textDecoration: 'none' }}>
-                            Sitio Web ↗
-                          </a>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
-            );
-          })}
+                  </Popup>
+                </Marker>
+              );
+            })}
         </MapContainer>
       </div>
+
+      {/* ── ALERTA AMIGABLE SI LA GEOLOCALIZACIÓN ESTÁ DESACTIVADA O FALLA ── */}
+      <AnimatePresence>
+        {geoError && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            style={{
+              backgroundColor: 'rgba(234, 179, 8, 0.12)',
+              border: '1.5px solid rgba(234, 179, 8, 0.4)',
+              borderRadius: '18px',
+              padding: '1.1rem 1.2rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.7rem'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <AlertCircle size={20} color="#FDE047" style={{ flexShrink: 0 }} />
+                <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#FEF08A' }}>
+                  Ubicación GPS no disponible
+                </span>
+              </div>
+              <button
+                onClick={() => setGeoError(null)}
+                style={{
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-dim)',
+                  cursor: 'pointer',
+                  padding: '2px'
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <p style={{ margin: 0, fontSize: '0.82rem', color: '#E2E8F0', lineHeight: 1.45 }}>
+              {geoError} Puedes activar los permisos de ubicación en tu navegador, o simplemente elegir tu ciudad aquí:
+            </p>
+
+            {/* Accesos rápidos a las zonas del estado */}
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '2px' }}>
+              <button
+                onClick={() => handleSelectZone('campeche')}
+                style={{
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: '10px',
+                  backgroundColor: 'rgba(212,175,55,0.2)',
+                  border: '1px solid var(--accent-gold)',
+                  color: '#FFF',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+              >
+                🏛️ Ver San Francisco de Campeche
+              </button>
+
+              <button
+                onClick={() => handleSelectZone('carmen')}
+                style={{
+                  padding: '0.5rem 0.9rem',
+                  borderRadius: '10px',
+                  backgroundColor: 'rgba(212,175,55,0.2)',
+                  border: '1px solid var(--accent-gold)',
+                  color: '#FFF',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+              >
+                🏖️ Ver Ciudad del Carmen
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── AVISO DE ORDENADO POR PROXIMIDAD ── */}
+      {sortByProximity && userLocation && (
+        <div style={{
+          backgroundColor: 'rgba(34,197,94,0.12)',
+          border: '1px solid rgba(34,197,94,0.3)',
+          borderRadius: '14px',
+          padding: '0.7rem 1rem',
+          marginBottom: '1.2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '0.8rem',
+          color: '#D1FAE5'
+        }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}>
+            <Navigation size={14} color="#4ADE80" /> Comercios ordenados por distancia más cercana a ti
+          </span>
+          <button
+            onClick={() => setSortByProximity(false)}
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              color: 'var(--text-dim)',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              textDecoration: 'underline'
+            }}
+          >
+            Quitar orden
+          </button>
+        </div>
+      )}
 
       {/* Category Tabs */}
       <div 
@@ -336,16 +711,26 @@ const Aliados: React.FC = () => {
 
       {/* Promotions List Section */}
       <section style={{ marginBottom: '3rem' }}>
-        <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Promociones Disponibles</h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <h3 style={{ fontSize: '1.2rem', margin: 0 }}>
+            Promociones Disponibles ({filteredAllies.length})
+          </h3>
+          {selectedZone !== 'todas' && (
+            <span style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 700 }}>
+              Zona: {ZONES.find(z => z.id === selectedZone)?.label}
+            </span>
+          )}
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {filteredAllies.length === 0 ? (
             <div className="glass" style={{ padding: '2rem', borderRadius: '20px', textAlign: 'center', color: 'var(--text-dim)' }}>
-              No hay promociones registradas en esta categoría.
+              No hay promociones registradas en esta zona o categoría.
             </div>
           ) : (
             filteredAllies.map((item) => {
               const IconComponent = getCategoryIcon(item.category);
-              const isDigitalAlly = !item.lat || !item.lng || isNaN(Number(item.lat)) || isNaN(Number(item.lng)) || (Number(item.lat) === 0 && Number(item.lng) === 0);
+              const isDigitalAlly = item._isDigital;
               return (
                 <motion.div
                   key={item.id}
@@ -379,23 +764,47 @@ const Aliados: React.FC = () => {
                       )}
                       <div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.category}</div>
-                        <h4 style={{ fontSize: '1rem', fontWeight: 700 }}>{item.name}</h4>
+                        <h4 style={{ fontSize: '1rem', fontWeight: 700, margin: '2px 0 0' }}>{item.name}</h4>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexShrink: 0 }}>
-                      {isDigitalAlly && (
-                        <span style={{ backgroundColor: 'rgba(168,85,247,0.2)', color: '#C084FC', padding: '2px 7px', borderRadius: '6px', fontSize: '0.6rem', fontWeight: 800 }}>
+
+                    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {/* Distancia si se calculó */}
+                      {item._distanceKm !== null && (
+                        <span style={{
+                          backgroundColor: 'rgba(34,197,94,0.18)',
+                          color: '#4ADE80',
+                          padding: '2px 7px',
+                          borderRadius: '6px',
+                          fontSize: '0.65rem',
+                          fontWeight: 800,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '3px',
+                          border: '1px solid rgba(34,197,94,0.3)'
+                        }}>
+                          <Navigation size={10} /> a {formatDistance(item._distanceKm)}
+                        </span>
+                      )}
+
+                      {/* Etiqueta de Zona */}
+                      {item._zone === 'carmen' ? (
+                        <span style={{ backgroundColor: 'rgba(59,130,246,0.15)', color: '#93C5FD', padding: '2px 7px', borderRadius: '6px', fontSize: '0.62rem', fontWeight: 700 }}>
+                          🏖️ Cd. del Carmen
+                        </span>
+                      ) : item._zone === 'campeche' ? (
+                        <span style={{ backgroundColor: 'rgba(212,175,55,0.15)', color: 'var(--accent-gold)', padding: '2px 7px', borderRadius: '6px', fontSize: '0.62rem', fontWeight: 700 }}>
+                          🏛️ Campeche
+                        </span>
+                      ) : (
+                        <span style={{ backgroundColor: 'rgba(168,85,247,0.2)', color: '#C084FC', padding: '2px 7px', borderRadius: '6px', fontSize: '0.62rem', fontWeight: 800 }}>
                           🌐 DIGITAL
                         </span>
                       )}
+
                       {isNewAlly((item as any).created_at) && (
                         <span style={{ backgroundColor: 'rgba(74,222,128,0.15)', color: '#4ADE80', padding: '2px 7px', borderRadius: '6px', fontSize: '0.6rem', fontWeight: 800 }}>
                           🆕 NUEVO
-                        </span>
-                      )}
-                      {item.id.startsWith('mock-') && (
-                        <span style={{ backgroundColor: 'rgba(255,255,255,0.05)', color: 'var(--text-dim)', padding: '2px 6px', borderRadius: '6px', fontSize: '0.6rem', fontWeight: 600 }}>
-                          Demo
                         </span>
                       )}
                     </div>
