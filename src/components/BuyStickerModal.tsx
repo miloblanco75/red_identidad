@@ -42,16 +42,37 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
   const physicalStores = [
     {
       city: 'San Francisco de Campeche',
-      name: 'Módulo Central Centro Histórico',
-      address: 'Calle 59 entre 12 y 14, Centro Histórico',
-      hours: 'Lunes a Sábado: 10:00 AM - 7:00 PM',
+      name: 'Maneki Neko',
+      address: 'Plaza del Mar',
+      hours: 'Punto de Venta Oficial',
       phone: '9811971305'
     },
     {
-      city: 'Ciudad del Carmen',
-      name: 'Módulo Isla de Carmen',
-      address: 'Av. Concordia por Calle 56, Carmen',
-      hours: 'Lunes a Sábado: 10:00 AM - 6:00 PM',
+      city: 'San Francisco de Campeche',
+      name: 'Barbería Mdoce',
+      address: 'Avenida Concordia',
+      hours: 'Punto de Venta Oficial',
+      phone: '9811971305'
+    },
+    {
+      city: 'San Francisco de Campeche',
+      name: 'Lavadero Royal Shine',
+      address: 'Avenida Central',
+      hours: 'Punto de Venta Oficial',
+      phone: '9811971305'
+    },
+    {
+      city: 'San Francisco de Campeche',
+      name: 'Refaccionaria Bahía',
+      address: 'Avenida Hidalgo',
+      hours: 'Punto de Venta Oficial',
+      phone: '9811971305'
+    },
+    {
+      city: 'San Francisco de Campeche',
+      name: 'Gesti+',
+      address: 'Av. Ruiz Cortines (contra esquina del Palacio Federal)',
+      hours: 'Punto de Venta Oficial',
       phone: '9811971305'
     }
   ];

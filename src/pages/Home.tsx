@@ -98,6 +98,39 @@ const Home: React.FC = () => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [initialStickerSelection, setInitialStickerSelection] = useState<string>('campechano_negra');
 
+  const officialStores = [
+    {
+      city: 'San Francisco de Campeche',
+      name: 'Maneki Neko',
+      address: 'Plaza del Mar',
+      phone: '9811971305'
+    },
+    {
+      city: 'San Francisco de Campeche',
+      name: 'Barbería Mdoce',
+      address: 'Avenida Concordia',
+      phone: '9811971305'
+    },
+    {
+      city: 'San Francisco de Campeche',
+      name: 'Lavadero Royal Shine',
+      address: 'Avenida Central',
+      phone: '9811971305'
+    },
+    {
+      city: 'San Francisco de Campeche',
+      name: 'Refaccionaria Bahía',
+      address: 'Avenida Hidalgo',
+      phone: '9811971305'
+    },
+    {
+      city: 'San Francisco de Campeche',
+      name: 'Gesti+',
+      address: 'Av. Ruiz Cortines (contra esquina del Palacio Federal)',
+      phone: '9811971305'
+    }
+  ];
+
   const faqItems = [
     {
       q: '¿La calcomanía resiste el sol, la lluvia y los lavados de auto?',
@@ -109,7 +142,7 @@ const Home: React.FC = () => {
     },
     {
       q: '¿Dónde entregan mi distintivo físico o dónde puedo recogerlo?',
-      a: 'Puedes solicitarlo con envío directo por WhatsApp o acudir personalmente a nuestros Puntos de Venta Físicos oficiales en el Centro Histórico de Campeche y en Isla de Carmen.'
+      a: 'Puedes solicitarlo con envío directo por WhatsApp o acudir personalmente a nuestros Puntos de Venta Oficiales: Maneki Neko en Plaza del Mar, Barbería Mdoce en Av. Concordia, Lavadero Royal Shine en Av. Central, Refaccionaria Bahía en Av. Hidalgo y Gesti+ en Av. Ruiz Cortines (contra esquina del Palacio Federal).'
     }
   ];
 
@@ -1056,25 +1089,16 @@ const Home: React.FC = () => {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-          <div className="glass" style={{ padding: '1.2rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.3)', backgroundColor: 'rgba(20,20,22,0.8)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>📍 San Francisco de Campeche</span>
-              <a href="https://wa.me/529811971305" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#25D366', fontWeight: 700, textDecoration: 'none' }}>WhatsApp: 9811971305</a>
+          {officialStores.map((store, idx) => (
+            <div key={idx} className="glass" style={{ padding: '1.2rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.3)', backgroundColor: 'rgba(20,20,22,0.8)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>📍 {store.city}</span>
+                <a href={`https://wa.me/52${store.phone}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#25D366', fontWeight: 700, textDecoration: 'none' }}>WhatsApp: {store.phone}</a>
+              </div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FFF', marginBottom: '0.2rem' }}>{store.name}</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', margin: 0 }}>{store.address}</p>
             </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FFF', marginBottom: '0.2rem' }}>Módulo Central Centro Histórico</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', margin: 0 }}>Calle 59 entre 12 y 14, Centro Histórico</p>
-            <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', display: 'block', marginTop: '0.4rem' }}>Horario: Lunes a Sábado 10:00 AM - 7:00 PM</span>
-          </div>
-
-          <div className="glass" style={{ padding: '1.2rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.3)', backgroundColor: 'rgba(20,20,22,0.8)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>📍 Ciudad del Carmen</span>
-              <a href="https://wa.me/529811971305" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#25D366', fontWeight: 700, textDecoration: 'none' }}>WhatsApp: 9811971305</a>
-            </div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FFF', marginBottom: '0.2rem' }}>Módulo Isla de Carmen</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', margin: 0 }}>Av. Concordia por Calle 56, Carmen</p>
-            <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', display: 'block', marginTop: '0.4rem' }}>Horario: Lunes a Sábado 10:00 AM - 6:00 PM</span>
-          </div>
+          ))}
         </div>
       </section>
 
