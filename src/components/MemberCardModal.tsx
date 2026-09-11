@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { X, ShieldCheck, Crown, Sparkles, Smartphone, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -18,6 +19,14 @@ interface MemberCardModalProps {
 
 export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose }) => {
   const [showPassport, setShowPassport] = useState(false);
+
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
 
   const getLevelInfo = (level: string) => {
     switch (level?.toLowerCase()) {
@@ -43,18 +52,28 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
   const IconComponent = levelInfo.icon;
   const qrValue = user.code ? `https://redidentidad.vercel.app/registro?c=${user.code}` : `RED-${String(user.member_number).padStart(4, '0')}`;
 
-  return (
+  const modalContent = (
     <div
       style={{
         position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100dvh',
+        zIndex: 99998,
         backgroundColor: 'rgba(0,0,0,0.85)',
         backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '1.5rem',
+        boxSizing: 'border-box'
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
       }}
     >
       <motion.div
@@ -211,4 +230,6 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
       />
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };

@@ -1,4 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Award, CheckCircle2, Lock, Gift, ExternalLink, Calendar, MapPin, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getMemberVisitsSummary, type LoyaltyConfig, type MemberVisitRecord } from '../lib/loyaltyService';
@@ -28,6 +29,12 @@ export const LoyaltyPassportModal: React.FC<LoyaltyPassportModalProps> = ({
     if (isOpen) {
       const data = getMemberVisitsSummary(user?.code, user?.member_number);
       setSummary(data);
+
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
     }
   }, [isOpen, user]);
 
@@ -55,37 +62,49 @@ export const LoyaltyPassportModal: React.FC<LoyaltyPassportModalProps> = ({
     window.open(`https://wa.me/529811385474?text=${text}`, '_blank');
   };
 
-  return (
+  const modalContent = (
     <div
       style={{
         position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        backgroundColor: 'rgba(0,0,0,0.88)',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100vw',
+        height: '100dvh',
+        zIndex: 999999,
+        backgroundColor: 'rgba(0,0,0,0.85)',
         backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         padding: '1rem',
-        overflowY: 'auto'
+        boxSizing: 'border-box'
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
       }}
     >
       <motion.div
-        initial={{ opacity: 0, scale: 0.92, y: 20 }}
+        initial={{ opacity: 0, scale: 0.95, y: 15 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.92, y: 20 }}
+        exit={{ opacity: 0, scale: 0.95, y: 15 }}
         className="glass"
         style={{
           width: '100%',
           maxWidth: '460px',
-          maxHeight: '90vh',
+          maxHeight: '90dvh',
           overflowY: 'auto',
+          overscrollBehavior: 'contain',
           borderRadius: '28px',
           padding: '1.8rem 1.4rem',
           position: 'relative',
-          border: '1px solid rgba(212,175,55,0.4)',
-          boxShadow: '0 0 50px rgba(212,175,55,0.25)',
-          color: '#FFF'
+          border: '1.5px solid rgba(212,175,55,0.4)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.8), 0 0 40px rgba(212,175,55,0.25)',
+          color: '#FFF',
+          boxSizing: 'border-box',
+          margin: 'auto'
         }}
       >
         {/* Botón cerrar */}
@@ -386,4 +405,6 @@ export const LoyaltyPassportModal: React.FC<LoyaltyPassportModalProps> = ({
       </motion.div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
