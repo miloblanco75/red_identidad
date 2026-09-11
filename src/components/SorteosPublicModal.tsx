@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Gift, Trophy, ChevronRight, ShieldCheck } from 'lucide-react';
 import type { WinnerRecord } from './SorteosRuleta';
@@ -18,6 +19,9 @@ export const SorteosPublicModal: React.FC<SorteosPublicModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+
       try {
         const saved = localStorage.getItem('red_identidad_sorteos_history');
         if (saved) {
@@ -26,24 +30,40 @@ export const SorteosPublicModal: React.FC<SorteosPublicModalProps> = ({
       } catch (e) {
         console.warn('Error al leer ganadores:', e);
       }
+
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  return (
+  const modalContent = (
     <AnimatePresence>
-      <div style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        backgroundColor: 'rgba(0,0,0,0.85)',
-        backdropFilter: 'blur(10px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem'
-      }}>
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100vw',
+          height: '100dvh',
+          zIndex: 99998,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem',
+          boxSizing: 'border-box'
+        }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -129,23 +149,28 @@ export const SorteosPublicModal: React.FC<SorteosPublicModalProps> = ({
               gap: '1rem'
             }}>
               <div style={{
-                fontSize: '2.5rem',
+                fontSize: '2.2rem',
                 lineHeight: 1,
                 padding: '0.5rem',
                 backgroundColor: 'rgba(212,175,55,0.2)',
                 borderRadius: '16px'
               }}>
-                ⛽
+                🎁
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--accent-gold)', fontWeight: 800, letterSpacing: '0.08em' }}>
-                  Próximo Sorteo del Mes
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--accent-gold)', fontWeight: 800, letterSpacing: '0.08em' }}>
+                    Sorteo de la Red
+                  </div>
+                  <span style={{ backgroundColor: 'rgba(234,179,8,0.2)', color: '#FDE047', fontSize: '0.62rem', fontWeight: 800, padding: '2px 8px', borderRadius: '4px' }}>
+                    PRÓXIMAMENTE
+                  </span>
                 </div>
-                <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#FFF', marginTop: '2px' }}>
-                  Tanque Lleno de Gasolina + Cena en Maneki Neko
+                <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#FFF', marginTop: '3px' }}>
+                  Sorteo Exclusivo de la Red Identidad
                 </div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-dim)', marginTop: '4px' }}>
-                  Participan todos los números de socio activos con distintivo en vehículo o negocio.
+                  Anunciaremos los premios y bases oficiales muy pronto. Todos los socios con calcomanía registrada participarán automáticamente.
                 </div>
               </div>
             </div>
@@ -296,6 +321,8 @@ export const SorteosPublicModal: React.FC<SorteosPublicModalProps> = ({
       </div>
     </AnimatePresence>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default SorteosPublicModal;

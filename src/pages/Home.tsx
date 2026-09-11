@@ -678,17 +678,17 @@ const Home: React.FC = () => {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
                 <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--accent-gold)', fontWeight: 800, letterSpacing: '0.08em' }}>
-                  Gran Sorteo Mensual en Vivo
+                  Gran Sorteo de la Red
                 </span>
-                <span style={{ backgroundColor: 'rgba(239,68,68,0.2)', color: '#F87171', fontSize: '0.62rem', fontWeight: 800, padding: '2px 6px', borderRadius: '4px' }}>
-                  ACTIVO
+                <span style={{ backgroundColor: 'rgba(234,179,8,0.2)', color: '#FDE047', fontSize: '0.62rem', fontWeight: 800, padding: '2px 8px', borderRadius: '4px' }}>
+                  PRÓXIMAMENTE
                 </span>
               </div>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 900, color: '#FFF', margin: '0 0 3px' }}>
-                ¡Gana gasolina y premios con tu calcomanía!
+                Sorteos Exclusivos para Socios
               </h3>
               <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-dim)', lineHeight: 1.3 }}>
-                Cada distintivo registrado participa automáticamente con su número de socio oficial.
+                Cada distintivo registrado participará automáticamente con su número oficial de socio.
               </p>
             </div>
           </div>

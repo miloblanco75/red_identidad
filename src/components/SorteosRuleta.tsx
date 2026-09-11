@@ -97,7 +97,7 @@ export const SorteosRuleta: React.FC = () => {
   const [members, setMembers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
-  const [prizeName, setPrizeName] = useState<string>('Tanque Lleno de Gasolina ⛽');
+  const [prizeName, setPrizeName] = useState<string>('Premio de la Red Identidad 🎁');
   const [hidePhoneDigits, setHidePhoneDigits] = useState<boolean>(true);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
@@ -498,7 +498,7 @@ export const SorteosRuleta: React.FC = () => {
             type="text"
             value={prizeName}
             onChange={(e) => setPrizeName(e.target.value)}
-            placeholder="Ej. Tanque Lleno de Gasolina, $1,000 en Efectivo..."
+            placeholder="Ej. Premio Especial, $1,000 en Efectivo..."
             disabled={isSpinning}
             style={{
               width: '100%',
