@@ -5,10 +5,8 @@ import {
   Lock,
   Gift,
   TrendingUp,
-  CheckCircle2,
   Loader2,
   LogOut,
-  Plus,
   ShieldAlert,
   Camera,
   Crown,
@@ -16,6 +14,13 @@ import {
   ShieldCheck,
   X,
   MapPin,
+  Search,
+  AlertTriangle,
+  Clock,
+  History,
+  Check,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QrScannerModal } from '../components/QrScannerModal';
@@ -28,12 +33,64 @@ interface AllyData {
   promotions_given: number;
 }
 
-interface ScannedMember {
+interface ValidationResult {
+  status: 'valid' | 'invalid';
   code: string;
-  level: string;
-  member_number: number;
-  phone: string;
+  member_number?: number;
+  level?: string;
+  phone?: string;
+  discountToApply: string;
+  message: string;
+  isUnclaimedOfficial?: boolean;
 }
+
+// Reproductor de efectos sonoros y hápticos nativos para terminal de caja
+const playFeedback = (type: 'success' | 'error') => {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (AudioCtx) {
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+      if (type === 'success') {
+        // Chime triunfal de caja registradora: E5 -> G#5 -> B5
+        [659.25, 830.61, 987.77].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.08);
+          gain.gain.setValueAtTime(0.3, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.35);
+        });
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate([100, 50, 100]);
+        }
+      } else {
+        // Zumbido de error
+        [220, 180].forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, now + i * 0.15);
+          gain.gain.setValueAtTime(0.25, now + i * 0.15);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.2);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + i * 0.15);
+          osc.stop(now + i * 0.15 + 0.2);
+        });
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate(250);
+        }
+      }
+    }
+  } catch (e) {
+    // Audio restriction fallback
+  }
+};
 
 const AliadoPanel: React.FC = () => {
   const [step, setStep] = useState<'login' | 'select_branch' | 'panel'>('login');
@@ -42,12 +99,14 @@ const AliadoPanel: React.FC = () => {
   const [ally, setAlly] = useState<AllyData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [successAnim, setSuccessAnim] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // QR Scanning States
+  // QR Scanning & Semáforo States
   const [showScanner, setShowScanner] = useState(false);
-  const [scannedMember, setScannedMember] = useState<ScannedMember | null>(null);
+  const [manualInput, setManualInput] = useState('');
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [todayValidations, setTodayValidations] = useState<Array<{ time: string; member: string; discount: string }>>([]);
+  const [showHistoryList, setShowHistoryList] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,69 +165,193 @@ const AliadoPanel: React.FC = () => {
 
     if (!error) {
       setAlly({ ...ally, promotions_given: newCount });
-      setSuccessAnim(true);
-      setTimeout(() => setSuccessAnim(false), 2000);
     }
   };
 
-  const handleRegisterPromotion = async () => {
-    if (!ally || isSaving) return;
+  // Motor Inteligente y Flexible de Validación
+  const validateCodeOrInput = async (rawInput: string) => {
+    if (!ally || !rawInput.trim() || isSaving) return;
     setIsSaving(true);
     setErrorMsg('');
 
+    // 1. Extraer código limpio de URLs, parámetros o texto
+    let clean = rawInput.trim();
+    if (clean.includes('?c=')) {
+      clean = clean.split('?c=')[1].split('&')[0];
+    } else if (clean.includes('/registro?c=')) {
+      clean = clean.split('/registro?c=')[1].split('&')[0];
+    } else if (clean.includes('/') && !clean.startsWith('http')) {
+      const parts = clean.split('/');
+      clean = parts[parts.length - 1];
+    } else if (clean.startsWith('http')) {
+      try {
+        const urlObj = new URL(clean);
+        const cParam = urlObj.searchParams.get('c');
+        if (cParam) clean = cParam;
+      } catch (e) {}
+    }
+
+    clean = clean.replace(/#/g, '').trim().toUpperCase();
+
     try {
-      await incrementPromotionCount();
+      let foundSticker: any = null;
+
+      // A. Búsqueda directa por código en Supabase
+      const { data: exactMatch } = await supabase
+        .from('stickers')
+        .select('*')
+        .eq('code', clean)
+        .maybeSingle();
+
+      if (exactMatch) {
+        foundSticker = exactMatch;
+      }
+
+      // B. Si es número (ej. "35" o "0035"), buscar por member_number
+      if (!foundSticker) {
+        const numVal = parseInt(clean.replace(/\D/g, ''), 10);
+        if (!isNaN(numVal) && numVal > 0) {
+          const { data: numMatch } = await supabase
+            .from('stickers')
+            .select('*')
+            .eq('member_number', numVal)
+            .maybeSingle();
+
+          if (numMatch) {
+            foundSticker = numMatch;
+          }
+        }
+      }
+
+      // C. Búsqueda por teléfono
+      if (!foundSticker) {
+        const phoneDigits = clean.replace(/\D/g, '');
+        if (phoneDigits.length >= 7) {
+          const { data: phoneMatch } = await supabase
+            .from('stickers')
+            .select('*')
+            .ilike('phone', `%${phoneDigits}%`)
+            .maybeSingle();
+
+          if (phoneMatch) {
+            foundSticker = phoneMatch;
+          }
+        }
+      }
+
+      // D. Búsqueda flexible con/sin guión (ej. BLAN0001 vs BLAN-0001)
+      if (!foundSticker) {
+        const withHyphen = clean.replace(/([A-Z]+)(\d+)/, '$1-$2');
+        const withoutHyphen = clean.replace(/-/g, '');
+        const { data: fuzzyMatch } = await supabase
+          .from('stickers')
+          .select('*')
+          .or(`code.eq.${withHyphen},code.eq.${withoutHyphen}`)
+          .maybeSingle();
+
+        if (fuzzyMatch) {
+          foundSticker = fuzzyMatch;
+        }
+      }
+
+      // ── EVALUACIÓN Y RESULTADO DEL SEMÁFORO ──
+      if (foundSticker) {
+        const isClaimed = Boolean(foundSticker.phone && String(foundSticker.phone).trim() !== '');
+        const memberNum = foundSticker.member_number || parseInt(foundSticker.code?.replace(/\D/g, '') || '1', 10);
+        const level = foundSticker.level || 'campechana_blanca';
+
+        // Éxito: Sonido + vibración + incremento
+        playFeedback('success');
+        await incrementPromotionCount();
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+        setTodayValidations(prev => [
+          { time: timeStr, member: `#${String(memberNum).padStart(4, '0')}`, discount: ally.discount },
+          ...prev
+        ]);
+
+        setValidationResult({
+          status: 'valid',
+          code: foundSticker.code,
+          member_number: memberNum,
+          level: level,
+          phone: foundSticker.phone || '',
+          discountToApply: ally.discount,
+          message: isClaimed 
+            ? '¡Miembro Activo Verificado!' 
+            : '¡Calcomanía Oficial Válida! (Pendiente de registrar por el usuario)',
+          isUnclaimedOfficial: !isClaimed
+        });
+        setManualInput('');
+        return;
+      }
+
+      // E. Fallback: Prefijos oficiales reconocidos de la Red Identidad
+      const officialPrefixes = ['BLAN', 'ROSA', 'NEGR', 'CB-', 'CN-', 'CRN-', 'CRB-', 'RED-', 'TUL'];
+      const isOfficialPattern = officialPrefixes.some(p => clean.startsWith(p) || clean.includes(p));
+
+      if (isOfficialPattern) {
+        playFeedback('success');
+        await incrementPromotionCount();
+
+        const memberNum = parseInt(clean.replace(/\D/g, '') || '100', 10);
+        let derivedLevel = 'campechana_blanca';
+        if (clean.includes('ROSA') || clean.startsWith('CRN-') || clean.startsWith('CB-')) derivedLevel = 'campechana_rosa';
+        else if (clean.includes('NEGR') || clean.startsWith('CN-')) derivedLevel = 'campechana_negra';
+        else if (clean.includes('GOLD') || clean.includes('TESORO')) derivedLevel = 'gold';
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+        setTodayValidations(prev => [
+          { time: timeStr, member: `#${String(memberNum).padStart(4, '0')}`, discount: ally.discount },
+          ...prev
+        ]);
+
+        setValidationResult({
+          status: 'valid',
+          code: clean,
+          member_number: memberNum,
+          level: derivedLevel,
+          discountToApply: ally.discount,
+          message: '¡Distintivo Oficial de la Red Reconocido!',
+          isUnclaimedOfficial: true
+        });
+        setManualInput('');
+        return;
+      }
+
+      // Si no es un distintivo válido: PANTALLA ROJA
+      playFeedback('error');
+      setValidationResult({
+        status: 'invalid',
+        code: clean,
+        discountToApply: '',
+        message: `El código "${clean}" no pertenece a la Red Identidad o no está activado.`
+      });
+
     } catch (err: any) {
-      setErrorMsg('Error al registrar la promoción. Intenta de nuevo.');
+      playFeedback('error');
+      setValidationResult({
+        status: 'invalid',
+        code: clean,
+        discountToApply: '',
+        message: err.message || 'Error al validar el distintivo.'
+      });
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleScanQRSuccess = async (decodedText: string) => {
+  const handleScanQRSuccess = (decodedText: string) => {
     setShowScanner(false);
-    setErrorMsg('');
+    validateCodeOrInput(decodedText);
+  };
 
-    // Extract code from text or URL parameter ?c=RED-XXXX
-    let extractedCode = decodedText.trim();
-    if (extractedCode.includes('?c=')) {
-      extractedCode = extractedCode.split('?c=')[1].split('&')[0];
-    } else if (extractedCode.includes('/')) {
-      const parts = extractedCode.split('/');
-      extractedCode = parts[parts.length - 1];
-    }
-    extractedCode = extractedCode.toUpperCase();
-
-    try {
-      setIsSaving(true);
-      const { data, error } = await supabase
-        .from('stickers')
-        .select('*')
-        .eq('code', extractedCode)
-        .single();
-
-      if (error || !data) {
-        throw new Error(`Código ${extractedCode} no encontrado en la base de datos.`);
-      }
-
-      if (!data.phone) {
-        throw new Error(`El código ${extractedCode} aún no ha sido activado por un usuario.`);
-      }
-
-      // Valid Member Found!
-      setScannedMember({
-        code: data.code,
-        level: data.level || 'white',
-        member_number: data.member_number,
-        phone: data.phone,
-      });
-
-      await incrementPromotionCount();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Error al validar el código QR.');
-    } finally {
-      setIsSaving(false);
-    }
+  const handleManualSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualInput.trim()) return;
+    validateCodeOrInput(manualInput);
   };
 
   const handleLogout = () => {
@@ -176,18 +359,33 @@ const AliadoPanel: React.FC = () => {
     setStep('login');
     setPinInput('');
     setErrorMsg('');
-    setScannedMember(null);
+    setValidationResult(null);
   };
 
-  const getLevelInfo = (level: string) => {
-    switch (level?.toLowerCase()) {
-      case 'gold':
-        return { name: 'VIP DORADO', color: '#D4AF37', icon: Crown };
-      case 'silver':
-        return { name: 'COLECCIÓN PLATA', color: '#C0C0C0', icon: Sparkles };
-      default:
-        return { name: 'ESENCIAL', color: '#4ADE80', icon: ShieldCheck };
+  const getLevelInfo = (levelStr?: string) => {
+    const s = (levelStr || '').toLowerCase();
+    if (s.includes('blanca')) {
+      return { name: 'CAMPECHANA SOY BLANCA', color: '#FFFFFF', icon: Crown };
     }
+    if (s.includes('rosa')) {
+      return { name: 'CAMPECHANA SOY ROSA', color: '#FF5C9D', icon: Crown };
+    }
+    if (s.includes('negra')) {
+      return { name: 'CAMPECHANA SOY NEGRA', color: '#D4AF37', icon: Crown };
+    }
+    if (s.includes('carmelita')) {
+      return { name: 'CARMELITA SOY', color: '#60A5FA', icon: ShieldCheck };
+    }
+    if (s.includes('campechano')) {
+      return { name: 'CAMPECHANO SOY', color: '#D4AF37', icon: ShieldCheck };
+    }
+    if (s.includes('gold')) {
+      return { name: 'VIP DORADO', color: '#D4AF37', icon: Crown };
+    }
+    if (s.includes('silver')) {
+      return { name: 'COLECCIÓN PLATA', color: '#C0C0C0', icon: Sparkles };
+    }
+    return { name: 'DISTINTIVO OFICIAL', color: '#4ADE80', icon: ShieldCheck };
   };
 
   /* ─── LOGIN ─── */
@@ -210,7 +408,7 @@ const AliadoPanel: React.FC = () => {
           </div>
           <h1 style={{ fontSize: '1.7rem', marginBottom: '0.4rem' }}>Portal de Aliados</h1>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', lineHeight: 1.5 }}>
-            Valida los códigos QR y registra las promociones que das a los miembros.
+            Valida los distintivos oficiales y registra las promociones que otorgas a los miembros.
           </p>
         </div>
 
@@ -229,8 +427,8 @@ const AliadoPanel: React.FC = () => {
           </div>
 
           {errorMsg && (
-            <div style={{ color: '#ff4444', fontSize: '0.82rem', marginBottom: '1.2rem', padding: '0.8rem 1rem', backgroundColor: 'rgba(255,0,0,0.08)', borderRadius: '10px', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <ShieldAlert size={16} /> {errorMsg}
+            <div style={{ color: '#ff4444', fontSize: '0.85rem', marginBottom: '1.5rem', padding: '0.9rem', backgroundColor: 'rgba(255, 68, 68, 0.1)', borderRadius: '14px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <ShieldAlert size={18} /> {errorMsg}
             </div>
           )}
 
@@ -239,13 +437,14 @@ const AliadoPanel: React.FC = () => {
             disabled={isLoading}
             style={{
               width: '100%',
-              padding: '1rem',
-              borderRadius: '14px',
-              backgroundColor: isLoading ? 'rgba(255,255,255,0.1)' : 'var(--accent-gold)',
-              color: isLoading ? '#FFF' : '#121212',
-              fontWeight: 700,
+              padding: '1.1rem',
+              borderRadius: '16px',
+              backgroundColor: 'var(--accent-gold)',
+              color: '#121212',
+              fontWeight: 800,
               fontSize: '1rem',
               border: 'none',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
@@ -350,17 +549,17 @@ const AliadoPanel: React.FC = () => {
     );
   }
 
-  /* ─── PANEL ─── */
+  /* ─── TERMINAL PANEL DE NEGOCIO ─── */
   return (
     <div className="animate-fade-in" style={{ padding: '1.5rem', paddingBottom: '120px' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '1rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '1rem', marginBottom: '1.5rem' }}>
         <div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.3rem' }}>
-            {ally?.category}
+            Terminal de Caja • {ally?.category}
           </p>
-          <h1 style={{ fontSize: '1.6rem', lineHeight: 1.2 }}>{ally?.name}</h1>
+          <h1 style={{ fontSize: '1.6rem', lineHeight: 1.2, margin: 0 }}>{ally?.name}</h1>
         </div>
         <button
           onClick={handleLogout}
@@ -374,250 +573,374 @@ const AliadoPanel: React.FC = () => {
             alignItems: 'center',
             gap: '5px',
             fontSize: '0.75rem',
+            cursor: 'pointer'
           }}
         >
           <LogOut size={14} /> Salir
         </button>
       </div>
 
-      {/* Promoción activa */}
+      {/* Promoción activa en grande */}
       <div style={{
         padding: '1rem 1.2rem',
         borderRadius: '16px',
-        backgroundColor: 'rgba(212,175,55,0.08)',
-        border: '1px solid rgba(212,175,55,0.2)',
+        backgroundColor: 'rgba(212,175,55,0.12)',
+        border: '1.5px solid rgba(212,175,55,0.35)',
         marginBottom: '1.5rem',
         display: 'flex',
         gap: '0.8rem',
         alignItems: 'center',
       }}>
-        <Gift size={20} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+        <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(212,175,55,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Gift size={22} color="var(--accent-gold)" />
+        </div>
         <div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Tu promoción activa</div>
-          <div className="gold-text" style={{ fontSize: '1rem', fontWeight: 700, marginTop: '2px' }}>{ally?.discount}</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>Tu Promoción a Aplicar en Caja</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FFF', marginTop: '2px' }}>{ally?.discount}</div>
         </div>
       </div>
 
-      {/* Counter Card */}
-      <div className="glass" style={{
-        borderRadius: '28px',
-        padding: '2rem 1.5rem',
-        textAlign: 'center',
-        marginBottom: '1.5rem',
-        border: '1px solid rgba(212,175,55,0.15)',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        <TrendingUp size={18} color="var(--text-dim)" style={{ marginBottom: '0.6rem' }} />
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.4rem' }}>
-          Promociones otorgadas
-        </p>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={ally?.promotions_given}
-            initial={{ scale: 0.7, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 1.3, opacity: 0, y: -20 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-            className="gold-text"
-            style={{ fontSize: '4.5rem', fontWeight: 700, lineHeight: 1 }}
-          >
-            {ally?.promotions_given ?? 0}
-          </motion.div>
-        </AnimatePresence>
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', marginTop: '0.4rem' }}>
-          Total histórico acumulado
-        </p>
-
-        {/* Success animation overlay */}
-        <AnimatePresence>
-          {successAnim && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.5 }}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(74, 222, 128, 0.15)',
-                borderRadius: '28px',
-                flexDirection: 'column',
-                gap: '0.5rem',
-              }}
-            >
-              <CheckCircle2 size={52} color="#4ADE80" />
-              <span style={{ color: '#4ADE80', fontWeight: 700, fontSize: '1.1rem' }}>¡Promoción Registrada!</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Botón Principal: Escanear QR */}
+      {/* ── BOTÓN GIGANTE: ESCANEAR CÁMARA (TERMINAL) ── */}
       <motion.button
-        whileTap={{ scale: 0.96 }}
+        whileTap={{ scale: 0.97 }}
         whileHover={{ scale: 1.02 }}
         onClick={() => setShowScanner(true)}
         disabled={isSaving}
         style={{
           width: '100%',
-          padding: '1.3rem',
-          borderRadius: '20px',
-          backgroundColor: 'var(--accent-gold)',
+          padding: '1.4rem 1rem',
+          borderRadius: '24px',
+          backgroundColor: '#22C55E',
           color: '#121212',
-          fontWeight: 800,
-          fontSize: '1.1rem',
+          fontWeight: 900,
+          fontSize: '1.25rem',
           border: 'none',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: '0.7rem',
-          cursor: 'pointer',
-          boxShadow: '0 0 25px rgba(212,175,55,0.35)',
-          marginBottom: '1rem',
+          gap: '0.8rem',
+          cursor: isSaving ? 'not-allowed' : 'pointer',
+          boxShadow: '0 0 35px rgba(34,197,94,0.45)',
+          marginBottom: '1.2rem',
+          letterSpacing: '0.02em',
+          textTransform: 'uppercase'
         }}
       >
-        <Camera size={22} strokeWidth={2.5} />
+        <Camera size={26} strokeWidth={2.5} />
         Escanear QR de Cliente
       </motion.button>
 
-      {/* Botón de Respaldo: Manual */}
-      <motion.button
-        whileTap={{ scale: 0.96 }}
-        onClick={handleRegisterPromotion}
-        disabled={isSaving}
-        style={{
-          width: '100%',
-          padding: '1rem',
-          borderRadius: '16px',
-          backgroundColor: 'rgba(255,255,255,0.06)',
-          border: '1px solid var(--glass-border)',
-          color: 'var(--text-dim)',
-          fontWeight: 600,
-          fontSize: '0.9rem',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '0.5rem',
-          cursor: isSaving ? 'not-allowed' : 'pointer',
-          marginBottom: '1.5rem',
-        }}
-      >
-        {isSaving ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
-        {isSaving ? 'Guardando...' : 'Reg. Manual (Sin cámara)'}
-      </motion.button>
+      {/* ── VALIDACIÓN MANUAL DIRECTA (SI EL COCHE ESTÁ AFUERA) ── */}
+      <div style={{
+        backgroundColor: '#161622',
+        borderRadius: '20px',
+        padding: '1.2rem',
+        marginBottom: '1.5rem',
+        border: '1px solid rgba(255,255,255,0.08)'
+      }}>
+        <label style={{ display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--accent-gold)', fontWeight: 800, letterSpacing: '0.06em', marginBottom: '0.4rem' }}>
+          🔍 O Valida Manualmente (Sin cámara)
+        </label>
+        <form onSubmit={handleManualSubmit} style={{ display: 'flex', gap: '0.5rem' }}>
+          <input
+            type="text"
+            placeholder="Escribe # de socio (ej. 0035), código o WhatsApp"
+            value={manualInput}
+            onChange={(e) => setManualInput(e.target.value)}
+            disabled={isSaving}
+            style={{
+              flex: 1,
+              padding: '0.85rem 1rem',
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '12px',
+              color: '#FFF',
+              fontSize: '0.88rem',
+              outline: 'none'
+            }}
+          />
+          <button
+            type="submit"
+            disabled={isSaving || !manualInput.trim()}
+            style={{
+              padding: '0.85rem 1.3rem',
+              borderRadius: '12px',
+              backgroundColor: 'var(--accent-gold)',
+              color: '#121212',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              border: 'none',
+              cursor: isSaving || !manualInput.trim() ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Search size={16} />}
+            Validar
+          </button>
+        </form>
+        <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginTop: '4px', display: 'block' }}>
+          Útil si el cliente tiene la calcomanía en su vehículo estacionado.
+        </span>
+      </div>
 
       {errorMsg && (
-        <div style={{ color: '#ff4444', fontSize: '0.82rem', padding: '0.8rem 1rem', backgroundColor: 'rgba(255,0,0,0.08)', borderRadius: '12px', display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1.2rem' }}>
+        <div style={{ color: '#ff4444', fontSize: '0.85rem', padding: '0.9rem 1.2rem', backgroundColor: 'rgba(255,0,0,0.1)', borderRadius: '14px', display: 'flex', gap: '0.6rem', alignItems: 'center', marginBottom: '1.5rem' }}>
           <ShieldAlert size={18} /> {errorMsg}
         </div>
       )}
 
-      {/* Modal Resultado de Escaneo de Miembro */}
-      {scannedMember && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            backgroundColor: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(10px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-          }}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="glass"
+      {/* ── CONTADOR DEL TURNO & TOTAL ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1.5rem' }}>
+        {/* Clientes de Hoy */}
+        <div className="glass" style={{ borderRadius: '20px', padding: '1.2rem 1rem', textAlign: 'center', border: '1px solid rgba(74,222,128,0.3)', backgroundColor: 'rgba(74,222,128,0.04)' }}>
+          <Clock size={18} color="#4ADE80" style={{ marginBottom: '4px' }} />
+          <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#4ADE80', lineHeight: 1 }}>
+            {todayValidations.length}
+          </div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '4px', fontWeight: 600 }}>
+            Validados en tu turno
+          </div>
+        </div>
+
+        {/* Total Histórico */}
+        <div className="glass" style={{ borderRadius: '20px', padding: '1.2rem 1rem', textAlign: 'center', border: '1px solid rgba(212,175,55,0.3)', backgroundColor: 'rgba(212,175,55,0.04)' }}>
+          <TrendingUp size={18} color="var(--accent-gold)" style={{ marginBottom: '4px' }} />
+          <div style={{ fontSize: '2.4rem', fontWeight: 900, color: 'var(--accent-gold)', lineHeight: 1 }}>
+            {ally?.promotions_given ?? 0}
+          </div>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '4px', fontWeight: 600 }}>
+            Total histórico acumulado
+          </div>
+        </div>
+      </div>
+
+      {/* Bitácora de Turno Desplegable */}
+      {todayValidations.length > 0 && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <button
+            onClick={() => setShowHistoryList(!showHistoryList)}
             style={{
               width: '100%',
-              maxWidth: '380px',
-              borderRadius: '28px',
-              padding: '2rem 1.5rem',
-              textAlign: 'center',
-              position: 'relative',
-              border: '2px solid #4ADE80',
+              padding: '0.75rem 1rem',
+              backgroundColor: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px',
+              color: '#CBD5E1',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              cursor: 'pointer'
             }}
           >
-            <button
-              onClick={() => setScannedMember(null)}
-              style={{
-                position: 'absolute',
-                top: '1rem',
-                right: '1rem',
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                border: 'none',
-                color: '#FFF',
-                borderRadius: '50%',
-                width: 32,
-                height: 32,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-              }}
-            >
-              <X size={16} />
-            </button>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <History size={14} color="#4ADE80" /> Ver clientes atendidos hoy ({todayValidations.length})
+            </span>
+            {showHistoryList ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
 
-            <CheckCircle2 size={56} color="#4ADE80" style={{ margin: '0 auto 1rem' }} />
-            <h3 style={{ fontSize: '1.4rem', color: '#FFF', marginBottom: '0.4rem' }}>
-              ¡Membresía Válida!
-            </h3>
-            <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem', marginBottom: '1.2rem' }}>
-              El beneficio ha sido validado y registrado.
-            </p>
-
-            {/* Member Details */}
-            <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '18px', padding: '1rem', marginBottom: '1.2rem', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Código de Miembro:</span>
-                <span style={{ fontFamily: 'monospace', fontWeight: 800, color: 'var(--accent-gold)', fontSize: '1.05rem' }}>{scannedMember.code}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Nivel:</span>
-                {(() => {
-                  const info = getLevelInfo(scannedMember.level);
-                  const Icon = info.icon;
-                  return (
-                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: info.color, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <Icon size={14} /> {info.name}
-                    </span>
-                  );
-                })()}
-              </div>
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '8px', marginTop: '4px' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', display: 'block', marginBottom: '2px' }}>Descuento a aplicar:</span>
-                <span style={{ fontWeight: 700, color: '#4ADE80', fontSize: '0.95rem' }}>{ally?.discount}</span>
-              </div>
+          {showHistoryList && (
+            <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              {todayValidations.map((item, idx) => (
+                <div key={idx} style={{ padding: '0.6rem 0.9rem', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem' }}>
+                  <span style={{ fontWeight: 800, color: 'var(--accent-gold)' }}>Socio {item.member}</span>
+                  <span style={{ color: '#4ADE80', fontWeight: 700 }}>{item.discount}</span>
+                  <span style={{ color: 'var(--text-dim)', fontSize: '0.7rem' }}>{item.time}</span>
+                </div>
+              ))}
             </div>
-
-            <button
-              onClick={() => setScannedMember(null)}
-              style={{
-                width: '100%',
-                padding: '0.9rem',
-                borderRadius: '14px',
-                backgroundColor: '#4ADE80',
-                color: '#121212',
-                fontWeight: 800,
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '1rem',
-              }}
-            >
-              Aceptar y Continuar
-            </button>
-          </motion.div>
+          )}
         </div>
       )}
 
-      {/* Modal del Escáner */}
+      {/* ── SEMÁFORO EN PANTALLA COMPLETA (VERDE / ROJO) ── */}
+      <AnimatePresence>
+        {validationResult && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 10000,
+              background: validationResult.status === 'valid'
+                ? 'radial-gradient(ellipse at center, #059669 0%, #022c22 100%)'
+                : 'radial-gradient(ellipse at center, #DC2626 0%, #450A0A 100%)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              padding: '2rem 1.5rem',
+              color: '#FFF',
+              textAlign: 'center',
+              boxSizing: 'border-box'
+            }}
+          >
+            {/* Botón cerrar esquina */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setValidationResult(null)}
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: '#FFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* Contenido Central */}
+            <div style={{ maxWidth: '480px', margin: '0 auto', width: '100%' }}>
+              {validationResult.status === 'valid' ? (
+                <div>
+                  {/* Ícono gigante verde con halo */}
+                  <motion.div
+                    initial={{ scale: 0.5, rotate: -20 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: 'spring', stiffness: 350, damping: 15 }}
+                    style={{
+                      width: '100px',
+                      height: '100px',
+                      borderRadius: '50%',
+                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      border: '3px solid #FFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 1.2rem',
+                      boxShadow: '0 0 50px rgba(255,255,255,0.5)'
+                    }}
+                  >
+                    <Check size={62} strokeWidth={3.5} color="#FFF" />
+                  </motion.div>
+
+                  <h1 style={{ fontSize: '2.4rem', fontWeight: 900, margin: '0 0 0.5rem', letterSpacing: '-0.02em', textShadow: '0 2px 10px rgba(0,0,0,0.4)' }}>
+                    ¡DISTINTIVO VÁLIDO! ✓
+                  </h1>
+
+                  <p style={{ fontSize: '1rem', color: '#D1FAE5', margin: '0 0 1.5rem', fontWeight: 600 }}>
+                    {validationResult.message}
+                  </p>
+
+                  {/* CAJA GIGANTE DE DESCUENTO A APLICAR */}
+                  <div style={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#064E3B',
+                    borderRadius: '24px',
+                    padding: '1.8rem 1.2rem',
+                    marginBottom: '1.5rem',
+                    boxShadow: '0 15px 40px rgba(0,0,0,0.4)',
+                    border: '3px solid var(--accent-gold)'
+                  }}>
+                    <div style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 900, color: '#047857', marginBottom: '6px' }}>
+                      APLICAR EN CUENTA O TICKET:
+                    </div>
+                    <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#064E3B', lineHeight: 1.1 }}>
+                      {validationResult.discountToApply || ally?.discount}
+                    </div>
+                  </div>
+
+                  {/* Datos del Socio */}
+                  <div style={{
+                    backgroundColor: 'rgba(0,0,0,0.25)',
+                    borderRadius: '18px',
+                    padding: '1rem 1.2rem',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    alignItems: 'center'
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#A7F3D0', fontWeight: 800 }}>Socio</div>
+                      <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#FFF' }}>
+                        #{String(validationResult.member_number || 1).padStart(4, '0')}
+                      </div>
+                    </div>
+                    <div style={{ width: '1px', height: '36px', backgroundColor: 'rgba(255,255,255,0.2)' }} />
+                    <div>
+                      <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#A7F3D0', fontWeight: 800 }}>Distintivo</div>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#FFF' }}>
+                        {getLevelInfo(validationResult.level).name}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* PANTALLA ROJA DE ERROR */
+                <div>
+                  <motion.div
+                    initial={{ scale: 0.5 }}
+                    animate={{ scale: 1 }}
+                    style={{
+                      width: '90px',
+                      height: '90px',
+                      borderRadius: '50%',
+                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      border: '3px solid #FFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 1.2rem',
+                      boxShadow: '0 0 40px rgba(0,0,0,0.4)'
+                    }}
+                  >
+                    <AlertTriangle size={52} color="#FFF" />
+                  </motion.div>
+
+                  <h1 style={{ fontSize: '2.2rem', fontWeight: 900, margin: '0 0 0.8rem', letterSpacing: '-0.02em' }}>
+                    DISTINTIVO NO VÁLIDO
+                  </h1>
+
+                  <div style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: '20px', padding: '1.5rem', border: '1px solid rgba(255,255,255,0.15)', marginBottom: '1.5rem' }}>
+                    <p style={{ fontSize: '1.05rem', color: '#FEE2E2', margin: 0, lineHeight: 1.5 }}>
+                      {validationResult.message}
+                    </p>
+                    <p style={{ fontSize: '0.8rem', color: '#FCA5A5', marginTop: '8px', marginBottom: 0 }}>
+                      Pide al cliente que abra su Membresía Digital o verifique su código en redidentidad.vercel.app
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Botón Inferior de Cierre Rápido */}
+            <div style={{ maxWidth: '480px', margin: '0 auto', width: '100%' }}>
+              <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setValidationResult(null)}
+                style={{
+                  width: '100%',
+                  padding: '1.2rem',
+                  borderRadius: '18px',
+                  backgroundColor: '#FFFFFF',
+                  color: validationResult.status === 'valid' ? '#064E3B' : '#7F1D1D',
+                  fontWeight: 900,
+                  fontSize: '1.15rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+                  letterSpacing: '0.02em'
+                }}
+              >
+                {validationResult.status === 'valid' ? '✓ Listo / Siguiente Cliente' : '← Volver a Intentar'}
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal del Escáner de Cámara */}
       {showScanner && (
         <QrScannerModal
           onScanSuccess={handleScanQRSuccess}
@@ -625,14 +948,16 @@ const AliadoPanel: React.FC = () => {
         />
       )}
 
-      {/* Instrucciones */}
-      <div className="glass" style={{ borderRadius: '18px', padding: '1.2rem', border: '1px solid var(--glass-border)' }}>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', lineHeight: 1.6 }}>
-          <strong style={{ color: 'var(--accent-white)' }}>¿Cómo funciona?</strong><br />
-          1. Presiona <strong>"Escanear QR de Cliente"</strong> para verificar con tu cámara el QR del cliente.<br />
-          2. Si no tienes cámara disponible, usa <strong>"Reg. Manual"</strong> como respaldo.
+      {/* Instrucciones de Uso */}
+      <div className="glass" style={{ borderRadius: '18px', padding: '1.2rem', border: '1px solid var(--glass-border)', marginTop: '1rem' }}>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', lineHeight: 1.6, margin: 0 }}>
+          <strong style={{ color: 'var(--accent-white)' }}>Guía Rápida para el Cajero:</strong><br />
+          1. Toca <strong>"Escanear QR de Cliente"</strong> para apuntar al QR de la calcomanía o membresía digital.<br />
+          2. La pantalla se pondrá <strong>VERDE en grande</strong> con el descuento que debes aplicar en su cuenta.<br />
+          3. Si el cliente dejó el auto afuera, escribe su número de socio o WhatsApp en la casilla manual.
         </p>
       </div>
+
     </div>
   );
 };
