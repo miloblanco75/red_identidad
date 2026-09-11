@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ChevronRight, ShieldCheck, Sparkles, Utensils, Car, Wine, 
   HeartPulse, Building2, MapPin, Loader2, Globe, QrCode, 
-  Award, Heart, Store, Camera, Flame, DollarSign, ChevronDown, ChevronUp, Briefcase, Navigation
+  Award, Heart, Store, Camera, Flame, DollarSign, ChevronDown, ChevronUp, Briefcase, Navigation,
+  Gift, Trophy
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -12,6 +13,7 @@ import { BuyStickerModal } from '../components/BuyStickerModal';
 import { MemberCardModal } from '../components/MemberCardModal';
 import { RecoverPassModal } from '../components/RecoverPassModal';
 import { UploadStickerPhotoModal } from '../components/UploadStickerPhotoModal';
+import { SorteosPublicModal } from '../components/SorteosPublicModal';
 import { useAuth } from '../contexts/AuthContext';
 
 const FacebookIcon = ({ size = 14, color = '#1877F2' }: { size?: number; color?: string }) => (
@@ -95,6 +97,7 @@ const Home: React.FC = () => {
   const [showCardModal, setShowCardModal] = useState(false);
   const [showRecoverModal, setShowRecoverModal] = useState(false);
   const [showUploadPhotoModal, setShowUploadPhotoModal] = useState(false);
+  const [showSorteosModal, setShowSorteosModal] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [initialStickerSelection, setInitialStickerSelection] = useState<string>('campechano_negra');
 
@@ -612,6 +615,83 @@ const Home: React.FC = () => {
             <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', fontWeight: 600, marginTop: '2px', lineHeight: 1.2 }}>Categorías Exclusivas</div>
           </div>
         </div>
+      </section>
+
+      {/* =========================================================
+          SECCIÓN: SORTEOS Y RIFAS MENSUALES (FIDELIZACIÓN)
+         ========================================================= */}
+      <section style={{ marginBottom: '2.5rem' }}>
+        <motion.div
+          whileHover={{ scale: 1.01 }}
+          onClick={() => setShowSorteosModal(true)}
+          style={{
+            padding: '1.4rem 1.3rem',
+            borderRadius: '22px',
+            border: '1.5px solid rgba(212,175,55,0.45)',
+            background: 'linear-gradient(135deg, rgba(35,25,12,0.95) 0%, rgba(18,16,24,0.95) 100%)',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.5), 0 0 25px rgba(212,175,55,0.15)',
+            cursor: 'pointer',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '1rem',
+            flexWrap: 'wrap'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '16px',
+              backgroundColor: 'rgba(212,175,55,0.2)',
+              border: '1.5px solid var(--accent-gold)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <Gift size={28} color="var(--accent-gold)" />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--accent-gold)', fontWeight: 800, letterSpacing: '0.08em' }}>
+                  Gran Sorteo Mensual en Vivo
+                </span>
+                <span style={{ backgroundColor: 'rgba(239,68,68,0.2)', color: '#F87171', fontSize: '0.62rem', fontWeight: 800, padding: '2px 6px', borderRadius: '4px' }}>
+                  ACTIVO
+                </span>
+              </div>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 900, color: '#FFF', margin: '0 0 3px' }}>
+                ¡Gana gasolina y premios con tu calcomanía!
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-dim)', lineHeight: 1.3 }}>
+                Cada distintivo registrado participa automáticamente con su número de socio oficial.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowSorteosModal(true);
+            }}
+            style={{
+              padding: '0.7rem 1.1rem',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(212,175,55,0.18)',
+              border: '1px solid var(--accent-gold)',
+              color: 'var(--accent-gold)',
+              fontSize: '0.82rem',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            <Trophy size={15} /> Ver Premios & Bases →
+          </button>
+        </motion.div>
       </section>
 
       {/* =========================================================
@@ -1233,6 +1313,12 @@ const Home: React.FC = () => {
       <RecoverPassModal isOpen={showRecoverModal} onClose={() => setShowRecoverModal(false)} />
 
       <UploadStickerPhotoModal isOpen={showUploadPhotoModal} onClose={() => setShowUploadPhotoModal(false)} />
+
+      <SorteosPublicModal
+        isOpen={showSorteosModal}
+        onClose={() => setShowSorteosModal(false)}
+        onBuySticker={() => setShowBuyModal(true)}
+      />
 
     </div>
   );

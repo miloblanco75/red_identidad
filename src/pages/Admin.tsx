@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe } from 'lucide-react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import StickerQRCode from '../components/StickerQRCode';
 
 import EnvelopeStickerDesigner from '../components/EnvelopeStickerDesigner';
+import SorteosRuleta from '../components/SorteosRuleta';
 
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
-  const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope' | 'status'>('codes');
+  const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope' | 'status' | 'sorteos'>('codes');
 
   // Print states
   const [printStickers, setPrintStickers] = useState<any[]>([]);
@@ -662,6 +663,12 @@ const Admin: React.FC = () => {
           style={{ flex: 1, minWidth: '100px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'status' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'status' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
         >
           <Activity size={16} /> Estatus QR
+        </button>
+        <button 
+          onClick={() => { setActiveTab('sorteos'); setSuccessMsg(''); setErrorMsg(''); }}
+          style={{ flex: 1, minWidth: '120px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'sorteos' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'sorteos' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+        >
+          <Gift size={16} /> Sorteos & Ruleta
         </button>
       </div>
 
@@ -1690,6 +1697,13 @@ const Admin: React.FC = () => {
               )}
             </div>
           )}
+        </section>
+      )}
+
+      {/* Tab: Sorteos & Ruleta */}
+      {activeTab === 'sorteos' && (
+        <section>
+          <SorteosRuleta />
         </section>
       )}
     </div>
