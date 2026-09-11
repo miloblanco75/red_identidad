@@ -69,8 +69,12 @@ const Admin: React.FC = () => {
     switch (lbl?.toLowerCase()) {
       case 'campechano_negra': return 'Campechano Negra';
       case 'campechano_blanca': return 'Campechano Blanca';
+      case 'campechana_blanca': return 'Campechana Blanca';
+      case 'campechana_negra': return 'Campechana Negra';
+      case 'campechana_rosa': return 'Campechana Rosa';
       case 'carmelita_negro': return 'Carmelita Negro';
       case 'carmelita_blanca': return 'Carmelita Blanca';
+      case 'carmelita_rosa': return 'Carmelita Rosa';
       case 'white': return 'White';
       case 'silver': return 'Silver';
       case 'gold': return 'Gold';
@@ -100,7 +104,7 @@ const Admin: React.FC = () => {
         from += step;
       }
 
-      const officialPrefixes = ['CB-', 'CN-', 'CRN-', 'CRB-'];
+      const officialPrefixes = ['CB-', 'CN-', 'CRN-', 'CRB-', 'BLAN-', 'CAB-', 'ROSA-', 'NEGR-'];
       const officialGoldSilver = ['RED-001', 'RED-002', 'RED-GOLD3ESBY', 'RED-GOLD376MF', 'RED-TESORO2U5BU'];
 
       const officialStickers = allFetched.filter(s => {
@@ -294,16 +298,16 @@ const Admin: React.FC = () => {
   };
 
   const handleClearCampechanaRosaNegraCodes = async () => {
-    if (confirm('¿Estás seguro de borrar ÚNICAMENTE los códigos sin reclamar de Campechana Rosa y Campechana Negra? Las demás calcomanías y las activadas por usuarios NO se borrarán.')) {
+    if (confirm('¿Estás seguro de borrar ÚNICAMENTE los códigos sin reclamar de Campechana (Rosa, Negra y Blanca)? Las demás calcomanías y las activadas por usuarios NO se borrarán.')) {
       try {
         const { error } = await supabase
           .from('stickers')
           .delete()
           .is('phone', null)
-          .or('level.eq.campechana_rosa,level.eq.campechana_negra,level.eq.rosa,level.eq.negra,code.ilike.ROSA%,code.ilike.NEGR%,code.ilike.CRN%,code.ilike.CN%');
+          .or('level.eq.campechana_rosa,level.eq.campechana_negra,level.eq.campechana_blanca,level.eq.rosa,level.eq.negra,level.eq.blanca,code.ilike.ROSA%,code.ilike.NEGR%,code.ilike.BLAN%,code.ilike.CRN%,code.ilike.CN%,code.ilike.CAB%');
 
         if (error) throw error;
-        setSuccessMsg('Códigos sin reclamar de Campechana Rosa y Negra eliminados correctamente.');
+        setSuccessMsg('Códigos sin reclamar de Campechana Rosa, Negra y Blanca eliminados correctamente.');
         fetchStickersStatus();
       } catch (err: any) {
         setErrorMsg('Error al eliminar códigos: ' + (err.message || ''));
@@ -702,6 +706,7 @@ const Admin: React.FC = () => {
               >
                 <option value="campechano_negra" style={{ color: '#000' }}>Campechano — Negra</option>
                 <option value="campechano_blanca" style={{ color: '#000' }}>Campechano — Blanca</option>
+                <option value="campechana_blanca" style={{ color: '#000' }}>Campechana — Blanca</option>
                 <option value="campechana_negra" style={{ color: '#000' }}>Campechana — Negra</option>
                 <option value="campechana_rosa" style={{ color: '#000' }}>Campechana — Rosa</option>
                 <option value="carmelita_negro" style={{ color: '#000' }}>Carmelita — Negro</option>
@@ -1327,6 +1332,7 @@ const Admin: React.FC = () => {
                   style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.08)', border: '1.5px solid var(--accent-gold)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', fontWeight: 800, outline: 'none' }}
                 >
                   <option value="all" style={{ color: '#000' }}>Todos los tipos (Cargar disponibles)</option>
+                  <option value="campechana_blanca" style={{ color: '#000' }}>🤍 Campechana — Blanca (Oficial QR)</option>
                   <option value="campechana_rosa" style={{ color: '#000' }}>🌸 Campechana — Rosa (Oficial QR)</option>
                   <option value="campechana_negra" style={{ color: '#000' }}>🖤 Campechana — Negra (Oficial QR)</option>
                   <option value="campechano_negra" style={{ color: '#000' }}>Campechano — Negra</option>
@@ -1481,7 +1487,7 @@ const Admin: React.FC = () => {
                 onClick={handleClearCampechanaRosaNegraCodes}
                 style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
               >
-                <Trash2 size={14} /> Limpiar Campechana Rosa / Negra
+                <Trash2 size={14} /> Limpiar Campechana (Rosa / Negra / Blanca)
               </button>
             </div>
           </div>

@@ -34,6 +34,7 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
     { id: 'carmelita_negra', label: 'Carmelita — Negra', tag: 'Negra', bg: '#333', color: '#FFF' },
     { id: 'carmelita_rosa', label: 'Carmelita — Rosa', tag: 'Rosa', bg: '#FF69B4', color: '#FFF' },
 
+    { id: 'campechana_blanca', label: 'Campechana — Blanca', tag: 'Blanca', bg: '#FFF', color: '#000' },
     { id: 'campechana_negra', label: 'Campechana — Negra', tag: 'Negra', bg: '#333', color: '#FFF' },
     { id: 'campechana_rosa', label: 'Campechana — Rosa', tag: 'Rosa', bg: '#FF69B4', color: '#FFF' },
   ];
@@ -286,7 +287,7 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                     </div>
                   </div>
 
-                  {(selectedSticker === 'campechana_rosa' || selectedSticker === 'campechana_negra') && (
+                  {(selectedSticker === 'campechana_rosa' || selectedSticker === 'campechana_negra' || selectedSticker === 'campechana_blanca') && (
                     <div style={{
                       margin: '0.6rem 0 1rem 0',
                       padding: '0.6rem',
@@ -304,7 +305,7 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                       />
                       <div>
                         <div style={{ fontSize: '0.78rem', fontWeight: 800, color: selectedSticker === 'campechana_rosa' ? '#FF69B4' : '#FFF' }}>
-                          Diseño de QR Oficial — Campechana Soy ({selectedSticker === 'campechana_rosa' ? 'Rosa' : 'Negra'})
+                          Diseño de QR Oficial — Campechana Soy ({selectedSticker === 'campechana_rosa' ? 'Rosa' : selectedSticker === 'campechana_blanca' ? 'Blanca' : 'Negra'})
                         </div>
                         <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', marginTop: '2px' }}>
                           Incluye el escudo impreso en el centro y tecnología QR scannable de vinil.

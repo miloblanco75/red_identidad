@@ -8,7 +8,7 @@ interface EnvelopeStickerDesignerProps {
 
 export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = ({ onBack }) => {
   // Settings
-  const [selectedStickerType, setSelectedStickerType] = useState<'campechana_rosa' | 'campechana_negra' | 'sobre'>('campechana_rosa');
+  const [selectedStickerType, setSelectedStickerType] = useState<'campechana_rosa' | 'campechana_negra' | 'campechana_blanca' | 'sobre'>('campechana_rosa');
   const [useExactImage] = useState<boolean>(false);
   const [headerText, setHeaderText] = useState<string>('RED IDENTIDAD');
   const [bottomLeftText, setBottomLeftText] = useState<string>('ESCANEA Y CONÓCENOS');
@@ -47,7 +47,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
   };
 
   const generateSequentialCodes = (qty: number) => {
-    const prefix = selectedStickerType === 'campechana_rosa' ? 'ROSA' : selectedStickerType === 'campechana_negra' ? 'NEGR' : 'SOBRE';
+    const prefix = selectedStickerType === 'campechana_rosa' ? 'ROSA' : selectedStickerType === 'campechana_negra' ? 'NEGR' : selectedStickerType === 'campechana_blanca' ? 'BLAN' : 'SOBRE';
     const list = Array.from({ length: qty }).map((_, i) => {
       const code = `${prefix}-${String(i + 1).padStart(4, '0')}`;
       return {
@@ -61,7 +61,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
   const fetchEnvelopeStickers = async () => {
     setIsLoadingStickers(true);
     try {
-      const prefix = selectedStickerType === 'campechana_rosa' ? 'ROSA' : selectedStickerType === 'campechana_negra' ? 'NEGR' : 'SOBRE';
+      const prefix = selectedStickerType === 'campechana_rosa' ? 'ROSA' : selectedStickerType === 'campechana_negra' ? 'NEGR' : selectedStickerType === 'campechana_blanca' ? 'BLAN' : 'SOBRE';
       const mapped = Array.from({ length: totalQuantity }).map((_, i) => {
         const code = `${prefix}-${String(i + 1).padStart(4, '0')}`;
         return {
@@ -271,6 +271,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
             >
               <option value="campechana_rosa" style={{ color: '#000' }}>🌸 Campechana — Rosa (Oficial QR)</option>
               <option value="campechana_negra" style={{ color: '#000' }}>🖤 Campechana — Negra (Oficial QR)</option>
+              <option value="campechana_blanca" style={{ color: '#000' }}>🤍 Campechana — Blanca (Oficial QR)</option>
               <option value="sobre" style={{ color: '#000' }}>✉️ Sobre Estándar Red Identidad</option>
             </select>
           </div>
@@ -298,13 +299,14 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                   fontFamily: 'system-ui, -apple-system, sans-serif',
                   position: 'relative',
                   overflow: 'hidden',
-                  border: selectedStickerType === 'campechana_rosa' ? '3px solid #FD80BF' : '3px solid #333'
+                  border: selectedStickerType === 'campechana_rosa' ? '3px solid #FD80BF' : selectedStickerType === 'campechana_blanca' ? '3px solid #D4AF37' : '3px solid #333'
                 }}
               >
                 <div style={{
                   width: '100%',
-                  backgroundColor: selectedStickerType === 'campechana_rosa' ? '#FD80BF' : '#121212',
-                  color: '#FFFFFF',
+                  backgroundColor: selectedStickerType === 'campechana_rosa' ? '#FD80BF' : selectedStickerType === 'campechana_blanca' ? '#F4F4F6' : '#121212',
+                  color: selectedStickerType === 'campechana_blanca' ? '#121212' : '#FFFFFF',
+                  border: selectedStickerType === 'campechana_blanca' ? '1.5px solid #D4AF37' : 'none',
                   fontSize: '13px',
                   fontWeight: '900',
                   letterSpacing: '0.04em',
@@ -316,7 +318,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                   justifyContent: 'center',
                   gap: '4px'
                 }}>
-                  {selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : headerText}
+                  {selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 CAMPECHANA BLANCA' : headerText}
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: 'auto' }}>
@@ -384,7 +386,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                   }}
                 >
                   <div style={{ fontSize: '6.5px', fontWeight: '900', color: selectedStickerType === 'campechana_rosa' ? '#FF5C9D' : '#000', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {selectedStickerType === 'campechana_rosa' ? '🌸 ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 NEGRA' : headerText}
+                    {selectedStickerType === 'campechana_rosa' ? '🌸 ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 BLANCA' : headerText}
                   </div>
                   <StickerQRCode value={stickerItem.url || qrUrl} level={selectedStickerType} size={42} />
                   <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', fontSize: '4.5px', fontWeight: '800', color: '#000' }}>
@@ -458,6 +460,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
               onChange={(e) => setSelectedStickerType(e.target.value as any)}
               style={{ width: '100%', padding: '0.65rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.4)', borderRadius: '8px', color: '#FFF', fontSize: '0.85rem', outline: 'none', marginBottom: '0.8rem' }}
             >
+              <option value="campechana_blanca" style={{ color: '#000' }}>🤍 Campechana — Blanca (Oficial QR)</option>
               <option value="campechana_rosa" style={{ color: '#000' }}>🌸 Campechana — Rosa (Oficial QR)</option>
               <option value="campechana_negra" style={{ color: '#000' }}>🖤 Campechana — Negra (Oficial QR)</option>
               <option value="sobre" style={{ color: '#000' }}>✉️ Sobre Estándar Red Identidad</option>
@@ -593,7 +596,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
             }}
           >
             <div style={{ fontSize: `${stickerSizeCm <= 3.2 ? 6.5 : 9}pt`, fontWeight: '900', letterSpacing: '0.01em', textAlign: 'center', lineHeight: '1', color: selectedStickerType === 'campechana_rosa' ? '#FF5C9D' : '#000000' }}>
-              {selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : headerText}
+              {selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 CAMPECHANA BLANCA' : headerText}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>

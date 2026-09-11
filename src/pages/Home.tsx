@@ -484,7 +484,7 @@ const Home: React.FC = () => {
                   </div>
                   <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#FFF', whiteSpace: 'nowrap', marginBottom: '2px' }}>CAMPECHANA</div>
                   <span style={{ fontSize: '0.6rem', color: '#F48FB1', fontWeight: 800, backgroundColor: 'rgba(244,143,177,0.15)', padding: '2px 6px', borderRadius: '6px' }}>
-                    Negra / Rosa
+                    Blanca / Negra / Rosa
                   </span>
                 </motion.div>
 

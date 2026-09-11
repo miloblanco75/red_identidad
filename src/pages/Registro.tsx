@@ -73,6 +73,7 @@ const Registro: React.FC = () => {
         let derivedLevel = 'gold';
         if (cleanCode.includes('PL') || cleanCode.includes('SILV')) derivedLevel = 'silver';
         else if (cleanCode.includes('ES') || cleanCode.includes('WHITE')) derivedLevel = 'white';
+        else if (cleanCode.includes('BLAN') || cleanCode.startsWith('CAB-')) derivedLevel = 'campechana_blanca';
         else if (cleanCode.includes('NEGR') || cleanCode.startsWith('CN-')) derivedLevel = 'campechana_negra';
         else if (cleanCode.includes('ROSA') || cleanCode.startsWith('CRN-') || cleanCode.startsWith('CB-')) derivedLevel = 'campechana_rosa';
 
@@ -147,6 +148,7 @@ const Registro: React.FC = () => {
       let mockLevel = 'campechana_rosa';
       if (upperSerial.includes('PL') || upperSerial.includes('SILV')) mockLevel = 'silver';
       else if (upperSerial.includes('ES') || upperSerial.includes('WHITE')) mockLevel = 'white';
+      else if (upperSerial.includes('BLAN') || upperSerial.startsWith('CAB-')) mockLevel = 'campechana_blanca';
       else if (upperSerial.includes('NEGR')) mockLevel = 'campechana_negra';
 
       loginLocal({
@@ -165,6 +167,8 @@ const Registro: React.FC = () => {
     switch (levelStr?.toLowerCase()) {
       case 'white': return { name: 'Esencial', color: 'var(--accent-white)', glow: 'premium-glow-white', progress: 30 };
       case 'silver': return { name: 'Colección', color: 'var(--accent-silver)', glow: 'premium-glow-silver', progress: 70 };
+      case 'campechana_blanca':
+      case 'blanca': return { name: 'Campechana Soy (Blanca VIP)', color: '#FFFFFF', glow: 'premium-glow-white', progress: 100 };
       case 'campechana_rosa':
       case 'rosa': return { name: 'Campechana Soy (Rosa VIP)', color: '#FF5C9D', glow: 'premium-glow-gold', progress: 100 };
       case 'campechana_negra':

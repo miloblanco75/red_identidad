@@ -90,6 +90,17 @@ const STICKERS_DATA: StickerInfo[] = [
 
   // Campechana Soy
   {
+    id: 'campechana-blanca',
+    name: 'Campechana Soy (Blanca)',
+    category: 'campechana',
+    colorName: 'Blanca',
+    colorType: 'white',
+    rarity: 'essential',
+    imagePath: '/campechana_rosada.png',
+    description: 'Edición Campechana Blanca oficial en vinil automotriz brillante de alta resistencia para vehículo o cristal.',
+    perk: 'Acceso a la Red de Aliados y descuentos en todo el estado.'
+  },
+  {
     id: 'campechana-negra',
     name: 'Campechana Soy (Negra)',
     category: 'campechana',
