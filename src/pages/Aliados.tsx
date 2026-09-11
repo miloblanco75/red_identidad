@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Utensils, Car, Loader2, Wine, HeartPulse, Building2, MapPin, Globe, CreditCard, Briefcase, Sparkles } from 'lucide-react';
+import { Utensils, Car, Loader2, Wine, HeartPulse, Building2, MapPin, Globe, CreditCard, Briefcase, Sparkles, Navigation } from 'lucide-react';
 import L from 'leaflet';
 import { supabase } from '../lib/supabase';
 import { motion } from 'framer-motion';
@@ -257,6 +257,30 @@ const Aliados: React.FC = () => {
                       </div>
                     </div>
                     <div style={{ marginTop: '5px', color: '#B8860B', fontWeight: 700, fontSize: '0.85rem' }}>{partner.discount}</div>
+                    
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${partner.lat},${partner.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        marginTop: '8px',
+                        padding: '7px 10px',
+                        backgroundColor: '#1a73e8',
+                        color: '#FFF',
+                        borderRadius: '8px',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        textDecoration: 'none',
+                        boxShadow: '0 2px 6px rgba(26,115,232,0.35)'
+                      }}
+                    >
+                      <Navigation size={13} color="#FFF" /> Cómo llegar en Google Maps ↗
+                    </a>
+
                     {(partner.facebook_url || partner.website_url) && (
                       <div style={{ display: 'flex', gap: '8px', marginTop: '8px', paddingTop: '6px', borderTop: '1px solid #eee' }}>
                         {partner.facebook_url && (
@@ -438,24 +462,46 @@ const Aliados: React.FC = () => {
                     
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       {!isDigitalAlly ? (
-                        <button
-                          onClick={() => handleLocateAlly(item)}
-                          style={{
-                            backgroundColor: 'rgba(255,255,255,0.05)',
-                            color: '#FFF',
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            fontSize: '0.75rem',
-                            fontWeight: 600,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            border: '1px solid var(--glass-border)',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          <MapPin size={12} /> Ubicar
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleLocateAlly(item)}
+                            style={{
+                              backgroundColor: 'rgba(255,255,255,0.05)',
+                              color: '#FFF',
+                              padding: '6px 12px',
+                              borderRadius: '8px',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              border: '1px solid var(--glass-border)',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <MapPin size={12} /> Ubicar
+                          </button>
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              backgroundColor: 'rgba(26, 115, 232, 0.15)',
+                              color: '#4285F4',
+                              padding: '6px 12px',
+                              borderRadius: '8px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              border: '1px solid rgba(66, 133, 244, 0.3)',
+                              textDecoration: 'none'
+                            }}
+                          >
+                            <Navigation size={12} /> Cómo llegar ↗
+                          </a>
+                        </>
                       ) : item.website_url ? (
                         <a
                           href={item.website_url}

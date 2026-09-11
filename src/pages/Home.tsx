@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ChevronRight, ShieldCheck, Sparkles, Utensils, Car, Wine, 
   HeartPulse, Building2, MapPin, Loader2, Globe, QrCode, 
-  Award, Heart, Store, Camera, Flame, DollarSign, ChevronDown, ChevronUp, Briefcase
+  Award, Heart, Store, Camera, Flame, DollarSign, ChevronDown, ChevronUp, Briefcase, Navigation
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -1091,9 +1091,19 @@ const Home: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
           {officialStores.map((store, idx) => (
             <div key={idx} className="glass" style={{ padding: '1.2rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.3)', backgroundColor: 'rgba(20,20,22,0.8)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '6px' }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>📍 {store.city}</span>
-                <a href={`https://wa.me/52${store.phone}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#25D366', fontWeight: 700, textDecoration: 'none' }}>WhatsApp: {store.phone}</a>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <a 
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${store.name} ${store.address} Campeche`)}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    style={{ fontSize: '0.75rem', color: '#4285F4', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <Navigation size={12} /> Ver en Maps ↗
+                  </a>
+                  <a href={`https://wa.me/52${store.phone}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#25D366', fontWeight: 700, textDecoration: 'none' }}>WhatsApp</a>
+                </div>
               </div>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#FFF', marginBottom: '0.2rem' }}>{store.name}</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', margin: 0 }}>{store.address}</p>

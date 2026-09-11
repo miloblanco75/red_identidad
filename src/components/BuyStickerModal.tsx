@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShoppingBag, CheckCircle2, MessageCircle, User, Phone, Store } from 'lucide-react';
+import { X, ShoppingBag, CheckCircle2, MessageCircle, User, Phone, Store, Navigation } from 'lucide-react';
 import StickerQRCode from './StickerQRCode';
 
 interface BuyStickerModalProps {
@@ -415,14 +415,24 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                         <span style={{ fontSize: '0.68rem', color: 'var(--accent-gold)', fontWeight: 800, textTransform: 'uppercase' }}>
                           📍 {store.city}
                         </span>
-                        <a
-                          href={`https://wa.me/52${store.phone}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ fontSize: '0.68rem', color: '#25D366', fontWeight: 700, textDecoration: 'none' }}
-                        >
-                          Contacto: {store.phone}
-                        </a>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${store.name} ${store.address} Campeche`)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ fontSize: '0.68rem', color: '#4285F4', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}
+                          >
+                            <Navigation size={10} /> Maps ↗
+                          </a>
+                          <a
+                            href={`https://wa.me/52${store.phone}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ fontSize: '0.68rem', color: '#25D366', fontWeight: 700, textDecoration: 'none' }}
+                          >
+                            WhatsApp
+                          </a>
+                        </div>
                       </div>
                       <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#FFF' }}>{store.name}</h4>
                       <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', margin: '2px 0' }}>{store.address}</p>
