@@ -14,6 +14,7 @@ import { MemberCardModal } from '../components/MemberCardModal';
 import { RecoverPassModal } from '../components/RecoverPassModal';
 import { UploadStickerPhotoModal } from '../components/UploadStickerPhotoModal';
 import { SorteosPublicModal } from '../components/SorteosPublicModal';
+import { LoyaltyPassportModal } from '../components/LoyaltyPassportModal';
 import { useAuth } from '../contexts/AuthContext';
 
 const FacebookIcon = ({ size = 14, color = '#1877F2' }: { size?: number; color?: string }) => (
@@ -95,6 +96,7 @@ const Home: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [showCardModal, setShowCardModal] = useState(false);
+  const [showPassportModal, setShowPassportModal] = useState(false);
   const [showRecoverModal, setShowRecoverModal] = useState(false);
   const [showUploadPhotoModal, setShowUploadPhotoModal] = useState(false);
   const [showSorteosModal, setShowSorteosModal] = useState(false);
@@ -248,26 +250,47 @@ const Home: React.FC = () => {
               ● Distintivo Activo — {getLevelName(user.level)}
             </div>
           </div>
-          <button
-            onClick={() => setShowCardModal(true)}
-            style={{
-              backgroundColor: 'var(--accent-gold)',
-              border: 'none',
-              color: '#121212',
-              borderRadius: '12px',
-              padding: '0.7rem 1rem',
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-              flexShrink: 0,
-              boxShadow: '0 0 15px rgba(212,175,55,0.3)',
-            }}
-          >
-            <QrCode size={16} /> Mi Membresía Digital
-          </button>
+          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <button
+              onClick={() => setShowPassportModal(true)}
+              style={{
+                backgroundColor: 'rgba(212,175,55,0.15)',
+                border: '1.5px solid var(--accent-gold)',
+                color: 'var(--accent-gold)',
+                borderRadius: '12px',
+                padding: '0.7rem 0.9rem',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer',
+                flexShrink: 0
+              }}
+            >
+              <Award size={16} /> Pasaporte de Visitas
+            </button>
+            <button
+              onClick={() => setShowCardModal(true)}
+              style={{
+                backgroundColor: 'var(--accent-gold)',
+                border: 'none',
+                color: '#121212',
+                borderRadius: '12px',
+                padding: '0.7rem 1rem',
+                fontSize: '0.8rem',
+                fontWeight: 800,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer',
+                flexShrink: 0,
+                boxShadow: '0 0 15px rgba(212,175,55,0.3)',
+              }}
+            >
+              <QrCode size={16} /> Mi Membresía Digital
+            </button>
+          </div>
         </motion.div>
       )}
 
@@ -1318,6 +1341,12 @@ const Home: React.FC = () => {
         isOpen={showSorteosModal}
         onClose={() => setShowSorteosModal(false)}
         onBuySticker={() => setShowBuyModal(true)}
+      />
+
+      <LoyaltyPassportModal
+        isOpen={showPassportModal}
+        onClose={() => setShowPassportModal(false)}
+        user={user ? { code: user.code, member_number: user.member_number, phone: user.phone } : undefined}
       />
 
     </div>

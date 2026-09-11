@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { X, ShieldCheck, Crown, Sparkles, Smartphone } from 'lucide-react';
+import { X, ShieldCheck, Crown, Sparkles, Smartphone, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { LoyaltyPassportModal } from './LoyaltyPassportModal';
 
 interface LocalUser {
   phone: string;
@@ -16,6 +17,8 @@ interface MemberCardModalProps {
 }
 
 export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose }) => {
+  const [showPassport, setShowPassport] = useState(false);
+
   const getLevelInfo = (level: string) => {
     switch (level?.toLowerCase()) {
       case 'campechana_blanca':
@@ -154,24 +157,58 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
           </div>
         </div>
 
+        {/* Botón Pasaporte de Visitas */}
+        <button
+          onClick={() => setShowPassport(true)}
+          style={{
+            width: '100%',
+            marginTop: '1rem',
+            padding: '0.85rem',
+            borderRadius: '14px',
+            backgroundColor: 'rgba(212,175,55,0.15)',
+            border: '1.5px solid var(--accent-gold)',
+            color: 'var(--accent-gold)',
+            fontWeight: 800,
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <Award size={18} /> Ver Mi Pasaporte de Visitas & Sellos
+        </button>
+
         <button
           onClick={onClose}
           style={{
             width: '100%',
-            marginTop: '1.5rem',
-            padding: '0.9rem',
+            marginTop: '0.6rem',
+            padding: '0.85rem',
             borderRadius: '14px',
-            backgroundColor: 'var(--accent-gold)',
-            color: '#121212',
+            backgroundColor: 'rgba(255,255,255,0.08)',
+            color: '#FFF',
             fontWeight: 700,
             border: 'none',
             cursor: 'pointer',
-            fontSize: '0.95rem',
+            fontSize: '0.9rem',
           }}
         >
           Cerrar Membresía
         </button>
       </motion.div>
+
+      {/* Modal de Pasaporte */}
+      <LoyaltyPassportModal
+        isOpen={showPassport}
+        onClose={() => setShowPassport(false)}
+        user={{
+          code: user.code,
+          member_number: user.member_number,
+          phone: user.phone
+        }}
+      />
     </div>
   );
 };

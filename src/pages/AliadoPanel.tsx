@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QrScannerModal } from '../components/QrScannerModal';
+import { recordMemberVisit, type LoyaltyMilestone } from '../lib/loyaltyService';
 
 interface AllyData {
   id: string;
@@ -42,6 +43,9 @@ interface ValidationResult {
   discountToApply: string;
   message: string;
   isUnclaimedOfficial?: boolean;
+  totalVisits?: number;
+  achievedMilestone?: LoyaltyMilestone | null;
+  nextMilestone?: LoyaltyMilestone;
 }
 
 // Reproductor de efectos sonoros y hápticos nativos para terminal de caja
@@ -271,6 +275,13 @@ const AliadoPanel: React.FC = () => {
           ...prev
         ]);
 
+        const visitResult = recordMemberVisit(
+          foundSticker.code,
+          memberNum,
+          ally.name,
+          ally.discount
+        );
+
         setValidationResult({
           status: 'valid',
           code: foundSticker.code,
@@ -281,7 +292,10 @@ const AliadoPanel: React.FC = () => {
           message: isClaimed 
             ? '¡Miembro Activo Verificado!' 
             : '¡Calcomanía Oficial Válida! (Pendiente de registrar por el usuario)',
-          isUnclaimedOfficial: !isClaimed
+          isUnclaimedOfficial: !isClaimed,
+          totalVisits: visitResult.totalVisits,
+          achievedMilestone: visitResult.achievedMilestone,
+          nextMilestone: visitResult.nextMilestone
         });
         setManualInput('');
         return;
@@ -308,6 +322,13 @@ const AliadoPanel: React.FC = () => {
           ...prev
         ]);
 
+        const visitResult = recordMemberVisit(
+          clean,
+          memberNum,
+          ally.name,
+          ally.discount
+        );
+
         setValidationResult({
           status: 'valid',
           code: clean,
@@ -315,7 +336,10 @@ const AliadoPanel: React.FC = () => {
           level: derivedLevel,
           discountToApply: ally.discount,
           message: '¡Distintivo Oficial de la Red Reconocido!',
-          isUnclaimedOfficial: true
+          isUnclaimedOfficial: true,
+          totalVisits: visitResult.totalVisits,
+          achievedMilestone: visitResult.achievedMilestone,
+          nextMilestone: visitResult.nextMilestone
         });
         setManualInput('');
         return;
@@ -875,6 +899,41 @@ const AliadoPanel: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Pasaporte & Sellos de Lealtad */}
+                  {validationResult.totalVisits !== undefined && (
+                    <div style={{
+                      marginTop: '0.9rem',
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      borderRadius: '16px',
+                      padding: '0.8rem 1rem',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.88rem', fontWeight: 800, color: '#FDE047' }}>
+                        ⭐ Visita #{validationResult.totalVisits} en comercios aliados
+                      </div>
+                      {validationResult.achievedMilestone ? (
+                        <div style={{
+                          marginTop: '6px',
+                          backgroundColor: 'rgba(234,179,8,0.25)',
+                          border: '1px solid #EAB308',
+                          borderRadius: '10px',
+                          padding: '6px 8px',
+                          fontSize: '0.78rem',
+                          color: '#FEF08A',
+                          fontWeight: 700
+                        }}>
+                          🎉 ¡META ALCANZADA! El socio desbloqueó:<br />
+                          <strong>{validationResult.achievedMilestone.reward}</strong>
+                        </div>
+                      ) : validationResult.nextMilestone ? (
+                        <div style={{ fontSize: '0.72rem', color: '#D1FAE5', marginTop: '4px' }}>
+                          Faltan {Math.max(0, validationResult.nextMilestone.visits - (validationResult.totalVisits || 0))} visitas para su premio ({validationResult.nextMilestone.badgeName})
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
               ) : (
                 /* PANTALLA ROJA DE ERROR */

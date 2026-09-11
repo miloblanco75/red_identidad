@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare } from 'lucide-react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import StickerQRCode from '../components/StickerQRCode';
 
 import EnvelopeStickerDesigner from '../components/EnvelopeStickerDesigner';
 import SorteosRuleta from '../components/SorteosRuleta';
 import AlliesMessenger from '../components/AlliesMessenger';
+import LoyaltyAdminManager from '../components/LoyaltyAdminManager';
 
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
-  const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope' | 'status' | 'sorteos' | 'messenger'>('codes');
+  const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope' | 'status' | 'sorteos' | 'messenger' | 'loyalty'>('codes');
 
   // Print states
   const [printStickers, setPrintStickers] = useState<any[]>([]);
@@ -676,6 +677,12 @@ const Admin: React.FC = () => {
           style={{ flex: 1, minWidth: '130px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'messenger' ? '#25D366' : 'rgba(255,255,255,0.1)', color: activeTab === 'messenger' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
         >
           <MessageSquare size={16} /> Contactar Aliados
+        </button>
+        <button 
+          onClick={() => { setActiveTab('loyalty'); setSuccessMsg(''); setErrorMsg(''); }}
+          style={{ flex: 1, minWidth: '130px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'loyalty' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'loyalty' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+        >
+          <Award size={16} /> Premios Lealtad
         </button>
       </div>
 
@@ -1718,6 +1725,13 @@ const Admin: React.FC = () => {
       {activeTab === 'messenger' && (
         <section>
           <AlliesMessenger />
+        </section>
+      )}
+
+      {/* Tab: Premios Lealtad & Recorrido */}
+      {activeTab === 'loyalty' && (
+        <section>
+          <LoyaltyAdminManager />
         </section>
       )}
     </div>
