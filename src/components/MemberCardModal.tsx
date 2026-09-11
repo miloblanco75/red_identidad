@@ -114,7 +114,7 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
         </div>
 
         <h2 style={{ fontSize: '1.4rem', color: '#FFF', marginBottom: '0.2rem' }}>
-          Carné Digital de Miembro
+          Membresía Digital
         </h2>
         <p style={{ color: 'var(--text-dim)', fontSize: '0.8rem', marginBottom: '1.5rem' }}>
           Muestra este código en comercios aliados para aplicar tus beneficios.
@@ -169,7 +169,7 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
             fontSize: '0.95rem',
           }}
         >
-          Cerrar Carné
+          Cerrar Membresía
         </button>
       </motion.div>
     </div>

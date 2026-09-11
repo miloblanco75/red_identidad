@@ -119,7 +119,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({ onScanSuccess, o
         </div>
 
         <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem', marginBottom: '1.2rem' }}>
-          Apunta la cámara al QR del carné o calcomanía del miembro.
+          Apunta la cámara al QR de la membresía o calcomanía del miembro.
         </p>
 
         {/* Camera Container */}

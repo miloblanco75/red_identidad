@@ -111,7 +111,7 @@ export const RecoverPassModal: React.FC<RecoverPassModalProps> = ({ isOpen, onCl
           Sincronizar mi Pase
         </h2>
         <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-          Ingresa tu número de <strong>WhatsApp</strong> o tu <strong>Código</strong> (ej: RED-0001) para recuperar tu carné digital en este dispositivo.
+          Ingresa tu número de <strong>WhatsApp</strong> o tu <strong>Código</strong> (ej: RED-0001) para recuperar tu membresía digital en este dispositivo.
         </p>
 
         <form onSubmit={handleSubmit}>

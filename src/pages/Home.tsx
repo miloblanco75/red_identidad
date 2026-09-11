@@ -266,7 +266,7 @@ const Home: React.FC = () => {
               boxShadow: '0 0 15px rgba(212,175,55,0.3)',
             }}
           >
-            <QrCode size={16} /> Mi Carné Digital
+            <QrCode size={16} /> Mi Membresía Digital
           </button>
         </motion.div>
       )}
@@ -293,7 +293,7 @@ const Home: React.FC = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', color: '#FFF', fontWeight: 600 }}>
             <Sparkles size={16} color="var(--accent-gold)" />
-            ¿Ya tienes tu distintivo o carné?
+            ¿Ya tienes tu distintivo o membresía?
           </div>
           <span style={{ fontSize: '0.78rem', color: 'var(--accent-gold)', fontWeight: 800 }}>
             Sincronizar Pase →
