@@ -901,6 +901,7 @@ const Admin: React.FC = () => {
                 <option value="Auto" style={{ color: '#000' }}>Auto / Lavados</option>
                 <option value="Entretenimiento" style={{ color: '#000' }}>Entretenimiento / Bares</option>
                 <option value="Salud" style={{ color: '#000' }}>Salud / Bienestar</option>
+                <option value="Parque de Diversiones / Diversión Infantil" style={{ color: '#000' }}>Parque de Diversiones / Diversión Infantil</option>
               </select>
             </div>
 
@@ -1114,6 +1115,7 @@ const Admin: React.FC = () => {
                   <option value="Auto" style={{ color: '#000' }}>Auto / Lavados</option>
                   <option value="Entretenimiento" style={{ color: '#000' }}>Entretenimiento / Bares</option>
                   <option value="Salud" style={{ color: '#000' }}>Salud / Bienestar</option>
+                  <option value="Parque de Diversiones / Diversión Infantil" style={{ color: '#000' }}>Parque de Diversiones / Diversión Infantil</option>
                 </select>
               </div>
 

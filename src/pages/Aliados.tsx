@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { 
   Utensils, Car, Loader2, Wine, HeartPulse, Building2, MapPin, 
   Globe, CreditCard, Briefcase, Sparkles, Navigation, 
-  AlertCircle, X, Compass, RotateCcw 
+  AlertCircle, X, Compass, RotateCcw, FerrisWheel 
 } from 'lucide-react';
 import L from 'leaflet';
 import { supabase } from '../lib/supabase';
@@ -146,7 +146,7 @@ const Aliados: React.FC = () => {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [sortByProximity, setSortByProximity] = useState<boolean>(false);
 
-  const categories = ['Todas', 'Comida', 'Auto', 'Servicios', 'Estética', 'Entretenimiento', 'Salud'];
+  const categories = ['Todas', 'Comida', 'Auto', 'Servicios', 'Estética', 'Entretenimiento', 'Salud', 'Parque de Diversiones / Diversión Infantil'];
 
   useEffect(() => {
     fetchAllies();
@@ -183,6 +183,11 @@ const Aliados: React.FC = () => {
       case 'Estética': return Sparkles;
       case 'Entretenimiento': return Wine;
       case 'Salud': return HeartPulse;
+      case 'Parque de Diversiones / Diversión Infantil':
+      case 'Parque de Diversiones':
+      case 'Diversión Infantil':
+      case 'Parque / Infantil':
+        return FerrisWheel;
       default: return Building2;
     }
   };
@@ -293,7 +298,15 @@ const Aliados: React.FC = () => {
   // Filtrar por Categoría
   let filteredAllies = selectedCategory === 'Todas'
     ? enrichedAllies
-    : enrichedAllies.filter(item => item.category === selectedCategory);
+    : enrichedAllies.filter(item => {
+        if (selectedCategory === 'Parque de Diversiones / Diversión Infantil') {
+          return item.category === 'Parque de Diversiones / Diversión Infantil' ||
+                 item.category === 'Parque de Diversiones' ||
+                 item.category === 'Diversión Infantil' ||
+                 item.category === 'Parque / Infantil';
+        }
+        return item.category === selectedCategory;
+      });
 
   // Filtrar por Zona
   if (selectedZone !== 'todas') {
