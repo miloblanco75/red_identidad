@@ -23,8 +23,8 @@ const DEFAULT_OFFICIAL_STORES: AllyContact[] = [
     name: 'Maneki Neko',
     category: 'Comida / Restaurante',
     address: 'Plaza del Mar',
-    phone: '',
-    facebook: 'https://facebook.com',
+    phone: '9811971305',
+    facebook: '',
     isOfficialStore: true
   },
   {
@@ -32,8 +32,8 @@ const DEFAULT_OFFICIAL_STORES: AllyContact[] = [
     name: 'Barbería Mdoce',
     category: 'Barbería / Cuidado Personal',
     address: 'Avenida Concordia',
-    phone: '',
-    facebook: 'https://facebook.com',
+    phone: '9811971305',
+    facebook: 'https://www.facebook.com/reel/1033770919398354',
     isOfficialStore: true
   },
   {
@@ -41,8 +41,8 @@ const DEFAULT_OFFICIAL_STORES: AllyContact[] = [
     name: 'Lavadero Royal Shine',
     category: 'Auto / Lavado',
     address: 'Avenida Central',
-    phone: '',
-    facebook: 'https://facebook.com',
+    phone: '9811971305',
+    facebook: '',
     isOfficialStore: true
   },
   {
@@ -50,8 +50,8 @@ const DEFAULT_OFFICIAL_STORES: AllyContact[] = [
     name: 'Refaccionaria Bahía',
     category: 'Auto / Refacciones',
     address: 'Avenida Hidalgo',
-    phone: '',
-    facebook: 'https://facebook.com',
+    phone: '9811971305',
+    facebook: 'https://www.facebook.com/RefaBahiaCam',
     isOfficialStore: true
   },
   {
@@ -59,8 +59,8 @@ const DEFAULT_OFFICIAL_STORES: AllyContact[] = [
     name: 'Gesti+',
     category: 'Servicios / Trámites',
     address: 'Av. Ruiz Cortines (contra esquina del Palacio Federal)',
-    phone: '',
-    facebook: 'https://facebook.com',
+    phone: '9811971305',
+    facebook: 'https://www.facebook.com/GestimasCorporativoMx',
     isOfficialStore: true
   }
 ];
@@ -90,7 +90,7 @@ export const AlliesMessenger: React.FC = () => {
   const loadAlliesContacts = async () => {
     setIsLoading(true);
     try {
-      // 1. Leer contactos guardados en localStorage
+      // 1. Leer contactos guardados en localStorage (para teléfonos o notas)
       let localContactsMap: Record<string, Partial<AllyContact>> = {};
       try {
         const saved = localStorage.getItem('red_identidad_allies_contacts');
@@ -101,7 +101,7 @@ export const AlliesMessenger: React.FC = () => {
         console.warn('Error al leer contactos locales:', e);
       }
 
-      // 2. Cargar aliados de la base de datos Supabase
+      // 2. Cargar aliados de la base de datos Supabase (Fuente de la verdad)
       const { data: dbAllies, error } = await supabase
         .from('allies')
         .select('*')
@@ -113,40 +113,65 @@ export const AlliesMessenger: React.FC = () => {
 
       // 3. Fusionar puntos oficiales + aliados de base de datos
       const mergedList: AllyContact[] = [];
+      const dbAlliesList = dbAllies || [];
 
-      // Agregar puntos oficiales
-      DEFAULT_OFFICIAL_STORES.forEach(official => {
-        const overrides = localContactsMap[official.id] || {};
+      // A. Mapear TODOS los aliados registrados en la sección Aliados de la base de datos
+      dbAlliesList.forEach(dbA => {
+        const overrides = localContactsMap[dbA.id] || {};
+
+        // Identificar si coincide con algún punto de venta oficial
+        const officialMatch = DEFAULT_OFFICIAL_STORES.find(
+          off => off.name.toLowerCase().trim() === dbA.name.toLowerCase().trim() ||
+                 dbA.name.toLowerCase().includes(off.name.toLowerCase()) ||
+                 off.name.toLowerCase().includes(dbA.name.toLowerCase())
+        );
+
+        // Copiar y rellenar con PRIORIDAD ABSOLUTA el Facebook de la sección Aliados
+        let facebook = '';
+        if (dbA.facebook_url && dbA.facebook_url.trim() !== '' && dbA.facebook_url !== 'https://facebook.com') {
+          facebook = dbA.facebook_url.trim();
+        } else if (overrides.facebook && overrides.facebook.trim() !== '' && overrides.facebook !== 'https://facebook.com') {
+          facebook = overrides.facebook.trim();
+        } else if (officialMatch?.facebook && officialMatch.facebook !== 'https://facebook.com') {
+          facebook = officialMatch.facebook.trim();
+        }
+
+        const phone = overrides.phone !== undefined ? overrides.phone : (officialMatch?.phone || '');
+
         mergedList.push({
-          ...official,
-          phone: overrides.phone !== undefined ? overrides.phone : official.phone,
-          facebook: overrides.facebook !== undefined ? overrides.facebook : official.facebook,
-          notes: overrides.notes || ''
+          id: dbA.id,
+          name: dbA.name || 'Aliado sin nombre',
+          category: dbA.category || (officialMatch?.category || 'Comercio Aliado'),
+          address: dbA.discount ? `Descuento: ${dbA.discount}` : (officialMatch?.address || ''),
+          phone: phone,
+          facebook: facebook,
+          notes: overrides.notes || '',
+          isOfficialStore: Boolean(officialMatch)
         });
       });
 
-      // Agregar aliados de Supabase
-      if (dbAllies && dbAllies.length > 0) {
-        dbAllies.forEach(dbA => {
-          // Evitar duplicar si el nombre ya coincide con uno oficial
-          const alreadyExists = mergedList.some(
-            m => m.name.toLowerCase().trim() === dbA.name?.toLowerCase().trim()
-          );
-          if (!alreadyExists) {
-            const overrides = localContactsMap[dbA.id] || {};
-            mergedList.push({
-              id: dbA.id,
-              name: dbA.name || 'Aliado sin nombre',
-              category: dbA.category || 'Comercio Aliado',
-              address: dbA.discount ? `Descuento: ${dbA.discount}` : '',
-              phone: overrides.phone !== undefined ? overrides.phone : (dbA.phone || ''),
-              facebook: overrides.facebook !== undefined ? overrides.facebook : (dbA.facebook_url || ''),
-              notes: overrides.notes || '',
-              isOfficialStore: false
-            });
-          }
-        });
-      }
+      // B. Agregar puntos oficiales que aún no estén en la tabla de aliados de Supabase
+      DEFAULT_OFFICIAL_STORES.forEach(official => {
+        const alreadyExists = mergedList.some(
+          m => m.name.toLowerCase().trim() === official.name.toLowerCase().trim() ||
+               m.name.toLowerCase().includes(official.name.toLowerCase()) ||
+               official.name.toLowerCase().includes(m.name.toLowerCase())
+        );
+
+        if (!alreadyExists) {
+          const overrides = localContactsMap[official.id] || {};
+          const facebook = (overrides.facebook && overrides.facebook !== 'https://facebook.com')
+            ? overrides.facebook
+            : (official.facebook && official.facebook !== 'https://facebook.com' ? official.facebook : '');
+
+          mergedList.push({
+            ...official,
+            phone: overrides.phone !== undefined ? overrides.phone : official.phone,
+            facebook: facebook,
+            notes: overrides.notes || ''
+          });
+        }
+      });
 
       setAlliesList(mergedList);
     } catch (err) {
@@ -156,22 +181,38 @@ export const AlliesMessenger: React.FC = () => {
     }
   };
 
-  const handleSaveContact = () => {
+  const handleSaveContact = async () => {
     if (!editingAlly) return;
+
+    const cleanPhone = editPhone.trim();
+    const cleanFacebook = editFacebook.trim();
+    const cleanNotes = editNotes.trim();
 
     const updatedList = alliesList.map(a => {
       if (a.id === editingAlly.id) {
         return {
           ...a,
-          phone: editPhone.trim(),
-          facebook: editFacebook.trim(),
-          notes: editNotes.trim()
+          phone: cleanPhone,
+          facebook: cleanFacebook,
+          notes: cleanNotes
         };
       }
       return a;
     });
 
     setAlliesList(updatedList);
+
+    // Sincronizar en la base de datos Supabase si es un aliado registrado
+    if (editingAlly.id && !editingAlly.id.startsWith('store-')) {
+      try {
+        await supabase
+          .from('allies')
+          .update({ facebook_url: cleanFacebook || null })
+          .eq('id', editingAlly.id);
+      } catch (err) {
+        console.warn('Error al sincronizar Facebook con Supabase:', err);
+      }
+    }
 
     // Guardar en localStorage para persistencia garantizada
     try {
