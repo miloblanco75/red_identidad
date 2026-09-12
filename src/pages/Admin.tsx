@@ -35,6 +35,7 @@ const Admin: React.FC = () => {
   const [allyLng, setAllyLng] = useState('');
   const [isDigital, setIsDigital] = useState(false);
   const [allyFacebook, setAllyFacebook] = useState('');
+  const [allyPhone, setAllyPhone] = useState('');
   const [allyWebsite, setAllyWebsite] = useState('');
   const [allyLogo, setAllyLogo] = useState('');
   const [allyPin, setAllyPin] = useState('');
@@ -50,6 +51,7 @@ const Admin: React.FC = () => {
   const [editLng, setEditLng] = useState('');
   const [editIsDigital, setEditIsDigital] = useState(false);
   const [editFacebook, setEditFacebook] = useState('');
+  const [editPhone, setEditPhone] = useState('');
   const [editWebsite, setEditWebsite] = useState('');
   const [editLogo, setEditLogo] = useState('');
   const [editPin, setEditPin] = useState('');
@@ -374,6 +376,7 @@ const Admin: React.FC = () => {
         discount: allyDiscount,
         lat: parsedLat,
         lng: parsedLng,
+        phone: allyPhone || null,
         facebook_url: allyFacebook || null,
         website_url: allyWebsite || null,
         logo_url: allyLogo || null,
@@ -408,6 +411,7 @@ const Admin: React.FC = () => {
       setAllyLat('');
       setAllyLng('');
       setIsDigital(false);
+      setAllyPhone('');
       setAllyFacebook('');
       setAllyWebsite('');
       setAllyLogo('');
@@ -533,6 +537,7 @@ const Admin: React.FC = () => {
     setEditIsDigital(isNoLoc);
     setEditLat(ally.lat != null && Number(ally.lat) !== 0 ? String(ally.lat) : '');
     setEditLng(ally.lng != null && Number(ally.lng) !== 0 ? String(ally.lng) : '');
+    setEditPhone(ally.phone || '');
     setEditFacebook(ally.facebook_url || '');
     setEditWebsite(ally.website_url || '');
     setEditLogo(ally.logo_url || '');
@@ -560,6 +565,7 @@ const Admin: React.FC = () => {
         discount: editDiscount,
         lat: parsedLat,
         lng: parsedLng,
+        phone: editPhone || null,
         facebook_url: editFacebook || null,
         website_url: editWebsite || null,
         logo_url: editLogo || null,
@@ -910,7 +916,11 @@ const Admin: React.FC = () => {
               <input type="text" value={allyDiscount} onChange={(e) => setAllyDiscount(e.target.value)} required placeholder="Ej. 15% OFF o Postre Gratis" style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }} />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ADE80', marginBottom: '0.5rem', letterSpacing: '0.1em', fontWeight: 700 }}>WhatsApp (10 dígitos)</label>
+                <input type="tel" value={allyPhone} onChange={(e) => setAllyPhone(e.target.value)} placeholder="Ej. 9811234567" style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(74,222,128,0.3)', borderRadius: '12px', color: '#FFF', fontSize: '0.9rem', outline: 'none' }} />
+              </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Página de Facebook</label>
                 <input type="url" value={allyFacebook} onChange={(e) => setAllyFacebook(e.target.value)} placeholder="https://facebook.com/pagina" style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.9rem', outline: 'none' }} />
@@ -1056,6 +1066,7 @@ const Admin: React.FC = () => {
                         <span style={{ fontSize: '0.75rem', color: '#4ADE80', fontWeight: 600 }}>🎁 {ally.promotions_given ?? 0} promo(s)</span>
                         {(!ally.lat || !ally.lng || (Number(ally.lat) === 0 && Number(ally.lng) === 0)) && <span style={{ fontSize: '0.75rem', color: '#C084FC', fontWeight: 600 }}>🌐 Digital</span>}
                         {ally.ally_pin && <span style={{ fontSize: '0.75rem', color: 'var(--accent-gold)' }}>PIN: {ally.ally_pin}</span>}
+                        {ally.phone && <span style={{ fontSize: '0.75rem', color: '#4ADE80', fontWeight: 600 }}>📱 {ally.phone}</span>}
                         {ally.facebook_url && <span style={{ fontSize: '0.75rem', color: '#1877F2', fontWeight: 600 }}>🌐 Facebook</span>}
                         {ally.website_url && <span style={{ fontSize: '0.75rem', color: '#38BDF8', fontWeight: 600 }}>🔗 Web</span>}
                       </div>
@@ -1102,7 +1113,7 @@ const Admin: React.FC = () => {
 
             <form onSubmit={handleUpdateAlly}>
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Nombre del Negocio</label>
+                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Nombre del Aliado</label>
                 <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} required style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }} />
               </div>
 
@@ -1124,7 +1135,11 @@ const Admin: React.FC = () => {
                 <input type="text" value={editDiscount} onChange={(e) => setEditDiscount(e.target.value)} required style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.8rem', marginBottom: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: '#4ADE80', marginBottom: '0.4rem', fontWeight: 700 }}>WhatsApp (10 dígitos)</label>
+                  <input type="tel" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="Ej. 9811234567" style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(74,222,128,0.3)', borderRadius: '12px', color: '#FFF', fontSize: '0.85rem', outline: 'none' }} />
+                </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Página de Facebook</label>
                   <input type="url" value={editFacebook} onChange={(e) => setEditFacebook(e.target.value)} placeholder="https://facebook.com/pagina" style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.85rem', outline: 'none' }} />
