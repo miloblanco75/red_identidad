@@ -47,9 +47,9 @@ export const PRODUCTS: Record<'digital' | 'physical', ProductConfig> = {
   }
 };
 
-// Enlaces de Stripe configurables (puedes cambiarlos en tus variables de entorno en Vercel)
-const STRIPE_LINK_DIGITAL = import.meta.env.VITE_STRIPE_LINK_DIGITAL || '';
-const STRIPE_LINK_PHYSICAL = import.meta.env.VITE_STRIPE_LINK_PHYSICAL || '';
+// Enlaces de Stripe oficiales con fallback directo
+const STRIPE_LINK_DIGITAL = import.meta.env.VITE_STRIPE_LINK_DIGITAL || 'https://buy.stripe.com/fZu4gA4mWgAq8hu5X65os01';
+const STRIPE_LINK_PHYSICAL = import.meta.env.VITE_STRIPE_LINK_PHYSICAL || 'https://buy.stripe.com/7sY28s4mW97Y2Xadpy5os02';
 
 /**
  * Genera el enlace de pago de Stripe con datos precargados del cliente.
