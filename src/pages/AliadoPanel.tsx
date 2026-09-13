@@ -25,6 +25,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { QrScannerModal } from '../components/QrScannerModal';
 import { recordMemberVisit, type LoyaltyMilestone } from '../lib/loyaltyService';
+import { verifyQrPayload } from '../lib/dynamicQr';
+import { getUserGamificationProfile } from '../lib/challengesService';
 
 interface AllyData {
   id: string;
@@ -43,9 +45,14 @@ interface ValidationResult {
   discountToApply: string;
   message: string;
   isUnclaimedOfficial?: boolean;
+  isDynamic?: boolean;
+  isPhysicalSticker?: boolean;
+  ageSeconds?: number;
   totalVisits?: number;
   achievedMilestone?: LoyaltyMilestone | null;
   nextMilestone?: LoyaltyMilestone;
+  totalPoints?: number;
+  pointsEarned?: number;
 }
 
 // Reproductor de efectos sonoros y hápticos nativos para terminal de caja
@@ -172,30 +179,31 @@ const AliadoPanel: React.FC = () => {
     }
   };
 
-  // Motor Inteligente y Flexible de Validación
+  // Motor Inteligente y Flexible de Validación con Detección Anti-Captura
   const validateCodeOrInput = async (rawInput: string) => {
     if (!ally || !rawInput.trim() || isSaving) return;
     setIsSaving(true);
     setErrorMsg('');
 
-    // 1. Extraer código limpio de URLs, parámetros o texto
-    let clean = rawInput.trim();
-    if (clean.includes('?c=')) {
-      clean = clean.split('?c=')[1].split('&')[0];
-    } else if (clean.includes('/registro?c=')) {
-      clean = clean.split('/registro?c=')[1].split('&')[0];
-    } else if (clean.includes('/') && !clean.startsWith('http')) {
-      const parts = clean.split('/');
-      clean = parts[parts.length - 1];
-    } else if (clean.startsWith('http')) {
-      try {
-        const urlObj = new URL(clean);
-        const cParam = urlObj.searchParams.get('c');
-        if (cParam) clean = cParam;
-      } catch (e) {}
+    // 1. Extraer y verificar el código (detecta si es QR Dinámico o Calcomanía Física)
+    const parsedQr = verifyQrPayload(rawInput);
+
+    // Si es un QR Dinámico inválido o expirado (captura de pantalla)
+    if (parsedQr.isDynamic && !parsedQr.isValid) {
+      playFeedback('error');
+      setValidationResult({
+        status: 'invalid',
+        code: parsedQr.code,
+        discountToApply: '',
+        message: parsedQr.errorMessage || 'Pase digital caducado. Muestre su membresía en vivo.',
+        isDynamic: true,
+        ageSeconds: parsedQr.ageSeconds,
+      });
+      setIsSaving(false);
+      return;
     }
 
-    clean = clean.replace(/#/g, '').trim().toUpperCase();
+    const clean = parsedQr.code;
 
     try {
       let foundSticker: any = null;
@@ -264,6 +272,21 @@ const AliadoPanel: React.FC = () => {
         const memberNum = foundSticker.member_number || parseInt(foundSticker.code?.replace(/\D/g, '') || '1', 10);
         const level = foundSticker.level || 'campechana_blanca';
 
+        // 🛡️ REGLA CRÍTICA PARA CALCOMANÍAS FÍSICAS EN TIENDA / NO ACTIVADAS:
+        // Si no es un pase dinámico (es decir, es una calcomanía física o código manual)
+        // y NO ha sido reclamada con un teléfono, NO SE PERMITE DAR DESCUENTO.
+        if (!parsedQr.isDynamic && !isClaimed) {
+          playFeedback('error');
+          setValidationResult({
+            status: 'invalid',
+            code: foundSticker.code,
+            discountToApply: '',
+            message: `⚠️ CALCOMANÍA NO ACTIVADA: Este distintivo no ha sido registrado aún por su comprador. El cliente debe escanear primero su calcomanía para registrar su número en redidentidad.vercel.app antes de poder recibir beneficios.`,
+            isPhysicalSticker: true,
+          });
+          return;
+        }
+
         // Éxito: Sonido + vibración + incremento
         playFeedback('success');
         await incrementPromotionCount();
@@ -282,20 +305,31 @@ const AliadoPanel: React.FC = () => {
           ally.discount
         );
 
+        const phoneMasked = foundSticker.phone 
+          ? `${foundSticker.phone.slice(0, 2)} •••• ${foundSticker.phone.slice(-2)}` 
+          : '';
+
+        const gameProfile = getUserGamificationProfile(foundSticker.code, memberNum);
+
         setValidationResult({
           status: 'valid',
           code: foundSticker.code,
           member_number: memberNum,
           level: level,
-          phone: foundSticker.phone || '',
+          phone: phoneMasked,
           discountToApply: ally.discount,
-          message: isClaimed 
-            ? '¡Miembro Activo Verificado!' 
-            : '¡Calcomanía Oficial Válida! (Pendiente de registrar por el usuario)',
+          message: parsedQr.isDynamic 
+            ? '¡Membresía Digital en Vivo Verificada! ✓' 
+            : '¡Calcomanía Física Oficial Verificada! ✓',
+          isDynamic: parsedQr.isDynamic,
+          isPhysicalSticker: !parsedQr.isDynamic,
+          ageSeconds: parsedQr.ageSeconds,
           isUnclaimedOfficial: !isClaimed,
           totalVisits: visitResult.totalVisits,
           achievedMilestone: visitResult.achievedMilestone,
-          nextMilestone: visitResult.nextMilestone
+          nextMilestone: visitResult.nextMilestone,
+          totalPoints: gameProfile.availablePoints,
+          pointsEarned: 10
         });
         setManualInput('');
         return;
@@ -306,6 +340,19 @@ const AliadoPanel: React.FC = () => {
       const isOfficialPattern = officialPrefixes.some(p => clean.startsWith(p) || clean.includes(p));
 
       if (isOfficialPattern) {
+        // Si no está dado de alta en base de datos y no es dinámico, exigir registro previo
+        if (!parsedQr.isDynamic) {
+          playFeedback('error');
+          setValidationResult({
+            status: 'invalid',
+            code: clean,
+            discountToApply: '',
+            message: `⚠️ CALCOMANÍA NO ACTIVADA: Pide al cliente que escanee el código con su celular para dar de alta su número en redidentidad.vercel.app antes de aplicar el descuento.`,
+            isPhysicalSticker: true,
+          });
+          return;
+        }
+
         playFeedback('success');
         await incrementPromotionCount();
 
@@ -329,17 +376,23 @@ const AliadoPanel: React.FC = () => {
           ally.discount
         );
 
+        const gameProfileFallback = getUserGamificationProfile(clean, memberNum);
+
         setValidationResult({
           status: 'valid',
           code: clean,
           member_number: memberNum,
           level: derivedLevel,
           discountToApply: ally.discount,
-          message: '¡Distintivo Oficial de la Red Reconocido!',
+          message: '¡Pase Digital Oficial Verificado!',
+          isDynamic: true,
+          ageSeconds: parsedQr.ageSeconds,
           isUnclaimedOfficial: true,
           totalVisits: visitResult.totalVisits,
           achievedMilestone: visitResult.achievedMilestone,
-          nextMilestone: visitResult.nextMilestone
+          nextMilestone: visitResult.nextMilestone,
+          totalPoints: gameProfileFallback.availablePoints,
+          pointsEarned: 10
         });
         setManualInput('');
         return;
@@ -853,6 +906,41 @@ const AliadoPanel: React.FC = () => {
                     ¡DISTINTIVO VÁLIDO! ✓
                   </h1>
 
+                  {/* Badge de Seguridad: Pase Dinámico vs Calcomanía Física */}
+                  <div style={{ marginBottom: '1.2rem' }}>
+                    {validationResult.isDynamic ? (
+                      <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        backgroundColor: 'rgba(74,222,128,0.2)',
+                        border: '1px solid #4ADE80',
+                        color: '#D1FAE5',
+                        padding: '6px 14px',
+                        borderRadius: '100px',
+                        fontSize: '0.8rem',
+                        fontWeight: 800
+                      }}>
+                        📱 MEMBRESÍA EN VIVO (ANTI-CAPTURA ✓)
+                      </div>
+                    ) : (
+                      <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        backgroundColor: 'rgba(212,175,55,0.25)',
+                        border: '1.5px solid var(--accent-gold)',
+                        color: '#FEF08A',
+                        padding: '6px 14px',
+                        borderRadius: '100px',
+                        fontSize: '0.78rem',
+                        fontWeight: 800
+                      }}>
+                        🚗 CALCOMANÍA FÍSICA (VERIFICAR EN VEHÍCULO/OBJETO)
+                      </div>
+                    )}
+                  </div>
+
                   <p style={{ fontSize: '1rem', color: '#D1FAE5', margin: '0 0 1.5rem', fontWeight: 600 }}>
                     {validationResult.message}
                   </p>
@@ -898,6 +986,17 @@ const AliadoPanel: React.FC = () => {
                         {getLevelInfo(validationResult.level).name}
                       </div>
                     </div>
+                    {validationResult.phone && (
+                      <>
+                        <div style={{ width: '1px', height: '36px', backgroundColor: 'rgba(255,255,255,0.2)' }} />
+                        <div>
+                          <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: '#A7F3D0', fontWeight: 800 }}>Titular</div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#FFF' }}>
+                            {validationResult.phone}
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Pasaporte & Sellos de Lealtad */}
@@ -912,6 +1011,21 @@ const AliadoPanel: React.FC = () => {
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.88rem', fontWeight: 800, color: '#FDE047' }}>
                         ⭐ Visita #{validationResult.totalVisits} en comercios aliados
+                      </div>
+                      <div style={{
+                        marginTop: '8px',
+                        backgroundColor: 'rgba(234,179,8,0.2)',
+                        border: '1px solid rgba(234,179,8,0.4)',
+                        borderRadius: '12px',
+                        padding: '6px 12px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.82rem',
+                        color: '#FEF08A',
+                        fontWeight: 800
+                      }}>
+                        ⭐ +10 PUNTOS SUMADOS • Saldo: {validationResult.totalPoints || 10} pts
                       </div>
                       {validationResult.achievedMilestone ? (
                         <div style={{

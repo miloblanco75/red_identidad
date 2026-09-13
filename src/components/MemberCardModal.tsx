@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { X, ShieldCheck, Crown, Sparkles, Smartphone, Award } from 'lucide-react';
+import { X, ShieldCheck, Crown, Sparkles, Smartphone, Award, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LoyaltyPassportModal } from './LoyaltyPassportModal';
+import { generateDynamicQrPayload } from '../lib/dynamicQr';
 
 interface LocalUser {
   phone: string;
@@ -19,6 +20,13 @@ interface MemberCardModalProps {
 
 export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose }) => {
   const [showPassport, setShowPassport] = useState(false);
+  
+  // Estado para el QR dinámico con rotación de 60 segundos
+  const [dynamicPayload, setDynamicPayload] = useState(() => 
+    generateDynamicQrPayload(user.code, user.member_number)
+  );
+  const [secondsLeft, setSecondsLeft] = useState(60);
+  const [liveClock, setLiveClock] = useState('');
 
   useEffect(() => {
     const originalOverflow = document.body.style.overflow;
@@ -27,6 +35,29 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
       document.body.style.overflow = originalOverflow;
     };
   }, []);
+
+  // Temporizador de 1 segundo para el reloj en vivo y la cuenta regresiva del QR dinámico
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setLiveClock(now.toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    };
+    updateTime();
+
+    const interval = setInterval(() => {
+      updateTime();
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          // Regenerar el QR dinámico cuando llegue a cero
+          setDynamicPayload(generateDynamicQrPayload(user.code, user.member_number));
+          return 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [user.code, user.member_number]);
 
   const getLevelInfo = (level: string) => {
     switch (level?.toLowerCase()) {
@@ -50,7 +81,7 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
 
   const levelInfo = getLevelInfo(user.level);
   const IconComponent = levelInfo.icon;
-  const qrValue = user.code ? `https://redidentidad.vercel.app/registro?c=${user.code}` : `RED-${String(user.member_number).padStart(4, '0')}`;
+  const qrValue = dynamicPayload.url;
 
   const modalContent = (
     <div
@@ -128,19 +159,59 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
             fontSize: '0.78rem',
             fontWeight: 800,
             letterSpacing: '0.08em',
-            marginBottom: '1rem',
+            marginBottom: '0.8rem',
           }}
         >
           <IconComponent size={16} />
           {levelInfo.name}
         </div>
 
-        <h2 style={{ fontSize: '1.4rem', color: '#FFF', marginBottom: '0.2rem' }}>
+        <h2 style={{ fontSize: '1.35rem', color: '#FFF', marginBottom: '0.2rem' }}>
           Membresía Digital
         </h2>
-        <p style={{ color: 'var(--text-dim)', fontSize: '0.8rem', marginBottom: '1.5rem' }}>
+        <p style={{ color: 'var(--text-dim)', fontSize: '0.8rem', marginBottom: '1rem' }}>
           Muestra este código en comercios aliados para aplicar tus beneficios.
         </p>
+
+        {/* Indicador de Seguridad y Reloj en Vivo Anti-Captura */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          backgroundColor: 'rgba(74, 222, 128, 0.09)',
+          border: '1px solid rgba(74, 222, 128, 0.3)',
+          borderRadius: '12px',
+          padding: '6px 12px',
+          marginBottom: '0.8rem',
+          fontSize: '0.75rem',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ADE80', fontWeight: 700 }}>
+            <span style={{ 
+              width: 8, 
+              height: 8, 
+              borderRadius: '50%', 
+              backgroundColor: '#4ADE80', 
+              display: 'inline-block', 
+              boxShadow: '0 0 10px #4ADE80',
+              animation: 'pulse 2s infinite'
+            }} />
+            EN VIVO • {liveClock}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-dim)' }}>
+            <Clock size={12} color="var(--accent-gold)" />
+            <span>Renueva: <strong style={{ color: '#FFF' }}>{secondsLeft}s</strong></span>
+          </div>
+        </div>
+
+        {/* Barra de expiración regresiva */}
+        <div style={{ width: '100%', height: '3px', backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden', marginBottom: '0.8rem' }}>
+          <div style={{ 
+            width: `${(secondsLeft / 60) * 100}%`, 
+            height: '100%', 
+            backgroundColor: secondsLeft <= 10 ? '#EF4444' : 'var(--accent-gold)', 
+            transition: 'width 1s linear' 
+          }} />
+        </div>
 
         {/* QR Box */}
         <div
@@ -150,10 +221,14 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
             borderRadius: '24px',
             display: 'inline-block',
             boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-            marginBottom: '1.2rem',
+            marginBottom: '0.6rem',
           }}
         >
-          <QRCodeSVG value={qrValue} size={200} level="H" />
+          <QRCodeSVG value={qrValue} size={190} level="H" />
+        </div>
+
+        <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', marginBottom: '0.8rem' }}>
+          🔒 Código de seguridad temporal. Capturas de pantalla no son válidas en comercios.
         </div>
 
         {/* Code & Phone */}

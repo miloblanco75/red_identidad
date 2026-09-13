@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Crown, QrCode, Star, Phone, Sparkles, Smartphone } from 'lucide-react';
+import { ShieldCheck, Crown, QrCode, Star, Phone, Sparkles, Smartphone, Clock } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BrandLogo from '../components/BrandLogo';
+import { generateDynamicQrPayload } from '../lib/dynamicQr';
 
 const Registro: React.FC = () => {
   const { user, loginLocal, signOut, isLoading } = useAuth();
@@ -17,6 +18,35 @@ const Registro: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [isActivating, setIsActivating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Estado del QR dinámico anti-captura para el pase post-registro
+  const [dynamicPayload, setDynamicPayload] = useState(() => 
+    generateDynamicQrPayload(user?.code || '', user?.member_number)
+  );
+  const [secondsLeft, setSecondsLeft] = useState(60);
+  const [liveClock, setLiveClock] = useState('');
+
+  useEffect(() => {
+    if (!user) return;
+    const updateTime = () => {
+      const now = new Date();
+      setLiveClock(now.toLocaleTimeString('es-MX', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    };
+    updateTime();
+
+    const interval = setInterval(() => {
+      updateTime();
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          setDynamicPayload(generateDynamicQrPayload(user.code, user.member_number));
+          return 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   const isFounder = user?.code.toUpperCase().includes('FD') || serial.toUpperCase().includes('FD');
 
@@ -354,17 +384,57 @@ const Registro: React.FC = () => {
             {user.level === 'gold' ? <Crown size={200} /> : <ShieldCheck size={200} />}
           </div>
 
+          {/* Indicador de Seguridad y Reloj en Vivo Anti-Captura */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            backgroundColor: 'rgba(74, 222, 128, 0.09)',
+            border: '1px solid rgba(74, 222, 128, 0.3)',
+            borderRadius: '12px',
+            padding: '6px 12px',
+            marginBottom: '0.8rem',
+            fontSize: '0.75rem',
+            zIndex: 1,
+            width: '100%'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4ADE80', fontWeight: 700 }}>
+              <span style={{ 
+                width: 8, 
+                height: 8, 
+                borderRadius: '50%', 
+                backgroundColor: '#4ADE80', 
+                display: 'inline-block', 
+                boxShadow: '0 0 10px #4ADE80' 
+              }} />
+              EN VIVO • {liveClock}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: 'var(--text-dim)' }}>
+              <Clock size={12} color="var(--accent-gold)" />
+              <span>Renueva: <strong style={{ color: '#FFF' }}>{secondsLeft}s</strong></span>
+            </div>
+          </div>
+
+          {/* Barra de expiración regresiva */}
+          <div style={{ width: '100%', height: '3px', backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden', marginBottom: '0.8rem', zIndex: 1 }}>
+            <div style={{ 
+              width: `${(secondsLeft / 60) * 100}%`, 
+              height: '100%', 
+              backgroundColor: secondsLeft <= 10 ? '#EF4444' : 'var(--accent-gold)', 
+              transition: 'width 1s linear' 
+            }} />
+          </div>
+
           {/* QR Code Section */}
           <div style={{ 
             backgroundColor: '#FFF', 
             padding: '1.2rem', 
             borderRadius: '16px', 
-            marginBottom: '0.8rem',
+            marginBottom: '0.6rem',
             boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
             zIndex: 1
           }}>
-            {/* El QR del pase muestra el ID del miembro para que el comercio lo escanee */}
-            <QRCodeSVG value={`redidentidad://validate/member/${user.member_number}`} size={190} level="H" />
+            <QRCodeSVG value={dynamicPayload.url} size={190} level="H" />
           </div>
 
           {/* Instruction below QR */}
@@ -380,7 +450,7 @@ const Registro: React.FC = () => {
             zIndex: 1
           }}>
             <QrCode size={14} color="var(--accent-gold)" />
-            <span style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 600 }}>Muéstrale este código o tu número al negocio aliado</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 600 }}>Pase digital seguro: muéstralo en pantalla en negocios aliados</span>
           </div>
 
           <div style={{ textAlign: 'center', zIndex: 1, width: '100%' }}>

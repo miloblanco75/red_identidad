@@ -16,6 +16,7 @@ import { UploadStickerPhotoModal } from '../components/UploadStickerPhotoModal';
 import { SorteosPublicModal } from '../components/SorteosPublicModal';
 import { LoyaltyPassportModal } from '../components/LoyaltyPassportModal';
 import { useAuth } from '../contexts/AuthContext';
+import { getUserGamificationProfile } from '../lib/challengesService';
 
 const FacebookIcon = ({ size = 14, color = '#1877F2' }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -102,6 +103,11 @@ const Home: React.FC = () => {
   const [showSorteosModal, setShowSorteosModal] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [initialStickerSelection, setInitialStickerSelection] = useState<string>('campechano_negra');
+  const [gamificationProfile, setGamificationProfile] = useState<any>(null);
+
+  useEffect(() => {
+    setGamificationProfile(getUserGamificationProfile(user?.code, user?.member_number));
+  }, [user, showPassportModal]);
 
   const officialStores = [
     {
@@ -268,7 +274,7 @@ const Home: React.FC = () => {
                 flexShrink: 0
               }}
             >
-              <Award size={16} /> Pasaporte de Visitas
+              <Trophy size={16} /> Retos & {gamificationProfile?.availablePoints ?? 0} Pts
             </button>
             <button
               onClick={() => setShowCardModal(true)}
@@ -293,6 +299,77 @@ const Home: React.FC = () => {
           </div>
         </motion.div>
       )}
+
+      {/* ── Widget Dinámico de Reto Activo & Puntos Identidad ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        onClick={() => setShowPassportModal(true)}
+        className="glass"
+        style={{
+          marginTop: user ? '0.6rem' : '0.8rem',
+          marginBottom: '1.5rem',
+          padding: '1.1rem 1.2rem',
+          borderRadius: '24px',
+          border: '1.5px solid rgba(212,175,55,0.4)',
+          background: 'linear-gradient(135deg, rgba(212,175,55,0.15) 0%, rgba(20,25,35,0.88) 100%)',
+          cursor: 'pointer',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '1.1rem' }}>🔥</span>
+            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-gold)', fontWeight: 800, letterSpacing: '0.08em' }}>
+              Reto Activo de la Semana
+            </span>
+          </div>
+          <span style={{
+            backgroundColor: 'rgba(212,175,55,0.25)',
+            border: '1px solid var(--accent-gold)',
+            color: '#FFF',
+            fontSize: '0.72rem',
+            fontWeight: 800,
+            padding: '3px 9px',
+            borderRadius: '10px'
+          }}>
+            ⭐ {gamificationProfile?.availablePoints ?? 0} Pts disponibles
+          </span>
+        </div>
+
+        <div style={{ fontSize: '1rem', fontWeight: 900, color: '#FFF', marginBottom: '4px' }}>
+          🎯 Trío de Media Semana (Mié - Jue)
+        </div>
+        <p style={{ fontSize: '0.78rem', color: 'var(--text-dim)', margin: '0 0 10px 0', lineHeight: 1.35 }}>
+          Visita 3 aliados esta semana y gana +25 Puntos canjeables por postres, cafés y membresías.
+        </p>
+
+        {/* Barra de progreso */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ flex: 1, height: '8px', backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: '6px', overflow: 'hidden' }}>
+            <div style={{
+              width: `${gamificationProfile?.challenges?.[0]?.progressPercent || 0}%`,
+              height: '100%',
+              background: 'linear-gradient(90deg, var(--accent-gold), #22C55E)',
+              borderRadius: '6px'
+            }} />
+          </div>
+          <span style={{ fontSize: '0.75rem', color: '#CBD5E1', fontWeight: 800, flexShrink: 0 }}>
+            {gamificationProfile?.challenges?.[0]?.current || 0} / 3 visitas
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '0.72rem' }}>
+          <span style={{ color: '#4ADE80', fontWeight: 700 }}>
+            ☕ 3 Rutas Temáticas activas en la ciudad
+          </span>
+          <span style={{ color: 'var(--accent-gold)', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '2px' }}>
+            Ver Retos & Premios →
+          </span>
+        </div>
+      </motion.div>
 
       {/* ── Banner de Sincronizar Pase si no tiene sesión activa en esta ventana ── */}
       {!user && (
