@@ -16,6 +16,7 @@ const Galeria = React.lazy(() => import('./pages/Galeria'));
 const Comercio = React.lazy(() => import('./pages/Comercio'));
 const AliadoPanel = React.lazy(() => import('./pages/AliadoPanel'));
 const EnvelopeStickerDesigner = React.lazy(() => import('./components/EnvelopeStickerDesigner'));
+const PagoExitoso = React.lazy(() => import('./pages/PagoExitoso'));
 
 import InstallPwaBanner from './components/InstallPwaBanner';
 
@@ -45,6 +46,7 @@ function App() {
             <Route path="/comercio" element={<Comercio />} />
             <Route path="/aliado-panel" element={<AliadoPanel />} />
             <Route path="/imprimir-calcomanias" element={<EnvelopeStickerDesigner />} />
+            <Route path="/pago-exitoso" element={<PagoExitoso />} />
           </Routes>
         </React.Suspense>
         <BottomNavigation />
