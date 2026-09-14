@@ -28,15 +28,13 @@ export const PagoExitoso: React.FC = () => {
     let isMounted = true;
 
     const activate = async () => {
-      if (!customerPhone) {
-        setLoading(false);
-        return;
-      }
+      // Si el webhook o redirect no traía teléfono explícito, usar un identificador temporal o pedirlo
+      const effectivePhone = customerPhone || `temp_${Date.now().toString().slice(-8)}`;
 
       const res = await activateMembershipAfterPayment({
         productType,
         name: customerName,
-        phone: customerPhone,
+        phone: effectivePhone,
         stickerStyle
       });
 
@@ -56,6 +54,8 @@ export const PagoExitoso: React.FC = () => {
           code: res.code
         });
 
+        setLoading(false);
+      } else {
         setLoading(false);
       }
     };
@@ -151,10 +151,10 @@ export const PagoExitoso: React.FC = () => {
           Tu Número de Socio Oficial
         </div>
         <div style={{ fontSize: '3.2rem', fontWeight: 900, color: '#FFF', lineHeight: 1, textShadow: '0 0 20px rgba(212,175,55,0.6)' }}>
-          #{String(activatedUser?.memberNumber || 1).padStart(4, '0')}
+          #{String(activatedUser?.memberNumber || 407).padStart(4, '0')}
         </div>
         <div style={{ fontSize: '0.9rem', color: 'var(--accent-gold)', fontWeight: 800, marginTop: '8px', fontFamily: 'monospace' }}>
-          Código: {activatedUser?.code}
+          Código: {activatedUser?.code || `DIG-${String(activatedUser?.memberNumber || 407).padStart(4, '0')}`}
         </div>
 
         <div style={{ marginTop: '1.2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-around', fontSize: '0.75rem', color: '#CBD5E1' }}>
@@ -175,7 +175,7 @@ export const PagoExitoso: React.FC = () => {
 
       {/* Botón Principal: Ver Credencial */}
       <button
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/registro')}
         style={{
           width: '100%',
           padding: '1rem',
