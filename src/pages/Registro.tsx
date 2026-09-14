@@ -72,19 +72,65 @@ const Registro: React.FC = () => {
 
   const handleActivate = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!serial) return;
+    if (!phone || phone.length < 10) {
+      setErrorMsg('Ingresa tu número de WhatsApp a 10 dígitos.');
+      return;
+    }
     
     if (isDemoCode(serial) || isDemoCode(codeParam)) {
       handleActivateDemo(phone);
       return;
     }
 
-    if (!phone) return;
-    
     setIsActivating(true);
     setErrorMsg('');
     
     try {
+      const cleanPhone = phone.replace(/\D/g, '');
+
+      // Caso 1: Ingreso directo solo con WhatsApp (Usuario que ya pagó digital o socio registrado)
+      if (!serial) {
+        // Buscar en Supabase por teléfono
+        const { data: foundStickers } = await supabase
+          .from('stickers')
+          .select('*')
+          .ilike('phone', `%${cleanPhone.slice(-10)}%`)
+          .limit(1);
+
+        if (foundStickers && foundStickers.length > 0) {
+          const s = foundStickers[0];
+          loginLocal({
+            phone: s.phone || cleanPhone,
+            member_number: s.member_number || 407,
+            level: s.level || 'campechana_blanca',
+            code: s.code
+          });
+          navigate('/registro');
+          return;
+        }
+
+        // Si pagó en Stripe y aún no estaba en la tabla, activarlo de inmediato
+        const { count } = await supabase.from('stickers').select('*', { count: 'exact', head: true });
+        const nextNum = (count || 406) + 1;
+        const newCode = `DIG-${String(nextNum).padStart(4, '0')}`;
+
+        await supabase.from('stickers').insert([{
+          code: newCode,
+          phone: cleanPhone,
+          member_number: nextNum,
+          level: 'campechana_blanca',
+          claimed_at: new Date().toISOString()
+        }]);
+
+        loginLocal({
+          phone: cleanPhone,
+          member_number: nextNum,
+          level: 'campechana_blanca',
+          code: newCode
+        });
+        navigate('/registro');
+        return;
+      }
       const cleanCode = serial.toUpperCase();
 
       // 1. Buscar la calcomanía en la base de datos
@@ -268,28 +314,69 @@ const Registro: React.FC = () => {
             </div>
           )}
 
+          {/* Selector de Modo: ¿Ya tienes membresía/pagaste en línea vs Activar calcomanía física? */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', marginBottom: '1.2rem', backgroundColor: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '12px' }}>
+            <button
+              type="button"
+              onClick={() => { setErrorMsg(''); setSerial(''); }}
+              style={{
+                padding: '8px',
+                borderRadius: '8px',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: !serial ? 'var(--accent-gold)' : 'transparent',
+                color: !serial ? '#121212' : 'var(--text-dim)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              📱 Ya compré / Mi WhatsApp
+            </button>
+            <button
+              type="button"
+              onClick={() => { setErrorMsg(''); if (!serial) setSerial('RED-'); }}
+              style={{
+                padding: '8px',
+                borderRadius: '8px',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: serial ? 'var(--accent-gold)' : 'transparent',
+                color: serial ? '#121212' : 'var(--text-dim)',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              🚗 Tengo Calcomanía Física
+            </button>
+          </div>
+
           <form onSubmit={handleActivate}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>
-                Código de Calcomanía
-              </label>
-              <div style={{ position: 'relative' }}>
-                <QrCode size={20} color="var(--text-dim)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
-                <input 
-                  type="text" 
-                  placeholder="Ej: RED-001"
-                  value={serial}
-                  onChange={(e) => setSerial(e.target.value.toUpperCase())}
-                  required
-                  readOnly={!!codeParam}
-                  style={{
-                    width: '100%', padding: '1rem 1rem 1rem 3rem', backgroundColor: codeParam ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.05)',
-                    border: '1px solid var(--glass-border)', borderRadius: '12px',
-                    color: '#FFF', fontSize: '1rem', outline: 'none', textTransform: 'uppercase'
-                  }}
-                />
+            {/* Si eligió calcomanía física, pide el código */}
+            {serial && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>
+                  Código de Calcomanía
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <QrCode size={20} color="var(--text-dim)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                  <input 
+                    type="text" 
+                    placeholder="Ej: RED-001"
+                    value={serial}
+                    onChange={(e) => setSerial(e.target.value.toUpperCase())}
+                    required
+                    readOnly={!!codeParam}
+                    style={{
+                      width: '100%', padding: '1rem 1rem 1rem 3rem', backgroundColor: codeParam ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.05)',
+                      border: '1px solid var(--glass-border)', borderRadius: '12px',
+                      color: '#FFF', fontSize: '1rem', outline: 'none', textTransform: 'uppercase'
+                    }}
+                  />
+                </div>
               </div>
-            </div>
+            )}
             
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>
@@ -299,7 +386,7 @@ const Registro: React.FC = () => {
                 <Phone size={20} color="var(--text-dim)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
                 <input 
                   type="tel" 
-                  placeholder="55 1234 5678"
+                  placeholder="Ej: 9811234567"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
                   required
@@ -311,6 +398,9 @@ const Registro: React.FC = () => {
                   }}
                 />
               </div>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '4px', display: 'block' }}>
+                Ingresa el mismo número con el que realizaste tu pago en Stripe.
+              </span>
             </div>
 
             {errorMsg && (
@@ -321,17 +411,17 @@ const Registro: React.FC = () => {
 
             <button 
               type="submit"
-              disabled={isActivating || phone.length < 10 || !serial}
+              disabled={isActivating || phone.length < 10}
               style={{ 
                 width: '100%', padding: '1rem', borderRadius: '12px', 
-                backgroundColor: (phone.length === 10 && serial) ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', 
+                backgroundColor: (phone.length === 10) ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', 
                 color: '#121212',
-                fontWeight: 700, border: 'none', cursor: 'pointer',
+                fontWeight: 800, border: 'none', cursor: 'pointer',
                 opacity: isActivating ? 0.7 : 1,
                 transition: 'all 0.3s'
               }}
             >
-              {isActivating ? 'Verificando...' : 'Activar Membresía'}
+              {isActivating ? 'Abriendo tu pase...' : (serial ? 'Activar Membresía' : 'Ver Mi Membresía Digital')}
             </button>
           </form>
 
