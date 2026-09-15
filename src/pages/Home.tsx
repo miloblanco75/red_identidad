@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   ChevronRight, ShieldCheck, Sparkles, Utensils, Car, Wine, 
   HeartPulse, Building2, MapPin, Loader2, Globe, QrCode, 
@@ -15,6 +15,7 @@ import { RecoverPassModal } from '../components/RecoverPassModal';
 import { UploadStickerPhotoModal } from '../components/UploadStickerPhotoModal';
 import { SorteosPublicModal } from '../components/SorteosPublicModal';
 import { LoyaltyPassportModal } from '../components/LoyaltyPassportModal';
+import { TrialPassModal } from '../components/TrialPassModal';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserGamificationProfile } from '../lib/challengesService';
 
@@ -90,12 +91,13 @@ const communityShowcase = [
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const [allies, setAllies] = useState<any[]>([]);
   const [newAllies, setNewAllies] = useState<any[]>([]);
   const [claimedCount, setClaimedCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
-  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [showBuyModal, setShowBuyModal] = useState(() => searchParams.get('comprar') === 'true');
   const [showCardModal, setShowCardModal] = useState(false);
   const [showPassportModal, setShowPassportModal] = useState(false);
   const [showRecoverModal, setShowRecoverModal] = useState(false);
@@ -104,10 +106,11 @@ const Home: React.FC = () => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [initialStickerSelection, setInitialStickerSelection] = useState<string>('campechano_negra');
   const [gamificationProfile, setGamificationProfile] = useState<any>(null);
+  const [showTrialModal, setShowTrialModal] = useState(false);
 
   useEffect(() => {
     setGamificationProfile(getUserGamificationProfile(user?.code, user?.member_number));
-  }, [user, showPassportModal]);
+  }, [user, showPassportModal, showTrialModal]);
 
   const officialStores = [
     {
@@ -371,33 +374,93 @@ const Home: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* ── Banner de Sincronizar Pase si no tiene sesión activa en esta ventana ── */}
+      {/* ── Banner de Invitación al Pase de Cortesía por 24 Horas (Para nuevos visitantes) ── */}
       {!user && (
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          onClick={() => setShowRecoverModal(true)}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
           className="glass"
           style={{
             marginTop: '0.8rem',
-            marginBottom: '1.5rem',
-            padding: '0.85rem 1.2rem',
-            borderRadius: '18px',
-            border: '1px solid rgba(212,175,55,0.3)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            backgroundColor: 'rgba(212,175,55,0.08)',
-            cursor: 'pointer',
+            marginBottom: '1rem',
+            padding: '1.2rem 1.3rem',
+            borderRadius: '24px',
+            border: '2px solid rgba(74, 222, 128, 0.4)',
+            background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(15, 25, 20, 0.92) 100%)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.4), 0 0 25px rgba(34, 197, 94, 0.15)',
+            position: 'relative',
+            overflow: 'hidden'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.82rem', color: '#FFF', fontWeight: 600 }}>
-            <Sparkles size={16} color="var(--accent-gold)" />
-            ¿Ya tienes tu distintivo o membresía?
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: 'rgba(74, 222, 128, 0.2)',
+              border: '1px solid #4ADE80',
+              color: '#4ADE80',
+              padding: '4px 10px',
+              borderRadius: '100px',
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              🎁 Promoción de Lanzamiento
+            </span>
+            <span style={{ color: '#86EFAC', fontSize: '0.75rem', fontWeight: 700 }}>
+              100% Gratis
+            </span>
           </div>
-          <span style={{ fontSize: '0.78rem', color: 'var(--accent-gold)', fontWeight: 800 }}>
-            Sincronizar Pase →
-          </span>
+
+          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FFF', marginBottom: '4px', lineHeight: 1.25 }}>
+            Pase de Cortesía por 24 Horas
+          </div>
+          <p style={{ fontSize: '0.8rem', color: '#E2E8F0', margin: '0 0 12px 0', lineHeight: 1.4 }}>
+            Prueba Red Identidad sin costo. Obtén <strong>1 descuento hoy</strong> en cualquier café, restaurante, lavado o barbería de la red.
+          </p>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setShowTrialModal(true)}
+              style={{
+                flex: 1,
+                minWidth: '180px',
+                padding: '0.85rem 1rem',
+                borderRadius: '14px',
+                backgroundColor: '#22C55E',
+                color: '#121212',
+                fontWeight: 900,
+                fontSize: '0.88rem',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                boxShadow: '0 0 20px rgba(34, 197, 94, 0.45)'
+              }}
+            >
+              <Sparkles size={16} /> Obtener Pase Gratis (24h)
+            </button>
+            <button
+              onClick={() => setShowRecoverModal(true)}
+              style={{
+                padding: '0.85rem 1rem',
+                borderRadius: '14px',
+                backgroundColor: 'rgba(255,255,255,0.06)',
+                color: 'var(--text-dim)',
+                fontWeight: 700,
+                fontSize: '0.78rem',
+                border: '1px solid rgba(255,255,255,0.12)',
+                cursor: 'pointer'
+              }}
+            >
+              Ya soy socio
+            </button>
+          </div>
         </motion.div>
       )}
 
@@ -1424,6 +1487,12 @@ const Home: React.FC = () => {
         isOpen={showPassportModal}
         onClose={() => setShowPassportModal(false)}
         user={user ? { code: user.code, member_number: user.member_number, phone: user.phone } : undefined}
+      />
+
+      <TrialPassModal
+        isOpen={showTrialModal}
+        onClose={() => setShowTrialModal(false)}
+        onBuyFullPass={() => setShowBuyModal(true)}
       />
 
     </div>

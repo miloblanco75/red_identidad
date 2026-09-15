@@ -53,6 +53,7 @@ interface ValidationResult {
   nextMilestone?: LoyaltyMilestone;
   totalPoints?: number;
   pointsEarned?: number;
+  isTrialPass?: boolean;
 }
 
 // Reproductor de efectos sonoros y hápticos nativos para terminal de caja
@@ -204,6 +205,87 @@ const AliadoPanel: React.FC = () => {
     }
 
     const clean = parsedQr.code;
+
+    // ── VERIFICACIÓN ESPECIAL DE PASE DE CORTESÍA 24 HORAS (TRIAL-XXXX) ──
+    if (clean.startsWith('TRIAL-')) {
+      try {
+        const { data: trialSticker } = await supabase
+          .from('stickers')
+          .select('*')
+          .eq('code', clean)
+          .maybeSingle();
+
+        const now = new Date();
+        const createdAt = trialSticker ? new Date(trialSticker.claimed_at || trialSticker.created_at) : now;
+        const diffHours = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+        // Si ya fue usado previamente
+        if (trialSticker && trialSticker.level === 'trial_used') {
+          playFeedback('error');
+          setValidationResult({
+            status: 'invalid',
+            code: clean,
+            discountToApply: '',
+            message: '⚠️ PASE DE CORTESÍA YA UTILIZADO: Este cliente ya disfrutó de su 1er descuento de prueba. Debe adquirir su Calcomanía Oficial ($90) o Membresía Digital ($45).',
+            isTrialPass: true
+          });
+          setIsSaving(false);
+          return;
+        }
+
+        // Si pasaron más de 24 horas
+        if (diffHours >= 24) {
+          playFeedback('error');
+          setValidationResult({
+            status: 'invalid',
+            code: clean,
+            discountToApply: '',
+            message: '⚠️ PASE DE CORTESÍA EXPIRADO: La vigencia de 24 horas de este pase ha concluido. Invite al cliente a adquirir su Membresía Oficial.',
+            isTrialPass: true
+          });
+          setIsSaving(false);
+          return;
+        }
+
+        // ¡Pase de Cortesía Válido! Registrar consumo y aplicar descuento
+        playFeedback('success');
+        await incrementPromotionCount();
+
+        // Quemar el pase para que no pueda reutilizarse
+        await supabase
+          .from('stickers')
+          .update({ level: 'trial_used' })
+          .eq('code', clean);
+
+        const timeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+        setTodayValidations(prev => [
+          { time: timeStr, member: `Cortesía 24h`, discount: ally.discount },
+          ...prev
+        ]);
+
+        const phoneMasked = trialSticker?.phone 
+          ? `${trialSticker.phone.slice(0, 2)} •••• ${trialSticker.phone.slice(-2)}` 
+          : '';
+
+        setValidationResult({
+          status: 'valid',
+          code: clean,
+          member_number: 0,
+          level: 'trial',
+          phone: phoneMasked,
+          discountToApply: ally.discount,
+          message: '🎁 ¡PASE DE CORTESÍA VÁLIDO! Aplica 1 descuento de bienvenida. Invita al cliente a adquirir la membresía oficial.',
+          isTrialPass: true,
+          isDynamic: parsedQr.isDynamic,
+          ageSeconds: parsedQr.ageSeconds
+        });
+        setManualInput('');
+        setIsSaving(false);
+        return;
+      } catch (trialErr) {
+        console.error('Error validando trial pass:', trialErr);
+      }
+    }
 
     try {
       let foundSticker: any = null;

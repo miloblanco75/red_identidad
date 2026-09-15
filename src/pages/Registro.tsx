@@ -249,6 +249,8 @@ const Registro: React.FC = () => {
       case 'rosa': return { name: 'Campechana Soy (Rosa VIP)', color: '#FF5C9D', glow: 'premium-glow-gold', progress: 100 };
       case 'campechana_negra':
       case 'negra': return { name: 'Campechana Soy (Negra VIP)', color: '#D4AF37', glow: 'premium-glow-gold', progress: 100 };
+      case 'trial': return { name: 'Pase de Cortesía (24h)', color: '#4ADE80', glow: 'premium-glow-white', progress: 50 };
+      case 'trial_used': return { name: 'Prueba Concluida', color: 'var(--text-dim)', glow: 'premium-glow-white', progress: 100 };
       case 'gold':
       default: return { name: 'VIP Dorado', color: 'var(--accent-gold)', glow: 'premium-glow-gold', progress: 100 };
     }
@@ -449,6 +451,45 @@ const Registro: React.FC = () => {
         {user.code?.includes('DEMO') && (
           <div style={{ backgroundColor: 'rgba(212, 175, 55, 0.15)', border: '1px solid var(--accent-gold)', padding: '0.6rem 1rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.8rem', color: 'var(--accent-gold)', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
             <Sparkles size={16} /> Pase de Demostración Activo (Vista Previa POS)
+          </div>
+        )}
+
+        {(user.level === 'trial' || user.code?.startsWith('TRIAL-')) && (
+          <div style={{
+            backgroundColor: 'rgba(34, 197, 94, 0.12)',
+            border: '1.5px solid #22C55E',
+            padding: '1rem 1.2rem',
+            borderRadius: '16px',
+            marginBottom: '1.5rem',
+            textAlign: 'center',
+            boxShadow: '0 0 25px rgba(34, 197, 94, 0.2)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: '#4ADE80', fontWeight: 800, fontSize: '0.88rem', marginBottom: '4px' }}>
+              <Clock size={18} /> Pase de Cortesía por 24 Horas Activo
+            </div>
+            <p style={{ color: '#E2E8F0', fontSize: '0.78rem', margin: '0 0 10px 0', lineHeight: 1.35 }}>
+              Disfruta hoy de <strong>1 descuento gratis</strong> en cualquier negocio aliado. Muestra el código QR en pantalla al pagar.
+            </p>
+            <button
+              onClick={() => navigate('/?comprar=true')}
+              style={{
+                width: '100%',
+                padding: '0.7rem',
+                borderRadius: '10px',
+                backgroundColor: 'var(--accent-gold)',
+                color: '#121212',
+                fontWeight: 900,
+                fontSize: '0.82rem',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              ⭐ Desbloquear Membresía Oficial Vitalicia ($45 / $90)
+            </button>
           </div>
         )}
 
