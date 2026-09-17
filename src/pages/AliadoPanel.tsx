@@ -159,14 +159,12 @@ const AliadoPanel: React.FC = () => {
     try {
       const res = await requestTrialPass(trialGiftName || 'Cliente en Caja', cleanDigits);
       if (res.success && res.pass) {
-        setTrialGiftSuccess(`¡Pase de 24h activado con éxito (#${res.pass.code})! Aplicando descuento de bienvenida...`);
+        setTrialGiftSuccess(`✓ ¡Pase de 24h obsequiado con éxito (#${res.pass.code})! Tu cliente ya tiene 24 horas de descuentos para sus próximas visitas.`);
         setTrialGiftPhone('');
         setTrialGiftName('');
-        // Validar en automático en el semáforo para no hacer esperar al cliente ni al cajero
         setTimeout(() => {
-          validateCodeOrInput(res.pass!.code);
           setShowTrialGiftModal(false);
-        }, 1400);
+        }, 2500);
       } else {
         setTrialGiftError(res.error || 'No se pudo activar el pase de prueba.');
       }
@@ -908,7 +906,7 @@ const AliadoPanel: React.FC = () => {
         </span>
       </div>
 
-      {/* ── BOTÓN DE CIERRE DE VENTA: REGALAR PASE DE CORTESÍA (24H) ── */}
+      {/* ── BOTÓN DE CIERRE DE VENTA POST-PAGO: REGALAR PASE DE CORTESÍA (24H) ── */}
       <div style={{
         background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(20, 30, 25, 0.85) 100%)',
         border: '1.5px solid rgba(74, 222, 128, 0.45)',
@@ -924,7 +922,7 @@ const AliadoPanel: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Sparkles size={20} color="#4ADE80" />
             <span style={{ fontSize: '0.9rem', fontWeight: 900, color: '#4ADE80', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              ¿Cliente sin distintivo?
+              Regalo Post-Pago para tu Cliente
             </span>
           </div>
           <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 10px', borderRadius: '100px', backgroundColor: 'rgba(212,175,55,0.2)', color: 'var(--accent-gold)', border: '1px solid rgba(212,175,55,0.4)' }}>
@@ -933,7 +931,7 @@ const AliadoPanel: React.FC = () => {
         </div>
         
         <p style={{ margin: 0, fontSize: '0.82rem', color: '#E2E8F0', lineHeight: 1.45 }}>
-          Regálale <strong>24 horas de descuento gratis</strong> ahora mismo para que vea el ahorro en su cuenta de hoy. ¡Al ver lo que se ahorra, te comprará la calcomanía física de <strong>$90 MXN</strong> de inmediato!
+          <strong>Cobra su cuenta completa sin descuento hoy.</strong> Al pagar, obsequíale este <strong>Pase de Cortesía de 24 horas</strong> como agradecimiento para sus próximas visitas. ¡Tu negocio no pierde dinero hoy y aprovechas para venderle la calcomanía física de <strong>$90 MXN</strong>!
         </p>
 
         <button
@@ -961,7 +959,7 @@ const AliadoPanel: React.FC = () => {
             transition: 'transform 0.15s ease'
           }}
         >
-          <Gift size={20} /> Regalar Pase de Cortesía (24h)
+          <Gift size={20} /> Obsequiar Pase de Cortesía (24h) al Cobrar
         </button>
       </div>
 
@@ -1403,13 +1401,13 @@ const AliadoPanel: React.FC = () => {
                   fontWeight: 800,
                   marginBottom: '0.6rem'
                 }}>
-                  <Gift size={14} /> CIERRE DE VENTA EN CAJA
+                  <Gift size={14} /> REGALO POST-PAGO • FIDELIZACIÓN
                 </div>
                 <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#FFF', margin: '0 0 0.3rem' }}>
                   Pase de Cortesía (24h)
                 </h2>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', margin: 0 }}>
-                  Dale el descuento hoy al cliente para cerrar la venta de la calcomanía física de <strong>$90 pesos</strong>.
+                  Obsequia este pase <strong>después de que el cliente pague su cuenta completa</strong>. Tu negocio no pierde dinero hoy y aprovechas para venderle la calcomanía física de <strong>$90 pesos</strong>.
                 </p>
               </div>
 
@@ -1540,7 +1538,7 @@ const AliadoPanel: React.FC = () => {
                       }}
                     >
                       {trialGiftLoading ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
-                      {trialGiftLoading ? 'Activando...' : 'Activar Pase y Validar Descuento'}
+                      {trialGiftLoading ? 'Obsequiando pase...' : 'Obsequiar Pase 24h al Cliente'}
                     </button>
                   </div>
                 </form>
@@ -1554,10 +1552,10 @@ const AliadoPanel: React.FC = () => {
                 padding: '0.85rem'
               }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 800, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  💡 Guion de Cierre para el Cajero:
+                  💡 Guion para el Cajero al Entregar la Cuenta / Ticket:
                 </div>
                 <p style={{ margin: 0, fontSize: '0.75rem', color: '#FFF', fontStyle: 'italic', lineHeight: 1.4 }}>
-                  "Le regalo el descuento hoy con este pase de cortesía. ¿Ya vio lo que se ahorró? Con la calcomanía de $90 pesos, este descuento le queda activo todo el año en más de 30 lugares. ¿Se la lleva de una vez?"
+                  "¡Muchas gracias por su compra! Por ser nuestro cliente, le regalamos este Pase de Cortesía de 24 horas: escanéelo con su celular y tendrá descuentos en más de 30 restaurantes y cafés aliados hoy y mañana. Y si quiere que sus descuentos le duren todo el año, aquí en caja tenemos la calcomanía oficial por solo $90 pesos. ¿Se la lleva de una vez?"
                 </p>
               </div>
 
