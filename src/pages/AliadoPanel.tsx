@@ -337,14 +337,15 @@ const AliadoPanel: React.FC = () => {
       if (!foundSticker) {
         const withHyphen = clean.replace(/([A-Z]+)(\d+)/, '$1-$2');
         const withoutHyphen = clean.replace(/-/g, '');
-        const { data: fuzzyMatch } = await supabase
+        const { data: fuzzyList } = await supabase
           .from('stickers')
           .select('*')
           .or(`code.eq.${withHyphen},code.eq.${withoutHyphen}`)
-          .maybeSingle();
+          .order('claimed_at', { ascending: false, nullsFirst: false })
+          .limit(1);
 
-        if (fuzzyMatch) {
-          foundSticker = fuzzyMatch;
+        if (fuzzyList && fuzzyList.length > 0) {
+          foundSticker = fuzzyList[0];
         }
       }
 
