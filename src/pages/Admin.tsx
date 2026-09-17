@@ -116,6 +116,7 @@ const Admin: React.FC = () => {
 
       const officialStickers = allFetched.filter(s => {
         const code = (s.code || '').toUpperCase();
+        if (code.includes('TEST') || code === 'RED-') return false;
         if (s.phone) return true;
         if (officialGoldSilver.includes(code)) return true;
         const lvl = (s.level || '').toLowerCase();
@@ -286,12 +287,14 @@ const Admin: React.FC = () => {
 
   const handleAutoCalcNextNumber = async () => {
     try {
-      // Excluir membresías digitales (DIG-%) y pases de cortesía (TRIAL-%) para que solo calcule sobre calcomanías físicas
+      // Excluir membresías digitales (DIG-%), pases de cortesía (TRIAL-%) y códigos de prueba/ruido para que solo calcule sobre calcomanías físicas reales
       const { data } = await supabase
         .from('stickers')
         .select('member_number')
         .not('code', 'ilike', 'DIG-%')
         .not('code', 'ilike', 'TRIAL-%')
+        .not('code', 'ilike', '%TEST%')
+        .neq('code', 'RED-')
         .order('member_number', { ascending: false })
         .limit(1);
 
