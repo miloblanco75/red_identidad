@@ -99,10 +99,11 @@ const Registro: React.FC = () => {
 
         if (foundStickers && foundStickers.length > 0) {
           const s = foundStickers[0];
+          const isDig = s.code?.startsWith('DIG-') || s.level === 'digital';
           loginLocal({
             phone: s.phone || cleanPhone,
             member_number: s.member_number || 407,
-            level: s.level || 'campechana_blanca',
+            level: isDig ? 'digital' : (s.level || 'campechana_blanca'),
             code: s.code
           });
           navigate('/registro');
@@ -118,14 +119,14 @@ const Registro: React.FC = () => {
           code: newCode,
           phone: cleanPhone,
           member_number: nextNum,
-          level: 'campechana_blanca',
+          level: 'digital',
           claimed_at: new Date().toISOString()
         }]);
 
         loginLocal({
           phone: cleanPhone,
           member_number: nextNum,
-          level: 'campechana_blanca',
+          level: 'digital',
           code: newCode
         });
         navigate('/registro');
@@ -147,7 +148,9 @@ const Registro: React.FC = () => {
         if (isNaN(derivedNum) || derivedNum === 0) derivedNum = Math.floor(Math.random() * 9000) + 1000;
         
         let derivedLevel = 'gold';
-        if (cleanCode.includes('PL') || cleanCode.includes('SILV')) derivedLevel = 'silver';
+        if (cleanCode.startsWith('DIG-')) derivedLevel = 'digital';
+        else if (cleanCode.startsWith('TRIAL-')) derivedLevel = 'trial';
+        else if (cleanCode.includes('PL') || cleanCode.includes('SILV')) derivedLevel = 'silver';
         else if (cleanCode.includes('ES') || cleanCode.includes('WHITE')) derivedLevel = 'white';
         else if (cleanCode.includes('BLAN') || cleanCode.startsWith('CAB-')) derivedLevel = 'campechana_blanca';
         else if (cleanCode.includes('NEGR') || cleanCode.startsWith('CN-')) derivedLevel = 'campechana_negra';
@@ -176,10 +179,11 @@ const Registro: React.FC = () => {
       }
 
       if (sticker.phone) {
+        const isDig = sticker.code?.startsWith('DIG-') || sticker.level === 'digital';
         loginLocal({
           phone: sticker.phone,
           member_number: sticker.member_number,
-          level: sticker.level,
+          level: isDig ? 'digital' : sticker.level,
           code: sticker.code
         });
         navigate('/');
@@ -187,9 +191,13 @@ const Registro: React.FC = () => {
       }
 
       // 2. Reclamar la calcomanía guardando el teléfono
+      const isDigSticker = sticker.code?.startsWith('DIG-') || sticker.level === 'digital';
+      const updateData: any = { phone: phone, claimed_at: new Date().toISOString() };
+      if (isDigSticker) updateData.level = 'digital';
+
       const { data: updatedSticker, error: updateError } = await supabase
         .from('stickers')
-        .update({ phone: phone, claimed_at: new Date().toISOString() })
+        .update(updateData)
         .eq('id', sticker.id)
         .select()
         .single();
@@ -199,7 +207,7 @@ const Registro: React.FC = () => {
         loginLocal({
           phone: phone,
           member_number: sticker.member_number,
-          level: sticker.level,
+          level: isDigSticker ? 'digital' : sticker.level,
           code: sticker.code
         });
         navigate('/');
@@ -222,7 +230,9 @@ const Registro: React.FC = () => {
       if (isNaN(mockNum) || mockNum === 0) mockNum = Math.floor(Math.random() * 9000) + 1000;
 
       let mockLevel = 'campechana_rosa';
-      if (upperSerial.includes('PL') || upperSerial.includes('SILV')) mockLevel = 'silver';
+      if (upperSerial.startsWith('DIG-')) mockLevel = 'digital';
+      else if (upperSerial.startsWith('TRIAL-')) mockLevel = 'trial';
+      else if (upperSerial.includes('PL') || upperSerial.includes('SILV')) mockLevel = 'silver';
       else if (upperSerial.includes('ES') || upperSerial.includes('WHITE')) mockLevel = 'white';
       else if (upperSerial.includes('BLAN') || upperSerial.startsWith('CAB-')) mockLevel = 'campechana_blanca';
       else if (upperSerial.includes('NEGR')) mockLevel = 'campechana_negra';
@@ -240,6 +250,12 @@ const Registro: React.FC = () => {
   };
 
   const getLevelInfo = (levelStr: string) => {
+    if (user?.code?.startsWith('DIG-') || levelStr?.toLowerCase() === 'digital') {
+      return { name: 'Membresía Digital Oficial', color: '#38BDF8', glow: 'premium-glow-gold', progress: 100 };
+    }
+    if (user?.code?.startsWith('TRIAL-') || levelStr?.toLowerCase() === 'trial') {
+      return { name: 'Pase de Cortesía (24h)', color: '#4ADE80', glow: 'premium-glow-white', progress: 50 };
+    }
     switch (levelStr?.toLowerCase()) {
       case 'white': return { name: 'Esencial', color: 'var(--accent-white)', glow: 'premium-glow-white', progress: 30 };
       case 'silver': return { name: 'Colección', color: 'var(--accent-silver)', glow: 'premium-glow-silver', progress: 70 };
@@ -249,6 +265,7 @@ const Registro: React.FC = () => {
       case 'rosa': return { name: 'Campechana Soy (Rosa VIP)', color: '#FF5C9D', glow: 'premium-glow-gold', progress: 100 };
       case 'campechana_negra':
       case 'negra': return { name: 'Campechana Soy (Negra VIP)', color: '#D4AF37', glow: 'premium-glow-gold', progress: 100 };
+      case 'digital': return { name: 'Membresía Digital Oficial', color: '#38BDF8', glow: 'premium-glow-gold', progress: 100 };
       case 'trial': return { name: 'Pase de Cortesía (24h)', color: '#4ADE80', glow: 'premium-glow-white', progress: 50 };
       case 'trial_used': return { name: 'Prueba Concluida', color: 'var(--text-dim)', glow: 'premium-glow-white', progress: 100 };
       case 'gold':

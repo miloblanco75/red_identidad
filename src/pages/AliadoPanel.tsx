@@ -352,7 +352,7 @@ const AliadoPanel: React.FC = () => {
       if (foundSticker) {
         const isClaimed = Boolean(foundSticker.phone && String(foundSticker.phone).trim() !== '');
         const memberNum = foundSticker.member_number || parseInt(foundSticker.code?.replace(/\D/g, '') || '1', 10);
-        const level = foundSticker.level || 'campechana_blanca';
+        const level = foundSticker.code?.startsWith('DIG-') ? 'digital' : (foundSticker.level || 'campechana_blanca');
 
         // 🛡️ REGLA CRÍTICA PARA CALCOMANÍAS FÍSICAS EN TIENDA / NO ACTIVADAS:
         // Si no es un pase dinámico (es decir, es una calcomanía física o código manual)
@@ -418,7 +418,7 @@ const AliadoPanel: React.FC = () => {
       }
 
       // E. Fallback: Prefijos oficiales reconocidos de la Red Identidad
-      const officialPrefixes = ['BLAN', 'ROSA', 'NEGR', 'CB-', 'CN-', 'CRN-', 'CRB-', 'RED-', 'TUL'];
+      const officialPrefixes = ['BLAN', 'ROSA', 'NEGR', 'CB-', 'CN-', 'CRN-', 'CRB-', 'RED-', 'TUL', 'DIG-', 'TRIAL-'];
       const isOfficialPattern = officialPrefixes.some(p => clean.startsWith(p) || clean.includes(p));
 
       if (isOfficialPattern) {
@@ -439,7 +439,7 @@ const AliadoPanel: React.FC = () => {
         await incrementPromotionCount();
 
         const memberNum = parseInt(clean.replace(/\D/g, '') || '100', 10);
-        let derivedLevel = 'campechana_blanca';
+        let derivedLevel = clean.startsWith('DIG-') ? 'digital' : clean.startsWith('TRIAL-') ? 'trial' : 'campechana_blanca';
         if (clean.includes('ROSA') || clean.startsWith('CRN-') || clean.startsWith('CB-')) derivedLevel = 'campechana_rosa';
         else if (clean.includes('NEGR') || clean.startsWith('CN-')) derivedLevel = 'campechana_negra';
         else if (clean.includes('GOLD') || clean.includes('TESORO')) derivedLevel = 'gold';
@@ -523,6 +523,12 @@ const AliadoPanel: React.FC = () => {
 
   const getLevelInfo = (levelStr?: string) => {
     const s = (levelStr || '').toLowerCase();
+    if (s.includes('digital') || s.startsWith('dig')) {
+      return { name: 'MEMBRESÍA DIGITAL OFICIAL', color: '#38BDF8', icon: Crown };
+    }
+    if (s.includes('trial')) {
+      return { name: 'PASE DE PRUEBA 24H', color: '#4ADE80', icon: Sparkles };
+    }
     if (s.includes('blanca')) {
       return { name: 'CAMPECHANA SOY BLANCA', color: '#FFFFFF', icon: Crown };
     }

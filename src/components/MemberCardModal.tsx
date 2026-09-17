@@ -60,6 +60,12 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
   }, [user.code, user.member_number]);
 
   const getLevelInfo = (level: string) => {
+    if (user.code?.startsWith('DIG-') || level?.toLowerCase() === 'digital') {
+      return { name: 'MEMBRESÍA DIGITAL OFICIAL', color: '#38BDF8', icon: Crown, bg: 'rgba(56,189,248,0.2)' };
+    }
+    if (user.code?.startsWith('TRIAL-') || level?.toLowerCase() === 'trial') {
+      return { name: 'PASE DE PRUEBA 24H', color: '#4ADE80', icon: Sparkles, bg: 'rgba(74,222,128,0.2)' };
+    }
     switch (level?.toLowerCase()) {
       case 'campechana_blanca':
       case 'blanca':
@@ -70,6 +76,10 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
       case 'campechana_negra':
       case 'negra':
         return { name: 'CAMPECHANA SOY (NEGRA VIP)', color: '#D4AF37', icon: Crown, bg: 'rgba(212,175,55,0.2)' };
+      case 'digital':
+        return { name: 'MEMBRESÍA DIGITAL OFICIAL', color: '#38BDF8', icon: Crown, bg: 'rgba(56,189,248,0.2)' };
+      case 'trial':
+        return { name: 'PASE DE PRUEBA 24H', color: '#4ADE80', icon: Sparkles, bg: 'rgba(74,222,128,0.2)' };
       case 'gold':
         return { name: 'VIP DORADO', color: '#D4AF37', icon: Crown, bg: 'rgba(212,175,55,0.15)' };
       case 'silver':

@@ -105,11 +105,12 @@ export async function activateMembershipAfterPayment(params: {
       .maybeSingle();
 
     if (existing) {
+      const isDig = existing.code?.startsWith('DIG-') || existing.level === 'digital';
       return {
         success: true,
         memberNumber: existing.member_number,
         code: existing.code,
-        level: existing.level || 'campechana_blanca',
+        level: isDig ? 'digital' : (existing.level || 'campechana_blanca'),
         phone: existing.phone
       };
     }
@@ -123,11 +124,12 @@ export async function activateMembershipAfterPayment(params: {
     
     // Prefijo de código: DIG para digitales, o según estilo
     let newCode = `DIG-${String(nextNumber).padStart(4, '0')}`;
-    let derivedLevel = 'campechana_blanca';
+    let derivedLevel = productType === 'digital' ? 'digital' : 'campechana_blanca';
 
     if (stickerStyle?.includes('rosa')) derivedLevel = 'campechana_rosa';
     else if (stickerStyle?.includes('negra')) derivedLevel = 'campechana_negra';
     else if (stickerStyle?.includes('carmelita')) derivedLevel = 'carmelita_blanca';
+    else if (productType === 'digital') derivedLevel = 'digital';
 
     if (productType === 'physical') {
       newCode = `RED-${String(nextNumber).padStart(4, '0')}`;
@@ -173,7 +175,7 @@ export async function activateMembershipAfterPayment(params: {
       success: true,
       memberNumber: fallbackNum,
       code: fallbackCode,
-      level: 'campechana_blanca',
+      level: productType === 'physical' ? 'campechana_blanca' : 'digital',
       phone: cleanPhone
     };
   }

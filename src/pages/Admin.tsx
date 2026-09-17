@@ -83,6 +83,8 @@ const Admin: React.FC = () => {
       case 'white': return 'White';
       case 'silver': return 'Silver';
       case 'gold': return 'Gold';
+      case 'digital': return '📱 Membresía Digital';
+      case 'trial': return '🎁 Pase de Prueba (24h)';
       default: return (lbl || 'Estándar').replace(/_/g, ' ');
     }
   };
@@ -284,16 +286,19 @@ const Admin: React.FC = () => {
 
   const handleAutoCalcNextNumber = async () => {
     try {
+      // Excluir membresías digitales (DIG-%) y pases de cortesía (TRIAL-%) para que solo calcule sobre calcomanías físicas
       const { data } = await supabase
         .from('stickers')
         .select('member_number')
+        .not('code', 'ilike', 'DIG-%')
+        .not('code', 'ilike', 'TRIAL-%')
         .order('member_number', { ascending: false })
         .limit(1);
 
       if (data && data.length > 0 && data[0].member_number) {
         const nextNum = Number(data[0].member_number) + 1;
         setStartNumber(nextNum);
-        setSuccessMsg(`Número libre calculado automáticamente: ${nextNum}`);
+        setSuccessMsg(`Número libre para calcomanías físicas: ${nextNum}`);
       } else {
         setStartNumber(1);
       }
@@ -1629,7 +1634,10 @@ const Admin: React.FC = () => {
                 })
                 .map((sticker) => {
                   const isClaimed = !!sticker.phone;
-                  const levelColor = sticker.level === 'gold' ? 'var(--accent-gold)' : sticker.level === 'silver' ? 'var(--accent-silver)' : 'var(--accent-white)';
+                  const isDig = sticker.code?.startsWith('DIG-') || sticker.level === 'digital';
+                  const isTrial = sticker.code?.startsWith('TRIAL-') || sticker.level === 'trial';
+                  const effectiveLevel = isDig ? 'digital' : isTrial ? 'trial' : sticker.level;
+                  const levelColor = effectiveLevel === 'digital' ? '#38BDF8' : effectiveLevel === 'trial' ? '#4ADE80' : effectiveLevel === 'gold' ? 'var(--accent-gold)' : effectiveLevel === 'silver' ? 'var(--accent-silver)' : effectiveLevel === 'campechana_rosa' ? '#FF5C9D' : effectiveLevel === 'campechana_negra' ? '#D4AF37' : 'var(--accent-white)';
 
                   return (
                     <div
@@ -1651,7 +1659,7 @@ const Admin: React.FC = () => {
                           </span>
 
                           <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', border: `1px solid ${levelColor}`, color: levelColor, textTransform: 'uppercase' }}>
-                            {formatStickerLabel(sticker.level)}
+                            {formatStickerLabel(effectiveLevel)}
                           </span>
 
                           {sticker.member_number && (
