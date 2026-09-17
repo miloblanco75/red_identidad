@@ -106,7 +106,13 @@ const Home: React.FC = () => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [initialStickerSelection, setInitialStickerSelection] = useState<string>('campechano_negra');
   const [gamificationProfile, setGamificationProfile] = useState<any>(null);
-  const [showTrialModal, setShowTrialModal] = useState(false);
+  const [showTrialModal, setShowTrialModal] = useState(() => searchParams.get('trial') === 'true' || searchParams.get('prueba') === 'true');
+
+  useEffect(() => {
+    if (searchParams.get('trial') === 'true' || searchParams.get('prueba') === 'true') {
+      setShowTrialModal(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setGamificationProfile(getUserGamificationProfile(user?.code, user?.member_number));

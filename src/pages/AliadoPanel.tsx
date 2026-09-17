@@ -20,13 +20,16 @@ import {
   History,
   Check,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Copy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QrScannerModal } from '../components/QrScannerModal';
 import { recordMemberVisit, type LoyaltyMilestone } from '../lib/loyaltyService';
 import { verifyQrPayload } from '../lib/dynamicQr';
 import { getUserGamificationProfile } from '../lib/challengesService';
+import { QRCodeSVG } from 'qrcode.react';
+import { requestTrialPass } from '../lib/trialService';
 
 interface AllyData {
   id: string;
@@ -119,6 +122,60 @@ const AliadoPanel: React.FC = () => {
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [todayValidations, setTodayValidations] = useState<Array<{ time: string; member: string; discount: string }>>([]);
   const [showHistoryList, setShowHistoryList] = useState(false);
+
+  // Estados para regalar Pase de Cortesía 24h al cliente
+  const [showTrialGiftModal, setShowTrialGiftModal] = useState(false);
+  const [trialGiftPhone, setTrialGiftPhone] = useState('');
+  const [trialGiftName, setTrialGiftName] = useState('');
+  const [trialGiftLoading, setTrialGiftLoading] = useState(false);
+  const [trialGiftSuccess, setTrialGiftSuccess] = useState<string | null>(null);
+  const [trialGiftError, setTrialGiftError] = useState('');
+  const [copiedTrialLink, setCopiedTrialLink] = useState(false);
+
+  const trialInviteUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/?trial=true&ally=${encodeURIComponent(ally?.name || '')}`
+    : `https://redidentidad.vercel.app/?trial=true&ally=${encodeURIComponent(ally?.name || '')}`;
+
+  const handleCopyTrialInvite = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(trialInviteUrl);
+      setCopiedTrialLink(true);
+      setTimeout(() => setCopiedTrialLink(false), 2500);
+    }
+  };
+
+  const handleActivateCustomerTrial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTrialGiftError('');
+    setTrialGiftSuccess(null);
+
+    const cleanDigits = trialGiftPhone.replace(/\D/g, '');
+    if (cleanDigits.length < 10) {
+      setTrialGiftError('Ingresa un número de WhatsApp a 10 dígitos.');
+      return;
+    }
+
+    setTrialGiftLoading(true);
+    try {
+      const res = await requestTrialPass(trialGiftName || 'Cliente en Caja', cleanDigits);
+      if (res.success && res.pass) {
+        setTrialGiftSuccess(`¡Pase de 24h activado con éxito (#${res.pass.code})! Aplicando descuento de bienvenida...`);
+        setTrialGiftPhone('');
+        setTrialGiftName('');
+        // Validar en automático en el semáforo para no hacer esperar al cliente ni al cajero
+        setTimeout(() => {
+          validateCodeOrInput(res.pass!.code);
+          setShowTrialGiftModal(false);
+        }, 1400);
+      } else {
+        setTrialGiftError(res.error || 'No se pudo activar el pase de prueba.');
+      }
+    } catch (err: any) {
+      setTrialGiftError('Error al activar el pase. Intenta nuevamente.');
+    } finally {
+      setTrialGiftLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -851,6 +908,63 @@ const AliadoPanel: React.FC = () => {
         </span>
       </div>
 
+      {/* ── BOTÓN DE CIERRE DE VENTA: REGALAR PASE DE CORTESÍA (24H) ── */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(20, 30, 25, 0.85) 100%)',
+        border: '1.5px solid rgba(74, 222, 128, 0.45)',
+        borderRadius: '20px',
+        padding: '1.2rem',
+        marginBottom: '1.5rem',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.8rem',
+        boxShadow: '0 8px 25px rgba(0,0,0,0.3)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Sparkles size={20} color="#4ADE80" />
+            <span style={{ fontSize: '0.9rem', fontWeight: 900, color: '#4ADE80', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              ¿Cliente sin distintivo?
+            </span>
+          </div>
+          <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 10px', borderRadius: '100px', backgroundColor: 'rgba(212,175,55,0.2)', color: 'var(--accent-gold)', border: '1px solid rgba(212,175,55,0.4)' }}>
+            Vende la calcomanía de $90
+          </span>
+        </div>
+        
+        <p style={{ margin: 0, fontSize: '0.82rem', color: '#E2E8F0', lineHeight: 1.45 }}>
+          Regálale <strong>24 horas de descuento gratis</strong> ahora mismo para que vea el ahorro en su cuenta de hoy. ¡Al ver lo que se ahorra, te comprará la calcomanía física de <strong>$90 MXN</strong> de inmediato!
+        </p>
+
+        <button
+          type="button"
+          onClick={() => {
+            setTrialGiftError('');
+            setTrialGiftSuccess(null);
+            setShowTrialGiftModal(true);
+          }}
+          style={{
+            width: '100%',
+            padding: '1rem',
+            borderRadius: '14px',
+            backgroundColor: '#22C55E',
+            color: '#0A2514',
+            fontWeight: 900,
+            fontSize: '1rem',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            boxShadow: '0 4px 20px rgba(34, 197, 94, 0.4)',
+            transition: 'transform 0.15s ease'
+          }}
+        >
+          <Gift size={20} /> Regalar Pase de Cortesía (24h)
+        </button>
+      </div>
+
       {errorMsg && (
         <div style={{ color: '#ff4444', fontSize: '0.85rem', padding: '0.9rem 1.2rem', backgroundColor: 'rgba(255,0,0,0.1)', borderRadius: '14px', display: 'flex', gap: '0.6rem', alignItems: 'center', marginBottom: '1.5rem' }}>
           <ShieldAlert size={18} /> {errorMsg}
@@ -1219,6 +1333,238 @@ const AliadoPanel: React.FC = () => {
           3. Si el cliente dejó el auto afuera, escribe su número de socio o WhatsApp en la casilla manual.
         </p>
       </div>
+
+      {/* ── MODAL: REGALAR PASE DE CORTESÍA (CIERRE DE VENTA) ── */}
+      <AnimatePresence>
+        {showTrialGiftModal && (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 99999,
+              backgroundColor: 'rgba(0,0,0,0.85)',
+              backdropFilter: 'blur(12px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem'
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="glass"
+              style={{
+                width: '100%',
+                maxWidth: '440px',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                borderRadius: '26px',
+                border: '2px solid rgba(74, 222, 128, 0.4)',
+                background: 'linear-gradient(145deg, rgba(16,28,20,0.98) 0%, rgba(10,16,12,0.99) 100%)',
+                padding: '1.8rem 1.4rem',
+                position: 'relative'
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setShowTrialGiftModal(false)}
+                style={{
+                  position: 'absolute',
+                  top: '1rem',
+                  right: '1rem',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '34px',
+                  height: '34px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#FFF',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={18} />
+              </button>
+
+              <div style={{ textAlign: 'center', marginBottom: '1.2rem' }}>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: 'rgba(74,222,128,0.15)',
+                  border: '1px solid rgba(74,222,128,0.35)',
+                  color: '#4ADE80',
+                  padding: '4px 12px',
+                  borderRadius: '100px',
+                  fontSize: '0.72rem',
+                  fontWeight: 800,
+                  marginBottom: '0.6rem'
+                }}>
+                  <Gift size={14} /> CIERRE DE VENTA EN CAJA
+                </div>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#FFF', margin: '0 0 0.3rem' }}>
+                  Pase de Cortesía (24h)
+                </h2>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', margin: 0 }}>
+                  Dale el descuento hoy al cliente para cerrar la venta de la calcomanía física de <strong>$90 pesos</strong>.
+                </p>
+              </div>
+
+              {/* Opción 1: QR para que el cliente lo escanee con su cámara */}
+              <div style={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: '18px',
+                padding: '1.2rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '1rem',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
+              }}>
+                <QRCodeSVG
+                  value={trialInviteUrl}
+                  size={180}
+                  level="M"
+                  includeMargin={false}
+                />
+                <div style={{ marginTop: '0.6rem', fontSize: '0.75rem', fontWeight: 800, color: '#121212', textAlign: 'center' }}>
+                  📱 Pide al cliente que escanee con su cámara
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.2rem' }}>
+                <button
+                  type="button"
+                  onClick={handleCopyTrialInvite}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    borderRadius: '12px',
+                    backgroundColor: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    color: '#FFF',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {copiedTrialLink ? <Check size={16} color="#4ADE80" /> : <Copy size={16} />}
+                  {copiedTrialLink ? '¡Enlace copiado!' : 'Copiar Enlace para Compartir'}
+                </button>
+              </div>
+
+              {/* Opción 2: O teclear su WhatsApp directo si el cliente prefiere */}
+              <div style={{
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '16px',
+                padding: '1rem',
+                marginBottom: '1rem'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.6rem' }}>
+                  O actívalo tú mismo en caja:
+                </div>
+                <form onSubmit={handleActivateCustomerTrial}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    <input
+                      type="tel"
+                      placeholder="WhatsApp del cliente (10 dígitos)"
+                      value={trialGiftPhone}
+                      onChange={(e) => setTrialGiftPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      required
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem',
+                        borderRadius: '10px',
+                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        color: '#FFF',
+                        fontSize: '0.85rem',
+                        outline: 'none'
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Nombre del cliente (opcional)"
+                      value={trialGiftName}
+                      onChange={(e) => setTrialGiftName(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem',
+                        borderRadius: '10px',
+                        backgroundColor: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        color: '#FFF',
+                        fontSize: '0.85rem',
+                        outline: 'none'
+                      }}
+                    />
+
+                    {trialGiftError && (
+                      <div style={{ color: '#FF4444', fontSize: '0.75rem', fontWeight: 600 }}>
+                        ⚠️ {trialGiftError}
+                      </div>
+                    )}
+
+                    {trialGiftSuccess && (
+                      <div style={{ color: '#4ADE80', fontSize: '0.75rem', fontWeight: 700 }}>
+                        ✓ {trialGiftSuccess}
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={trialGiftLoading || trialGiftPhone.length < 10}
+                      style={{
+                        width: '100%',
+                        padding: '0.85rem',
+                        borderRadius: '10px',
+                        backgroundColor: trialGiftPhone.length === 10 ? '#4ADE80' : 'rgba(255,255,255,0.1)',
+                        color: '#0A2514',
+                        fontWeight: 900,
+                        fontSize: '0.88rem',
+                        border: 'none',
+                        cursor: trialGiftPhone.length === 10 ? 'pointer' : 'not-allowed',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      {trialGiftLoading ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
+                      {trialGiftLoading ? 'Activando...' : 'Activar Pase y Validar Descuento'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Guion de ventas de caja */}
+              <div style={{
+                backgroundColor: 'rgba(212,175,55,0.1)',
+                border: '1px solid rgba(212,175,55,0.3)',
+                borderRadius: '14px',
+                padding: '0.85rem'
+              }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 800, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  💡 Guion de Cierre para el Cajero:
+                </div>
+                <p style={{ margin: 0, fontSize: '0.75rem', color: '#FFF', fontStyle: 'italic', lineHeight: 1.4 }}>
+                  "Le regalo el descuento hoy con este pase de cortesía. ¿Ya vio lo que se ahorró? Con la calcomanía de $90 pesos, este descuento le queda activo todo el año en más de 30 lugares. ¿Se la lleva de una vez?"
+                </p>
+              </div>
+
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

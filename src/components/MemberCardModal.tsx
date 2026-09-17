@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { QRCodeSVG } from 'qrcode.react';
-import { X, ShieldCheck, Crown, Sparkles, Smartphone, Award, Clock } from 'lucide-react';
+import { X, ShieldCheck, Crown, Sparkles, Smartphone, Award, Clock, Gift } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LoyaltyPassportModal } from './LoyaltyPassportModal';
 import { generateDynamicQrPayload } from '../lib/dynamicQr';
@@ -282,6 +282,35 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
           }}
         >
           <Award size={18} /> Ver Mi Pasaporte de Visitas & Sellos
+        </button>
+
+        {/* Botón Regalar Pase 24h a un Amigo */}
+        <button
+          onClick={() => {
+            const inviteLink = typeof window !== 'undefined'
+              ? `${window.location.origin}/?trial=true&ref=${user?.member_number || user?.code || 'socio'}`
+              : `https://redidentidad.vercel.app/?trial=true&ref=${user?.member_number || user?.code || 'socio'}`;
+            const text = `¡Hola! Te regalo un Pase de Cortesía de 24 horas en Red Identidad 🎁. Úsalo hoy para tener descuentos en más de 30 restaurantes, cafeterías y negocios en Campeche y Carmen. Pruébalo gratis aquí: ${inviteLink}`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+          }}
+          style={{
+            width: '100%',
+            marginTop: '0.6rem',
+            padding: '0.85rem',
+            borderRadius: '14px',
+            backgroundColor: 'rgba(34, 197, 94, 0.15)',
+            border: '1.5px solid #22C55E',
+            color: '#4ADE80',
+            fontWeight: 800,
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px'
+          }}
+        >
+          <Gift size={18} /> Regalar Pase de 24h a un Amigo
         </button>
 
         <button

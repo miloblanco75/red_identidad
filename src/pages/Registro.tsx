@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Crown, QrCode, Star, Phone, Sparkles, Smartphone, Clock } from 'lucide-react';
+import { ShieldCheck, Crown, QrCode, Star, Phone, Sparkles, Smartphone, Clock, Gift, Copy, Check } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import BrandLogo from '../components/BrandLogo';
 import { generateDynamicQrPayload } from '../lib/dynamicQr';
+import { TrialPassModal } from '../components/TrialPassModal';
 
 const Registro: React.FC = () => {
   const { user, loginLocal, signOut, isLoading } = useAuth();
@@ -18,6 +19,8 @@ const Registro: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [isActivating, setIsActivating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showTrialModal, setShowTrialModal] = useState(() => searchParams.get('trial') === 'true' || searchParams.get('prueba') === 'true');
+  const [copiedInvite, setCopiedInvite] = useState(false);
 
   // Estado del QR dinámico anti-captura para el pase post-registro
   const [dynamicPayload, setDynamicPayload] = useState(() => 
@@ -49,6 +52,24 @@ const Registro: React.FC = () => {
   }, [user]);
 
   const isFounder = user?.code.toUpperCase().includes('FD') || serial.toUpperCase().includes('FD');
+
+  const inviteLink = typeof window !== 'undefined'
+    ? `${window.location.origin}/?trial=true&ref=${user?.member_number || user?.code || 'socio'}`
+    : `https://redidentidad.vercel.app/?trial=true&ref=${user?.member_number || user?.code || 'socio'}`;
+
+  const handleShareWhatsApp = () => {
+    const text = `¡Hola! Te regalo un Pase de Cortesía de 24 horas en Red Identidad 🎁. Úsalo hoy para tener descuentos en más de 30 restaurantes, cafeterías y negocios en Campeche y Carmen. Pruébalo gratis aquí: ${inviteLink}`;
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleCopyInviteLink = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(inviteLink);
+      setCopiedInvite(true);
+      setTimeout(() => setCopiedInvite(false), 2500);
+    }
+  };
 
   const isDemoCode = (codeStr: string) => {
     if (!codeStr) return false;
@@ -444,6 +465,42 @@ const Registro: React.FC = () => {
             </button>
           </form>
 
+          {/* Opción de Pase de Cortesía 24h para nuevos visitantes */}
+          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+            <div style={{ width: '100%', height: '1px', backgroundColor: 'rgba(255,255,255,0.1)', marginBottom: '1.5rem' }}></div>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: '0.8rem' }}>
+              ¿Aún no tienes tu distintivo y quieres probar primero?
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowTrialModal(true)}
+              style={{
+                width: '100%',
+                padding: '0.95rem',
+                borderRadius: '14px',
+                backgroundColor: 'rgba(74, 222, 128, 0.12)',
+                border: '1.5px solid #22C55E',
+                color: '#4ADE80',
+                fontWeight: 900,
+                fontSize: '0.92rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 0 20px rgba(34,197,94,0.15)'
+              }}
+            >
+              <Gift size={18} /> Obtener Pase de Cortesía Gratis (24h)
+            </button>
+          </div>
+
+          <TrialPassModal
+            isOpen={showTrialModal}
+            onClose={() => setShowTrialModal(false)}
+            onBuyFullPass={() => navigate('/?comprar=true')}
+          />
+
         </section>
       </div>
     );
@@ -626,6 +683,71 @@ const Registro: React.FC = () => {
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: 'var(--text-dim)', fontSize: '0.8rem', marginBottom: '1.5rem' }}>
           <Sparkles size={14} color="var(--accent-gold)" /> Tu membresía está activa — úsala en cualquier aliado
+        </div>
+        
+        {/* ── SECCIÓN VIRAL: REGALAR PASE DE 24H A UN AMIGO ── */}
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(34, 197, 94, 0.08) 100%)',
+          border: '1.5px solid rgba(212, 175, 55, 0.35)',
+          borderRadius: '20px',
+          padding: '1.3rem',
+          marginBottom: '1.5rem',
+          textAlign: 'center',
+          boxShadow: '0 8px 25px rgba(0,0,0,0.25)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: 'var(--accent-gold)', fontWeight: 900, fontSize: '1rem', marginBottom: '6px' }}>
+            <Gift size={20} color="var(--accent-gold)" /> Regala un Pase de 24h a un Amigo
+          </div>
+          <p style={{ fontSize: '0.8rem', color: '#E2E8F0', margin: '0 0 1.1rem', lineHeight: 1.45 }}>
+            Invita a tus amigos o familiares a probar Red Identidad con <strong>24 horas de descuentos gratis</strong> en más de 30 restaurantes y negocios de Campeche y Carmen.
+          </p>
+          
+          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={handleShareWhatsApp}
+              style={{
+                flex: 1,
+                minWidth: '170px',
+                padding: '0.9rem 1rem',
+                borderRadius: '12px',
+                backgroundColor: '#25D366',
+                color: '#FFF',
+                fontWeight: 900,
+                fontSize: '0.9rem',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 15px rgba(37, 211, 102, 0.35)'
+              }}
+            >
+              <Smartphone size={18} /> Compartir por WhatsApp
+            </button>
+            
+            <button
+              type="button"
+              onClick={handleCopyInviteLink}
+              style={{
+                padding: '0.9rem 1.1rem',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(255,255,255,0.08)',
+                border: '1px solid var(--glass-border)',
+                color: '#FFF',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              {copiedInvite ? <Check size={16} color="#4ADE80" /> : <Copy size={16} />}
+              {copiedInvite ? '¡Copiado!' : 'Copiar Enlace'}
+            </button>
+          </div>
         </div>
         
         {/* Primary CTA: Ver Aliados */}
