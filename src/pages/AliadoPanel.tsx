@@ -21,15 +21,27 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  Copy
+  Copy,
+  FileSpreadsheet,
+  Download,
+  Calendar,
+  Filter
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QrScannerModal } from '../components/QrScannerModal';
-import { recordMemberVisit, type LoyaltyMilestone } from '../lib/loyaltyService';
+import { type LoyaltyMilestone } from '../lib/loyaltyService';
 import { verifyQrPayload } from '../lib/dynamicQr';
 import { getUserGamificationProfile } from '../lib/challengesService';
 import { QRCodeSVG } from 'qrcode.react';
 import { requestTrialPass } from '../lib/trialService';
+import {
+  recordPromotionDelivery,
+  getAllyPromotions,
+  downloadPromotionsCSV,
+  downloadPromotionsStyledExcel,
+  type PromotionRecord
+} from '../lib/promotionsReportService';
+import { parsePromotions } from '../lib/promotionsHelper';
 
 interface AllyData {
   id: string;
@@ -123,6 +135,35 @@ const AliadoPanel: React.FC = () => {
   const [todayValidations, setTodayValidations] = useState<Array<{ time: string; member: string; discount: string }>>([]);
   const [showHistoryList, setShowHistoryList] = useState(false);
 
+  // Estados para reporte y exportación a Excel
+  const [allyPromotions, setAllyPromotions] = useState<PromotionRecord[]>([]);
+  const [exportFilter, setExportFilter] = useState<'all' | 'today'>('all');
+  const [exportFeedback, setExportFeedback] = useState<string | null>(null);
+
+  // Selector de promoción activa si el aliado tiene 2 o más
+  const [selectedPromoIndex, setSelectedPromoIndex] = useState(0);
+
+  const loadAllyData = (selectedAlly: AllyData) => {
+    const records = getAllyPromotions(selectedAlly.id);
+    setAllyPromotions(records);
+    setSelectedPromoIndex(0);
+
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    const todayRecs = records.filter(r => r.dateStr === todayStr);
+    if (todayRecs.length > 0) {
+      setTodayValidations(todayRecs.map(r => ({
+        time: r.timeStr.slice(0, 5),
+        member: r.memberNumber > 0 ? `#${String(r.memberNumber).padStart(4, '0')}` : 'Cortesía 24h',
+        discount: r.discountApplied
+      })));
+    }
+  };
+
   // Estados para regalar Pase de Cortesía 24h al cliente
   const [showTrialGiftModal, setShowTrialGiftModal] = useState(false);
   const [trialGiftPhone, setTrialGiftPhone] = useState('');
@@ -131,6 +172,10 @@ const AliadoPanel: React.FC = () => {
   const [trialGiftSuccess, setTrialGiftSuccess] = useState<string | null>(null);
   const [trialGiftError, setTrialGiftError] = useState('');
   const [copiedTrialLink, setCopiedTrialLink] = useState(false);
+
+  // Promociones parseadas y promoción actualmente activa para aplicar
+  const allyPromos = parsePromotions(ally?.discount);
+  const activePromoDiscount = allyPromos[selectedPromoIndex] || ally?.discount || '';
 
   const trialInviteUrl = typeof window !== 'undefined'
     ? `${window.location.origin}/?trial=true&ally=${encodeURIComponent(ally?.name || '')}`
@@ -205,6 +250,7 @@ const AliadoPanel: React.FC = () => {
 
       if (formattedBranches.length === 1) {
         setAlly(formattedBranches[0]);
+        loadAllyData(formattedBranches[0]);
         setStep('panel');
       } else {
         setBranchesList(formattedBranches);
@@ -219,6 +265,7 @@ const AliadoPanel: React.FC = () => {
 
   const handleSelectBranch = (selectedAlly: AllyData) => {
     setAlly(selectedAlly);
+    loadAllyData(selectedAlly);
     setStep('panel');
   };
 
@@ -314,7 +361,7 @@ const AliadoPanel: React.FC = () => {
 
         const timeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
         setTodayValidations(prev => [
-          { time: timeStr, member: `Cortesía 24h`, discount: ally.discount },
+          { time: timeStr, member: `Cortesía 24h`, discount: activePromoDiscount },
           ...prev
         ]);
 
@@ -322,13 +369,28 @@ const AliadoPanel: React.FC = () => {
           ? `${trialSticker.phone.slice(0, 2)} •••• ${trialSticker.phone.slice(-2)}` 
           : '';
 
+        // Registrar en el log de promociones para exportación a Excel
+        const { record: promoRecord } = recordPromotionDelivery({
+          allyId: ally.id,
+          allyName: ally.name,
+          allyCategory: ally.category,
+          memberNumber: 0,
+          memberCode: clean,
+          memberLevel: 'Pase de Cortesía 24h',
+          discountApplied: activePromoDiscount,
+          validationMethod: 'Pase Cortesía 24h',
+          phoneMasked: phoneMasked,
+          notes: 'Pase de cortesía 24 horas aplicado en caja'
+        });
+        setAllyPromotions(prev => [promoRecord, ...prev.filter(p => p.id !== promoRecord.id)]);
+
         setValidationResult({
           status: 'valid',
           code: clean,
           member_number: 0,
           level: 'trial',
           phone: phoneMasked,
-          discountToApply: ally.discount,
+          discountToApply: activePromoDiscount,
           message: '🎁 ¡PASE DE CORTESÍA VÁLIDO! Aplica 1 descuento de bienvenida. Invita al cliente a adquirir la membresía oficial.',
           isTrialPass: true,
           isDynamic: parsedQr.isDynamic,
@@ -432,20 +494,27 @@ const AliadoPanel: React.FC = () => {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
         setTodayValidations(prev => [
-          { time: timeStr, member: `#${String(memberNum).padStart(4, '0')}`, discount: ally.discount },
+          { time: timeStr, member: `#${String(memberNum).padStart(4, '0')}`, discount: activePromoDiscount },
           ...prev
         ]);
-
-        const visitResult = recordMemberVisit(
-          foundSticker.code,
-          memberNum,
-          ally.name,
-          ally.discount
-        );
 
         const phoneMasked = foundSticker.phone 
           ? `${foundSticker.phone.slice(0, 2)} •••• ${foundSticker.phone.slice(-2)}` 
           : '';
+
+        // Registrar en el log de promociones para exportación a Excel y sistema de lealtad
+        const { record: promoRecord, loyaltyVisit } = recordPromotionDelivery({
+          allyId: ally.id,
+          allyName: ally.name,
+          allyCategory: ally.category,
+          memberNumber: memberNum,
+          memberCode: foundSticker.code,
+          memberLevel: getLevelInfo(level).name,
+          discountApplied: activePromoDiscount,
+          validationMethod: parsedQr.isDynamic ? 'Cámara QR en vivo' : 'Calcomanía Física',
+          phoneMasked: phoneMasked
+        });
+        setAllyPromotions(prev => [promoRecord, ...prev.filter(p => p.id !== promoRecord.id)]);
 
         const gameProfile = getUserGamificationProfile(foundSticker.code, memberNum);
 
@@ -455,7 +524,7 @@ const AliadoPanel: React.FC = () => {
           member_number: memberNum,
           level: level,
           phone: phoneMasked,
-          discountToApply: ally.discount,
+          discountToApply: activePromoDiscount,
           message: parsedQr.isDynamic 
             ? '¡Membresía Digital en Vivo Verificada! ✓' 
             : '¡Calcomanía Física Oficial Verificada! ✓',
@@ -463,9 +532,9 @@ const AliadoPanel: React.FC = () => {
           isPhysicalSticker: !parsedQr.isDynamic,
           ageSeconds: parsedQr.ageSeconds,
           isUnclaimedOfficial: !isClaimed,
-          totalVisits: visitResult.totalVisits,
-          achievedMilestone: visitResult.achievedMilestone,
-          nextMilestone: visitResult.nextMilestone,
+          totalVisits: loyaltyVisit?.totalVisits || promoRecord.totalVisits || 1,
+          achievedMilestone: loyaltyVisit?.achievedMilestone || null,
+          nextMilestone: loyaltyVisit?.nextMilestone,
           totalPoints: gameProfile.availablePoints,
           pointsEarned: 10
         });
@@ -503,16 +572,23 @@ const AliadoPanel: React.FC = () => {
         const now = new Date();
         const timeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
         setTodayValidations(prev => [
-          { time: timeStr, member: `#${String(memberNum).padStart(4, '0')}`, discount: ally.discount },
+          { time: timeStr, member: `#${String(memberNum).padStart(4, '0')}`, discount: activePromoDiscount },
           ...prev
         ]);
 
-        const visitResult = recordMemberVisit(
-          clean,
-          memberNum,
-          ally.name,
-          ally.discount
-        );
+        // Registrar en el log de promociones para exportación a Excel y sistema de lealtad
+        const { record: promoRecord, loyaltyVisit } = recordPromotionDelivery({
+          allyId: ally.id,
+          allyName: ally.name,
+          allyCategory: ally.category,
+          memberNumber: memberNum,
+          memberCode: clean,
+          memberLevel: getLevelInfo(derivedLevel).name,
+          discountApplied: activePromoDiscount,
+          validationMethod: 'Cámara QR en vivo',
+          phoneMasked: ''
+        });
+        setAllyPromotions(prev => [promoRecord, ...prev.filter(p => p.id !== promoRecord.id)]);
 
         const gameProfileFallback = getUserGamificationProfile(clean, memberNum);
 
@@ -521,14 +597,14 @@ const AliadoPanel: React.FC = () => {
           code: clean,
           member_number: memberNum,
           level: derivedLevel,
-          discountToApply: ally.discount,
+          discountToApply: activePromoDiscount,
           message: '¡Pase Digital Oficial Verificado!',
           isDynamic: true,
           ageSeconds: parsedQr.ageSeconds,
           isUnclaimedOfficial: true,
-          totalVisits: visitResult.totalVisits,
-          achievedMilestone: visitResult.achievedMilestone,
-          nextMilestone: visitResult.nextMilestone,
+          totalVisits: loyaltyVisit?.totalVisits || promoRecord.totalVisits || 1,
+          achievedMilestone: loyaltyVisit?.achievedMilestone || null,
+          nextMilestone: loyaltyVisit?.nextMilestone,
           totalPoints: gameProfileFallback.availablePoints,
           pointsEarned: 10
         });
@@ -569,12 +645,77 @@ const AliadoPanel: React.FC = () => {
     validateCodeOrInput(manualInput);
   };
 
+  const handleExportCSV = () => {
+    if (!ally) return;
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    const dataToExport = exportFilter === 'today'
+      ? allyPromotions.filter(r => r.dateStr === todayStr)
+      : allyPromotions;
+
+    if (dataToExport.length === 0) {
+      setExportFeedback(
+        exportFilter === 'today'
+          ? 'No hay promociones registradas el día de hoy.'
+          : 'Aún no tienes promociones registradas para exportar.'
+      );
+      setTimeout(() => setExportFeedback(null), 3500);
+      return;
+    }
+
+    downloadPromotionsCSV(
+      dataToExport,
+      ally.name,
+      exportFilter === 'today' ? 'Reporte de Promociones del Día' : 'Reporte General de Promociones'
+    );
+    setExportFeedback(`✓ ¡Reporte CSV descargado con éxito (${dataToExport.length} registros)! Ábrelo en Microsoft Excel.`);
+    setTimeout(() => setExportFeedback(null), 5000);
+  };
+
+  const handleExportStyledExcel = () => {
+    if (!ally) return;
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('es-MX', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    const dataToExport = exportFilter === 'today'
+      ? allyPromotions.filter(r => r.dateStr === todayStr)
+      : allyPromotions;
+
+    if (dataToExport.length === 0) {
+      setExportFeedback(
+        exportFilter === 'today'
+          ? 'No hay promociones registradas el día de hoy.'
+          : 'Aún no tienes promociones registradas para exportar.'
+      );
+      setTimeout(() => setExportFeedback(null), 3500);
+      return;
+    }
+
+    downloadPromotionsStyledExcel(
+      dataToExport,
+      ally.name,
+      exportFilter === 'today' ? 'Reporte de Promociones del Día' : 'Reporte General de Promociones'
+    );
+    setExportFeedback(`✓ ¡Reporte Excel (.xls) descargado con éxito (${dataToExport.length} registros)! Ábrelo en Microsoft Excel.`);
+    setTimeout(() => setExportFeedback(null), 5000);
+  };
+
   const handleLogout = () => {
     setAlly(null);
     setStep('login');
     setPinInput('');
     setErrorMsg('');
     setValidationResult(null);
+    setAllyPromotions([]);
+    setTodayValidations([]);
+    setExportFeedback(null);
   };
 
   const getLevelInfo = (levelStr?: string) => {
@@ -801,25 +942,93 @@ const AliadoPanel: React.FC = () => {
         </button>
       </div>
 
-      {/* Promoción activa en grande */}
-      <div style={{
-        padding: '1rem 1.2rem',
-        borderRadius: '16px',
-        backgroundColor: 'rgba(212,175,55,0.12)',
-        border: '1.5px solid rgba(212,175,55,0.35)',
-        marginBottom: '1.5rem',
-        display: 'flex',
-        gap: '0.8rem',
-        alignItems: 'center',
-      }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(212,175,55,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Gift size={22} color="var(--accent-gold)" />
+      {/* Promoción(es) activas en caja */}
+      {allyPromos.length <= 1 ? (
+        <div style={{
+          padding: '1rem 1.2rem',
+          borderRadius: '16px',
+          backgroundColor: 'rgba(212,175,55,0.12)',
+          border: '1.5px solid rgba(212,175,55,0.35)',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          gap: '0.8rem',
+          alignItems: 'center',
+        }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'rgba(212,175,55,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Gift size={22} color="var(--accent-gold)" />
+          </div>
+          <div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>Tu Promoción a Aplicar en Caja</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FFF', marginTop: '2px' }}>{ally?.discount}</div>
+          </div>
         </div>
-        <div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>Tu Promoción a Aplicar en Caja</div>
-          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FFF', marginTop: '2px' }}>{ally?.discount}</div>
+      ) : (
+        <div style={{
+          padding: '1.1rem 1.2rem',
+          borderRadius: '18px',
+          backgroundColor: 'rgba(212,175,55,0.12)',
+          border: '1.5px solid rgba(212,175,55,0.4)',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.7rem',
+          boxShadow: '0 6px 20px rgba(0,0,0,0.25)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+              <Gift size={18} color="var(--accent-gold)" />
+              <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800 }}>
+                {allyPromos.length} Promociones Activas en tu Negocio
+              </span>
+            </div>
+            <span style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>
+              Elige cuál aplicarás al cliente
+            </span>
+          </div>
+
+          {/* Selector de pestañas para el cajero */}
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+            {allyPromos.map((_p, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setSelectedPromoIndex(idx)}
+                style={{
+                  flex: 1,
+                  minWidth: '90px',
+                  padding: '0.55rem 0.6rem',
+                  borderRadius: '10px',
+                  border: selectedPromoIndex === idx ? '2px solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.1)',
+                  backgroundColor: selectedPromoIndex === idx ? 'rgba(212,175,55,0.25)' : 'rgba(255,255,255,0.04)',
+                  color: selectedPromoIndex === idx ? '#FFF' : 'var(--text-dim)',
+                  fontSize: '0.75rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                Promo {idx + 1} {selectedPromoIndex === idx ? '✓' : ''}
+              </button>
+            ))}
+          </div>
+
+          {/* Promoción seleccionada en grande */}
+          <div style={{
+            backgroundColor: 'rgba(0,0,0,0.3)',
+            borderRadius: '12px',
+            padding: '0.75rem 1rem',
+            border: '1px solid rgba(212,175,55,0.25)'
+          }}>
+            <div style={{ fontSize: '0.65rem', color: 'var(--accent-gold)', textTransform: 'uppercase', fontWeight: 800, marginBottom: '2px' }}>
+              Beneficio activo seleccionado:
+            </div>
+            <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#FFF' }}>
+              {activePromoDiscount}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── BOTÓN GIGANTE: ESCANEAR CÁMARA (TERMINAL) ── */}
       <motion.button
@@ -1034,6 +1243,177 @@ const AliadoPanel: React.FC = () => {
         </div>
       )}
 
+      {/* ── GENERADOR DE REPORTE DE PROMOCIONES PARA EXCEL ── */}
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)',
+        border: '1.5px solid rgba(212, 175, 55, 0.35)',
+        borderRadius: '22px',
+        padding: '1.3rem',
+        marginBottom: '1.5rem',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.35)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.8rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+            <div style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(34, 197, 94, 0.18)',
+              border: '1px solid rgba(74, 222, 128, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <FileSpreadsheet size={22} color="#4ADE80" />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 900, color: '#FFF', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                Reporte de Promociones para Excel
+              </h3>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
+                Descarga y abre directamente en Microsoft Excel o Google Sheets
+              </span>
+            </div>
+          </div>
+
+          <span style={{
+            fontSize: '0.75rem',
+            fontWeight: 800,
+            padding: '4px 10px',
+            borderRadius: '100px',
+            backgroundColor: 'rgba(212, 175, 55, 0.15)',
+            color: 'var(--accent-gold)',
+            border: '1px solid rgba(212, 175, 55, 0.3)'
+          }}>
+            {allyPromotions.length} registradas en terminal
+          </span>
+        </div>
+
+        <p style={{ fontSize: '0.8rem', color: '#CBD5E1', margin: '0 0 1rem', lineHeight: 1.45 }}>
+          Genera un archivo con toda la información de cada beneficio otorgado: <strong>fecha, hora exacta, número de socio, código de distintivo, membresía y descuento aplicado</strong>.
+        </p>
+
+        {/* Selector de periodo: Todo vs Hoy */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button
+            type="button"
+            onClick={() => setExportFilter('all')}
+            style={{
+              flex: 1,
+              padding: '0.6rem 0.8rem',
+              borderRadius: '12px',
+              border: exportFilter === 'all' ? '1.5px solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.1)',
+              backgroundColor: exportFilter === 'all' ? 'rgba(212, 175, 55, 0.2)' : 'rgba(255,255,255,0.03)',
+              color: exportFilter === 'all' ? 'var(--accent-gold)' : 'var(--text-dim)',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Filter size={14} /> Todo el Historial ({allyPromotions.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setExportFilter('today')}
+            style={{
+              flex: 1,
+              padding: '0.6rem 0.8rem',
+              borderRadius: '12px',
+              border: exportFilter === 'today' ? '1.5px solid #4ADE80' : '1px solid rgba(255,255,255,0.1)',
+              backgroundColor: exportFilter === 'today' ? 'rgba(74, 222, 128, 0.2)' : 'rgba(255,255,255,0.03)',
+              color: exportFilter === 'today' ? '#4ADE80' : 'var(--text-dim)',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Calendar size={14} /> Solo Hoy ({todayValidations.length})
+          </button>
+        </div>
+
+        {/* Botones de Descarga */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.7rem' }}>
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            disabled={allyPromotions.length === 0}
+            style={{
+              padding: '0.9rem 0.8rem',
+              borderRadius: '14px',
+              backgroundColor: allyPromotions.length > 0 ? '#22C55E' : 'rgba(255,255,255,0.06)',
+              color: allyPromotions.length > 0 ? '#0B2912' : 'var(--text-dim)',
+              fontWeight: 900,
+              fontSize: '0.85rem',
+              border: 'none',
+              cursor: allyPromotions.length > 0 ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              boxShadow: allyPromotions.length > 0 ? '0 4px 18px rgba(34, 197, 94, 0.35)' : 'none',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <Download size={16} /> Descargar Excel (.csv)
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportStyledExcel}
+            disabled={allyPromotions.length === 0}
+            style={{
+              padding: '0.9rem 0.8rem',
+              borderRadius: '14px',
+              backgroundColor: allyPromotions.length > 0 ? 'rgba(212, 175, 55, 0.18)' : 'rgba(255,255,255,0.04)',
+              color: allyPromotions.length > 0 ? 'var(--accent-gold)' : 'var(--text-dim)',
+              border: allyPromotions.length > 0 ? '1.5px solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.1)',
+              fontWeight: 800,
+              fontSize: '0.85rem',
+              cursor: allyPromotions.length > 0 ? 'pointer' : 'not-allowed',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.15s ease'
+            }}
+          >
+            <FileSpreadsheet size={16} /> Excel con Diseño (.xls)
+          </button>
+        </div>
+
+        {exportFeedback && (
+          <div style={{
+            marginTop: '0.9rem',
+            padding: '0.75rem 1rem',
+            borderRadius: '12px',
+            backgroundColor: exportFeedback.startsWith('✓') ? 'rgba(74, 222, 128, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+            border: exportFeedback.startsWith('✓') ? '1px solid #4ADE80' : '1px solid #EF4444',
+            color: exportFeedback.startsWith('✓') ? '#D1FAE5' : '#FCA5A5',
+            fontSize: '0.8rem',
+            fontWeight: 700,
+            textAlign: 'center'
+          }}>
+            {exportFeedback}
+          </div>
+        )}
+
+        {allyPromotions.length === 0 && (
+          <p style={{ margin: '0.7rem 0 0', fontSize: '0.72rem', color: 'var(--text-dim)', textAlign: 'center', fontStyle: 'italic' }}>
+            💡 En cuanto valides el primer código QR o número de socio, podrás descargar tu archivo de Excel aquí.
+          </p>
+        )}
+      </div>
+
       {/* ── SEMÁFORO EN PANTALLA COMPLETA (VERDE / ROJO) ── */}
       <AnimatePresence>
         {validationResult && (
@@ -1151,7 +1531,7 @@ const AliadoPanel: React.FC = () => {
                     backgroundColor: '#FFFFFF',
                     color: '#064E3B',
                     borderRadius: '24px',
-                    padding: '1.8rem 1.2rem',
+                    padding: '1.6rem 1.2rem',
                     marginBottom: '1.5rem',
                     boxShadow: '0 15px 40px rgba(0,0,0,0.4)',
                     border: '3px solid var(--accent-gold)'
@@ -1159,8 +1539,40 @@ const AliadoPanel: React.FC = () => {
                     <div style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 900, color: '#047857', marginBottom: '6px' }}>
                       APLICAR EN CUENTA O TICKET:
                     </div>
-                    <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#064E3B', lineHeight: 1.1 }}>
-                      {validationResult.discountToApply || ally?.discount}
+
+                    {allyPromos.length > 1 && (
+                      <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '10px', flexWrap: 'wrap' }}>
+                        {allyPromos.map((p, pI) => {
+                          const isCurrent = validationResult.discountToApply === p;
+                          return (
+                            <button
+                              key={pI}
+                              type="button"
+                              onClick={() => {
+                                setSelectedPromoIndex(pI);
+                                setValidationResult(prev => prev ? ({ ...prev, discountToApply: p }) : null);
+                              }}
+                              style={{
+                                padding: '5px 12px',
+                                borderRadius: '100px',
+                                border: isCurrent ? '2px solid #064E3B' : '1px solid #CBD5E1',
+                                backgroundColor: isCurrent ? '#064E3B' : '#E2E8F0',
+                                color: isCurrent ? '#FFF' : '#334155',
+                                fontWeight: 800,
+                                fontSize: '0.78rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.15s ease'
+                              }}
+                            >
+                              Promo {pI + 1} {isCurrent ? '✓' : ''}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <div style={{ fontSize: '2.2rem', fontWeight: 900, color: '#064E3B', lineHeight: 1.1 }}>
+                      {validationResult.discountToApply || activePromoDiscount}
                     </div>
                   </div>
 

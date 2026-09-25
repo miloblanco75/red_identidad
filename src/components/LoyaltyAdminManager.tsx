@@ -1,6 +1,11 @@
-﻿import React, { useState, useEffect } from 'react';
-import { Award, Gift, Save, CheckCircle2, History, Users, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Award, Gift, Save, CheckCircle2, History, Users, RefreshCw, FileSpreadsheet, Download } from 'lucide-react';
 import { getLoyaltyConfig, saveLoyaltyConfig, getAllVisits, type LoyaltyConfig, type MemberVisitRecord } from '../lib/loyaltyService';
+import {
+  getAllPromotionsGlobal,
+  downloadPromotionsCSV,
+  downloadPromotionsStyledExcel
+} from '../lib/promotionsReportService';
 
 export const LoyaltyAdminManager: React.FC = () => {
   const [config, setConfig] = useState<LoyaltyConfig>(getLoyaltyConfig());
@@ -15,6 +20,70 @@ export const LoyaltyAdminManager: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleExportAdminCSV = () => {
+    const globalPromos = getAllPromotionsGlobal();
+    const recordsToExport = [...globalPromos];
+    const existingIds = new Set(globalPromos.map(p => p.id));
+    
+    visits.forEach(v => {
+      if (!existingIds.has(v.id)) {
+        recordsToExport.push({
+          id: v.id,
+          allyId: 'general',
+          allyName: v.allyName,
+          timestamp: v.timestamp,
+          dateStr: v.date.split(',')[0] || v.date,
+          timeStr: v.date.split(',')[1]?.trim() || '',
+          memberNumber: v.memberNumber,
+          memberCode: v.memberCode,
+          memberLevel: 'Distintivo Oficial',
+          discountApplied: v.discount,
+          validationMethod: 'Cámara QR en vivo',
+          totalVisits: 1
+        });
+      }
+    });
+
+    if (recordsToExport.length === 0) {
+      alert('Aún no hay visitas ni promociones registradas en el sistema.');
+      return;
+    }
+
+    downloadPromotionsCSV(recordsToExport, 'Red_Identidad_Global', 'Reporte Global de Promociones');
+  };
+
+  const handleExportAdminXLS = () => {
+    const globalPromos = getAllPromotionsGlobal();
+    const recordsToExport = [...globalPromos];
+    const existingIds = new Set(globalPromos.map(p => p.id));
+    
+    visits.forEach(v => {
+      if (!existingIds.has(v.id)) {
+        recordsToExport.push({
+          id: v.id,
+          allyId: 'general',
+          allyName: v.allyName,
+          timestamp: v.timestamp,
+          dateStr: v.date.split(',')[0] || v.date,
+          timeStr: v.date.split(',')[1]?.trim() || '',
+          memberNumber: v.memberNumber,
+          memberCode: v.memberCode,
+          memberLevel: 'Distintivo Oficial',
+          discountApplied: v.discount,
+          validationMethod: 'Cámara QR en vivo',
+          totalVisits: 1
+        });
+      }
+    });
+
+    if (recordsToExport.length === 0) {
+      alert('Aún no hay visitas ni promociones registradas en el sistema.');
+      return;
+    }
+
+    downloadPromotionsStyledExcel(recordsToExport, 'Red_Identidad_Global', 'Reporte Global de Promociones');
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,31 +103,73 @@ export const LoyaltyAdminManager: React.FC = () => {
             <Award size={14} /> Recorrido de Lealtad & Visitas
           </div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 900, margin: '0 0 0.3rem' }}>
-            Configuración de Premios de Lealtad
+            Configuración de Premios de Lealtad & Reportes
           </h2>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem', margin: 0, maxWidth: '650px', lineHeight: 1.4 }}>
             Los socios acumulan visitas consumiendo en cualquiera de los <strong>comercios aliados</strong> (no puntos de venta). No tienen que ser comercios diferentes; visitas diarias al mismo café o negocio también cuentan.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={loadData}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '0.6rem 1rem',
-            backgroundColor: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '12px',
-            color: '#FFF',
-            fontSize: '0.8rem',
-            cursor: 'pointer'
-          }}
-        >
-          <RefreshCw size={14} /> Actualizar Datos
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={handleExportAdminCSV}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0.6rem 1rem',
+              backgroundColor: '#22C55E',
+              color: '#0A2514',
+              borderRadius: '12px',
+              fontWeight: 800,
+              fontSize: '0.8rem',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            <Download size={14} /> Exportar Excel (.csv)
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportAdminXLS}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0.6rem 1rem',
+              backgroundColor: 'rgba(212,175,55,0.2)',
+              border: '1px solid rgba(212,175,55,0.4)',
+              borderRadius: '12px',
+              color: 'var(--accent-gold)',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: 'pointer'
+            }}
+          >
+            <FileSpreadsheet size={14} /> Excel (.xls)
+          </button>
+
+          <button
+            type="button"
+            onClick={loadData}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0.6rem 1rem',
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '12px',
+              color: '#FFF',
+              fontSize: '0.8rem',
+              cursor: 'pointer'
+            }}
+          >
+            <RefreshCw size={14} /> Actualizar
+          </button>
+        </div>
       </div>
 
       {/* Tarjetas de Estadísticas Globales */}

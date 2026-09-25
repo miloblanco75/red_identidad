@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award } from 'lucide-react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award, Plus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import StickerQRCode from '../components/StickerQRCode';
 
@@ -7,6 +7,7 @@ import EnvelopeStickerDesigner from '../components/EnvelopeStickerDesigner';
 import SorteosRuleta from '../components/SorteosRuleta';
 import AlliesMessenger from '../components/AlliesMessenger';
 import LoyaltyAdminManager from '../components/LoyaltyAdminManager';
+import { parsePromotions, formatPromotions } from '../lib/promotionsHelper';
 
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -30,7 +31,7 @@ const Admin: React.FC = () => {
   // States for Allies
   const [allyName, setAllyName] = useState('');
   const [allyCategory, setAllyCategory] = useState('Comida');
-  const [allyDiscount, setAllyDiscount] = useState('');
+  const [allyDiscounts, setAllyDiscounts] = useState<string[]>(['']);
   const [allyLat, setAllyLat] = useState('');
   const [allyLng, setAllyLng] = useState('');
   const [isDigital, setIsDigital] = useState(false);
@@ -46,7 +47,7 @@ const Admin: React.FC = () => {
   const [editingAlly, setEditingAlly] = useState<any | null>(null);
   const [editName, setEditName] = useState('');
   const [editCategory, setEditCategory] = useState('Comida');
-  const [editDiscount, setEditDiscount] = useState('');
+  const [editDiscounts, setEditDiscounts] = useState<string[]>(['']);
   const [editLat, setEditLat] = useState('');
   const [editLng, setEditLng] = useState('');
   const [editIsDigital, setEditIsDigital] = useState(false);
@@ -371,7 +372,13 @@ const Admin: React.FC = () => {
     setErrorMsg('');
 
     try {
-      if (!allyName || !allyCategory || !allyDiscount || (!isDigital && (!allyLat || !allyLng))) {
+      const cleanDiscounts = allyDiscounts.map(d => d.trim()).filter(Boolean);
+      if (cleanDiscounts.length === 0) {
+        throw new Error('Por favor ingresa al menos una promoción o descuento para el aliado.');
+      }
+      const finalDiscount = formatPromotions(cleanDiscounts);
+
+      if (!allyName || !allyCategory || (!isDigital && (!allyLat || !allyLng))) {
         throw new Error('Por favor completa todos los campos obligatorios.');
       }
 
@@ -381,7 +388,7 @@ const Admin: React.FC = () => {
       const fullObj: any = {
         name: allyName,
         category: allyCategory,
-        discount: allyDiscount,
+        discount: finalDiscount,
         lat: parsedLat,
         lng: parsedLng,
         phone: allyPhone || null,
@@ -400,7 +407,7 @@ const Admin: React.FC = () => {
           const coreObj = {
             name: allyName,
             category: allyCategory,
-            discount: allyDiscount,
+            discount: finalDiscount,
             lat: parsedLat,
             lng: parsedLng,
             ally_pin: allyPin || null,
@@ -413,9 +420,9 @@ const Admin: React.FC = () => {
         }
       }
 
-      setSuccessMsg(`¡Aliado "${allyName}" agregado exitosamente a la Red!`);
+      setSuccessMsg(`¡Aliado "${allyName}" agregado exitosamente a la Red con ${cleanDiscounts.length} promoción(es)!`);
       setAllyName('');
-      setAllyDiscount('');
+      setAllyDiscounts(['']);
       setAllyLat('');
       setAllyLng('');
       setIsDigital(false);
@@ -540,7 +547,8 @@ const Admin: React.FC = () => {
     setEditingAlly(ally);
     setEditName(ally.name || '');
     setEditCategory(ally.category || 'Comida');
-    setEditDiscount(ally.discount || '');
+    const promos = parsePromotions(ally.discount);
+    setEditDiscounts(promos.length > 0 ? promos : ['']);
     const isNoLoc = ally.lat === null || ally.lat === undefined || ally.lng === null || ally.lng === undefined || (Number(ally.lat) === 0 && Number(ally.lng) === 0);
     setEditIsDigital(isNoLoc);
     setEditLat(ally.lat != null && Number(ally.lat) !== 0 ? String(ally.lat) : '');
@@ -560,7 +568,13 @@ const Admin: React.FC = () => {
     setSuccessMsg('');
 
     try {
-      if (!editName || !editCategory || !editDiscount || (!editIsDigital && (!editLat || !editLng))) {
+      const cleanEditDiscounts = editDiscounts.map(d => d.trim()).filter(Boolean);
+      if (cleanEditDiscounts.length === 0) {
+        throw new Error('Por favor ingresa al menos una promoción o descuento.');
+      }
+      const finalEditDiscount = formatPromotions(cleanEditDiscounts);
+
+      if (!editName || !editCategory || (!editIsDigital && (!editLat || !editLng))) {
         throw new Error('Por favor completa todos los campos obligatorios.');
       }
 
@@ -570,7 +584,7 @@ const Admin: React.FC = () => {
       const fullObj: any = {
         name: editName,
         category: editCategory,
-        discount: editDiscount,
+        discount: finalEditDiscount,
         lat: parsedLat,
         lng: parsedLng,
         phone: editPhone || null,
@@ -587,7 +601,7 @@ const Admin: React.FC = () => {
           const coreObj = {
             name: editName,
             category: editCategory,
-            discount: editDiscount,
+            discount: finalEditDiscount,
             lat: parsedLat,
             lng: parsedLng,
             ally_pin: editPin || null,
@@ -599,7 +613,7 @@ const Admin: React.FC = () => {
         }
       }
 
-      setSuccessMsg(`¡Aliado "${editName}" actualizado exitosamente!`);
+      setSuccessMsg(`¡Aliado "${editName}" actualizado exitosamente con ${cleanEditDiscounts.length} promoción(es)!`);
       setEditingAlly(null);
       fetchSavedAllies();
     } catch (err: any) {
@@ -920,8 +934,75 @@ const Admin: React.FC = () => {
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Descuento / Promoción</label>
-              <input type="text" value={allyDiscount} onChange={(e) => setAllyDiscount(e.target.value)} required placeholder="Ej. 15% OFF o Postre Gratis" style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap', gap: '0.4rem' }}>
+                <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-gold)', letterSpacing: '0.1em', fontWeight: 800 }}>
+                  🎁 Promociones / Descuentos ({allyDiscounts.length})
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setAllyDiscounts(prev => [...prev, ''])}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    backgroundColor: 'rgba(212,175,55,0.15)',
+                    border: '1px solid var(--accent-gold)',
+                    color: 'var(--accent-gold)',
+                    padding: '3px 8px',
+                    borderRadius: '8px',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Plus size={13} /> + Agregar otra promoción
+                </button>
+              </div>
+              <p style={{ margin: '0 0 0.6rem', fontSize: '0.72rem', color: 'var(--text-dim)', lineHeight: 1.4 }}>
+                Puedes subir 2 o más promociones. Los socios las verán en un <strong>carrusel interactivo</strong> en la app.
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {allyDiscounts.map((discount, index) => (
+                  <div key={index} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--accent-gold)', minWidth: '60px' }}>
+                      Promo {index + 1}:
+                    </span>
+                    <input
+                      type="text"
+                      value={discount}
+                      onChange={(e) => {
+                        const updated = [...allyDiscounts];
+                        updated[index] = e.target.value;
+                        setAllyDiscounts(updated);
+                      }}
+                      required={index === 0}
+                      placeholder={index === 0 ? "Ej. 15% OFF en consumo total" : "Ej. 2x1 en cafés los martes"}
+                      style={{ flex: 1, padding: '0.9rem 1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }}
+                    />
+                    {allyDiscounts.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setAllyDiscounts(allyDiscounts.filter((_, i) => i !== index))}
+                        style={{
+                          padding: '0.7rem',
+                          backgroundColor: 'rgba(255, 68, 68, 0.12)',
+                          border: '1px solid rgba(255, 68, 68, 0.3)',
+                          borderRadius: '10px',
+                          color: '#FF6B6B',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                        title="Eliminar esta promoción"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -1069,7 +1150,24 @@ const Admin: React.FC = () => {
                     )}
                     <div>
                       <strong style={{ display: 'block', fontSize: '1rem' }}>{ally.name}</strong>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>{ally.category} • {ally.discount}</span>
+                      {(() => {
+                        const promos = parsePromotions(ally.discount);
+                        if (promos.length <= 1) {
+                          return <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>{ally.category} • {ally.discount}</span>;
+                        }
+                        return (
+                          <div style={{ marginTop: '2px' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{ally.category} ({promos.length} promociones):</span>
+                            <div style={{ marginTop: '3px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                              {promos.map((p, pIdx) => (
+                                <span key={pIdx} style={{ fontSize: '0.75rem', color: 'var(--accent-gold)' }}>
+                                  🏷️ {p}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
                       <div style={{ display: 'flex', gap: '0.8rem', marginTop: '4px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '0.75rem', color: '#4ADE80', fontWeight: 600 }}>🎁 {ally.promotions_given ?? 0} promo(s)</span>
                         {(!ally.lat || !ally.lng || (Number(ally.lat) === 0 && Number(ally.lng) === 0)) && <span style={{ fontSize: '0.75rem', color: '#C084FC', fontWeight: 600 }}>🌐 Digital</span>}
@@ -1138,9 +1236,73 @@ const Admin: React.FC = () => {
                 </select>
               </div>
 
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Descuento / Promoción</label>
-                <input type="text" value={editDiscount} onChange={(e) => setEditDiscount(e.target.value)} required style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }} />
+              <div style={{ marginBottom: '1.2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.4rem' }}>
+                  <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-gold)', letterSpacing: '0.08em', fontWeight: 800 }}>
+                    🎁 Promociones / Descuentos ({editDiscounts.length})
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setEditDiscounts(prev => [...prev, ''])}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      backgroundColor: 'rgba(212,175,55,0.15)',
+                      border: '1px solid var(--accent-gold)',
+                      color: 'var(--accent-gold)',
+                      padding: '3px 8px',
+                      borderRadius: '8px',
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Plus size={12} /> + Agregar otra promoción
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {editDiscounts.map((discount, index) => (
+                    <div key={index} style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--accent-gold)', minWidth: '55px' }}>
+                        Promo {index + 1}:
+                      </span>
+                      <input
+                        type="text"
+                        value={discount}
+                        onChange={(e) => {
+                          const updated = [...editDiscounts];
+                          updated[index] = e.target.value;
+                          setEditDiscounts(updated);
+                        }}
+                        required={index === 0}
+                        placeholder={index === 0 ? "Ej. 15% OFF en consumo total" : "Ej. 2x1 en cafés los martes"}
+                        style={{ flex: 1, padding: '0.75rem 0.9rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '10px', color: '#FFF', fontSize: '0.9rem', outline: 'none' }}
+                      />
+                      {editDiscounts.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setEditDiscounts(editDiscounts.filter((_, i) => i !== index))}
+                          style={{
+                            padding: '0.6rem',
+                            backgroundColor: 'rgba(255, 68, 68, 0.12)',
+                            border: '1px solid rgba(255, 68, 68, 0.3)',
+                            borderRadius: '8px',
+                            color: '#FF6B6B',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                          title="Eliminar esta promoción"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.8rem', marginBottom: '1rem' }}>

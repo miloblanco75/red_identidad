@@ -10,6 +10,8 @@ import L from 'leaflet';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { AllyPromoCarousel } from '../components/AllyPromoCarousel';
+import { parsePromotions } from '../lib/promotionsHelper';
 
 const FacebookIcon = ({ size = 14, color = '#1877F2' }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -523,7 +525,22 @@ const Aliados: React.FC = () => {
                           <span style={{ fontSize: '0.75rem', color: '#666' }}>{partner.category}</span>
                         </div>
                       </div>
-                      <div style={{ marginTop: '5px', color: '#B8860B', fontWeight: 700, fontSize: '0.85rem' }}>{partner.discount}</div>
+                      {(() => {
+                        const promos = parsePromotions(partner.discount);
+                        if (promos.length <= 1) {
+                          return <div style={{ marginTop: '5px', color: '#B8860B', fontWeight: 700, fontSize: '0.85rem' }}>{partner.discount}</div>;
+                        }
+                        return (
+                          <div style={{ marginTop: '5px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <span style={{ fontSize: '0.7rem', color: '#888', fontWeight: 800 }}>🎁 {promos.length} Promociones:</span>
+                            {promos.map((p, pI) => (
+                              <div key={pI} style={{ color: '#B8860B', fontWeight: 700, fontSize: '0.8rem', lineHeight: 1.25 }}>
+                                • {p}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
                       
                       <a
                         href={`https://www.google.com/maps/dir/?api=1&destination=${partner.lat},${partner.lng}`}
@@ -824,9 +841,7 @@ const Aliados: React.FC = () => {
                   </div>
 
                   <div>
-                    <p className="gold-text" style={{ fontSize: '1.2rem', fontWeight: 700, lineHeight: 1.3, marginBottom: '0.6rem' }}>
-                      {item.discount}
-                    </p>
+                    <AllyPromoCarousel promotions={item.discount} />
 
                     {/* Social & Website links */}
                     <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.4rem' }}>
@@ -1008,8 +1023,8 @@ const Aliados: React.FC = () => {
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>🎁 {item.promotions_given} promociones</div>
                     </div>
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: '#4ADE80', fontWeight: 600 }}>
-                    {item.discount}
+                  <div style={{ fontSize: '0.8rem', color: '#4ADE80', fontWeight: 600, textAlign: 'right', maxWidth: '40%' }}>
+                    {parsePromotions(item.discount)[0] || item.discount}
                   </div>
                 </div>
               );
