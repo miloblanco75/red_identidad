@@ -17,8 +17,8 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
   const [qrUrl, setQrUrl] = useState<string>('https://redidentidad.vercel.app/registro?c=PASE-DEMO-001');
 
   // Quantity & Code Source settings
-  const [totalQuantity, setTotalQuantity] = useState<number>(95);
-  const [codeMode, setCodeMode] = useState<'auto' | 'db' | 'static'>('auto');
+  const [totalQuantity, setTotalQuantity] = useState<number>(42);
+  const [codeMode, setCodeMode] = useState<'demo' | 'static'>('demo');
   const [envelopeStickers, setEnvelopeStickers] = useState<Array<{ code: string; url: string }>>([]);
   const [isLoadingStickers, setIsLoadingStickers] = useState<boolean>(false);
 
@@ -47,29 +47,21 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
   };
 
   const generateSequentialCodes = (qty: number) => {
-    const prefix = selectedStickerType === 'campechana_rosa' ? 'ROSA' : selectedStickerType === 'campechana_negra' ? 'NEGR' : selectedStickerType === 'campechana_blanca' ? 'BLAN' : 'SOBRE';
-    const list = Array.from({ length: qty }).map((_, i) => {
-      const code = `${prefix}-${String(i + 1).padStart(4, '0')}`;
-      return {
-        code: code,
-        url: `https://redidentidad.vercel.app/registro?c=${code}`
-      };
-    });
+    const list = Array.from({ length: qty }).map((_, i) => ({
+      code: `DEMO-${String(i + 1).padStart(4, '0')}`,
+      url: qrUrl
+    }));
     setEnvelopeStickers(list);
   };
 
   const fetchEnvelopeStickers = async () => {
     setIsLoadingStickers(true);
     try {
-      const prefix = selectedStickerType === 'campechana_rosa' ? 'ROSA' : selectedStickerType === 'campechana_negra' ? 'NEGR' : selectedStickerType === 'campechana_blanca' ? 'BLAN' : 'SOBRE';
-      const mapped = Array.from({ length: totalQuantity }).map((_, i) => {
-        const code = `${prefix}-${String(i + 1).padStart(4, '0')}`;
-        return {
-          code: code,
-          url: codeMode === 'static' ? qrUrl : `https://redidentidad.vercel.app/registro?c=${code}`
-        };
-      });
-      setEnvelopeStickers(mapped);
+      const list = Array.from({ length: totalQuantity }).map((_, i) => ({
+        code: `DEMO-${String(i + 1).padStart(4, '0')}`,
+        url: qrUrl
+      }));
+      setEnvelopeStickers(list);
     } catch (e) {
       generateSequentialCodes(totalQuantity);
     } finally {
@@ -251,6 +243,22 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
             <ShieldCheck size={28} color="#D4AF37" style={{ flexShrink: 0 }} />
             <div style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.85)', lineHeight: '1.4' }}>
               <strong>Formato Exacto de la Marca:</strong> Diseñado específicamente para caber centrado en el exterior de los sobres de 20cm × 15cm sin obstruir el cierre.
+            </div>
+          </div>
+
+          <div style={{
+            backgroundColor: 'rgba(16, 185, 129, 0.12)',
+            border: '1px solid #10B981',
+            borderRadius: '16px',
+            padding: '1rem 1.2rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            <ShieldCheck size={28} color="#10B981" style={{ flexShrink: 0 }} />
+            <div style={{ fontSize: '0.85rem', color: '#E2E8F0', lineHeight: '1.4' }}>
+              <strong style={{ color: '#34D399' }}>Etiquetas de Exhibición Externa (Modo Demo):</strong> Todas las calcomanías de esta hoja contienen el QR oficial que lleva directamente al <strong>Modo Demo</strong> (idéntico a la muestra). Los QR de registro físico solo se generan en la pestaña <em>"Imprimir QR"</em>.
             </div>
           </div>
 
@@ -467,16 +475,21 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
             </select>
 
             <label style={{ display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '0.4rem', fontWeight: 700 }}>
-              Origen de los Códigos
+              Destino del Código QR (Exterior del Sobre)
             </label>
             <select
               value={codeMode}
-              onChange={(e) => setCodeMode(e.target.value as any)}
-              style={{ width: '100%', padding: '0.65rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#FFF', fontSize: '0.82rem', outline: 'none' }}
+              onChange={(e) => {
+                const mode = e.target.value as any;
+                setCodeMode(mode);
+                if (mode === 'demo') {
+                  setQrUrl('https://redidentidad.vercel.app/registro?c=PASE-DEMO-001');
+                }
+              }}
+              style={{ width: '100%', padding: '0.65rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.4)', borderRadius: '8px', color: '#FFF', fontSize: '0.82rem', outline: 'none' }}
             >
-              <option value="auto" style={{ color: '#000' }}>⚡ Secuencia Demo Registro (Recomendado)</option>
+              <option value="demo" style={{ color: '#000' }}>⭐ Modo Demo POS Oficial (Recomendado - Lleva a Demostración)</option>
               <option value="static" style={{ color: '#000' }}>🌐 Enlace Fijo Personalizado</option>
-              <option value="db" style={{ color: '#000' }}>Cargar de Base de Datos</option>
             </select>
 
             {codeMode === 'static' && (

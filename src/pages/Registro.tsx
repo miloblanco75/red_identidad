@@ -76,8 +76,6 @@ const Registro: React.FC = () => {
     const clean = codeStr.trim().toUpperCase();
     if (clean === 'DEMO' || clean.includes('DEMO')) return true;
     if (clean.startsWith('SOBRE-')) return true;
-    if (clean.startsWith('ROSA-')) return true;
-    if (clean.startsWith('NEGR-')) return true;
     return false;
   };
 
