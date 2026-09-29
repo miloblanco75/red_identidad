@@ -60,6 +60,9 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
   }, [user.code, user.member_number]);
 
   const getLevelInfo = (level: string) => {
+    if (user.code?.startsWith('PRENSA-') || level?.toLowerCase() === 'prensa') {
+      return { name: '🎙️ PRENSA OFICIAL / INVITADO DE HONOR', color: '#F59E0B', icon: Crown, bg: 'rgba(245,158,11,0.2)' };
+    }
     if (user.code?.startsWith('DIG-') || level?.toLowerCase() === 'digital') {
       return { name: 'MEMBRESÍA DIGITAL OFICIAL', color: '#38BDF8', icon: Crown, bg: 'rgba(56,189,248,0.2)' };
     }

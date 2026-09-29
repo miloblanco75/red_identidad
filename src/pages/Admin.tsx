@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award, Plus } from 'lucide-react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award, Plus, Crown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import StickerQRCode from '../components/StickerQRCode';
 
@@ -7,12 +7,13 @@ import EnvelopeStickerDesigner from '../components/EnvelopeStickerDesigner';
 import SorteosRuleta from '../components/SorteosRuleta';
 import AlliesMessenger from '../components/AlliesMessenger';
 import LoyaltyAdminManager from '../components/LoyaltyAdminManager';
+import PressPassesManager from '../components/PressPassesManager';
 import { parsePromotions, formatPromotions } from '../lib/promotionsHelper';
 
 const Admin: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
-  const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope' | 'status' | 'sorteos' | 'messenger' | 'loyalty'>('codes');
+  const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope' | 'status' | 'sorteos' | 'messenger' | 'loyalty' | 'prensa'>('codes');
 
   // Print states
   const [printStickers, setPrintStickers] = useState<any[]>([]);
@@ -711,6 +712,12 @@ const Admin: React.FC = () => {
           style={{ flex: 1, minWidth: '130px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'loyalty' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'loyalty' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
         >
           <Award size={16} /> Premios Lealtad
+        </button>
+        <button 
+          onClick={() => { setActiveTab('prensa'); setSuccessMsg(''); setErrorMsg(''); }}
+          style={{ flex: 1, minWidth: '130px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'prensa' ? '#F59E0B' : 'rgba(255,255,255,0.1)', color: activeTab === 'prensa' ? '#121212' : '#FFF', border: 'none', fontWeight: 800, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+        >
+          <Crown size={16} /> 🎙️ Prensa (25)
         </button>
       </div>
 
@@ -1922,6 +1929,13 @@ const Admin: React.FC = () => {
       {activeTab === 'loyalty' && (
         <section>
           <LoyaltyAdminManager />
+        </section>
+      )}
+
+      {/* Tab: Pases VIP de Prensa (25) */}
+      {activeTab === 'prensa' && (
+        <section>
+          <PressPassesManager />
         </section>
       )}
     </div>

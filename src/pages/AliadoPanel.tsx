@@ -720,6 +720,9 @@ const AliadoPanel: React.FC = () => {
 
   const getLevelInfo = (levelStr?: string) => {
     const s = (levelStr || '').toLowerCase();
+    if (s.includes('prensa')) {
+      return { name: '🎙️ PRENSA OFICIAL / INVITADO DE HONOR', color: '#F59E0B', icon: Crown };
+    }
     if (s.includes('digital') || s.startsWith('dig')) {
       return { name: 'MEMBRESÍA DIGITAL OFICIAL', color: '#38BDF8', icon: Crown };
     }

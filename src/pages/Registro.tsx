@@ -119,10 +119,11 @@ const Registro: React.FC = () => {
         if (foundStickers && foundStickers.length > 0) {
           const s = foundStickers[0];
           const isDig = s.code?.startsWith('DIG-') || s.level === 'digital';
+          const isPrensa = s.code?.startsWith('PRENSA-') || s.level === 'prensa';
           loginLocal({
             phone: s.phone || cleanPhone,
             member_number: s.member_number || 407,
-            level: isDig ? 'digital' : (s.level || 'campechana_blanca'),
+            level: isPrensa ? 'prensa' : (isDig ? 'digital' : (s.level || 'campechana_blanca')),
             code: s.code
           });
           navigate('/registro');
@@ -161,6 +162,12 @@ const Registro: React.FC = () => {
         .single();
 
       if (fetchError || !sticker) {
+        if (cleanCode.startsWith('PRENSA-')) {
+          setErrorMsg('Código de prensa no válido o no autorizado. Por favor verifica tu tarjeta de acreditación.');
+          setIsActivating(false);
+          return;
+        }
+
         // Si no está pre-cargada en la base de datos (ej. TUL0035 impresa desde la app),
         // se registra y activa en automático para el usuario sin bloquearlo.
         let derivedNum = parseInt(cleanCode.replace(/\D/g, ''), 10);
@@ -198,11 +205,21 @@ const Registro: React.FC = () => {
       }
 
       if (sticker.phone) {
+        if (sticker.code?.startsWith('PRENSA-') || sticker.level === 'prensa') {
+          const cleanInputPhone = phone.replace(/\D/g, '');
+          const existingPhone = (sticker.phone || '').replace(/\D/g, '');
+          if (cleanInputPhone.slice(-10) !== existingPhone.slice(-10)) {
+            setErrorMsg(`Este pase de prensa (${sticker.code}) ya fue activado por otro periodista. Cada pase es personal e intransferible.`);
+            setIsActivating(false);
+            return;
+          }
+        }
         const isDig = sticker.code?.startsWith('DIG-') || sticker.level === 'digital';
+        const isPrensa = sticker.code?.startsWith('PRENSA-') || sticker.level === 'prensa';
         loginLocal({
           phone: sticker.phone,
           member_number: sticker.member_number,
-          level: isDig ? 'digital' : sticker.level,
+          level: isPrensa ? 'prensa' : (isDig ? 'digital' : sticker.level),
           code: sticker.code
         });
         navigate('/');
@@ -211,8 +228,10 @@ const Registro: React.FC = () => {
 
       // 2. Reclamar la calcomanía guardando el teléfono
       const isDigSticker = sticker.code?.startsWith('DIG-') || sticker.level === 'digital';
+      const isPrensaSticker = sticker.code?.startsWith('PRENSA-') || sticker.level === 'prensa';
       const updateData: any = { phone: phone, claimed_at: new Date().toISOString() };
       if (isDigSticker) updateData.level = 'digital';
+      if (isPrensaSticker) updateData.level = 'prensa';
 
       const { data: updatedSticker, error: updateError } = await supabase
         .from('stickers')
@@ -226,11 +245,10 @@ const Registro: React.FC = () => {
         loginLocal({
           phone: phone,
           member_number: sticker.member_number,
-          level: isDigSticker ? 'digital' : sticker.level,
+          level: isPrensaSticker ? 'prensa' : (isDigSticker ? 'digital' : sticker.level),
           code: sticker.code
         });
         navigate('/');
-        return;
       }
 
       // 3. Éxito: Guardar en local storage (Login local) y redirigir
@@ -269,6 +287,9 @@ const Registro: React.FC = () => {
   };
 
   const getLevelInfo = (levelStr: string) => {
+    if (user?.code?.startsWith('PRENSA-') || levelStr?.toLowerCase() === 'prensa') {
+      return { name: '🎙️ Prensa Oficial / Invitado de Honor', color: '#F59E0B', glow: 'premium-glow-gold', progress: 100 };
+    }
     if (user?.code?.startsWith('DIG-') || levelStr?.toLowerCase() === 'digital') {
       return { name: 'Membresía Digital Oficial', color: '#38BDF8', glow: 'premium-glow-gold', progress: 100 };
     }
@@ -309,6 +330,30 @@ const Registro: React.FC = () => {
 
         <section className="glass" style={{ padding: '2rem', borderRadius: '24px', textAlign: 'left' }}>
           
+          {(codeParam || serial).toUpperCase().startsWith('PRENSA-') && (
+            <div style={{
+              backgroundColor: 'rgba(245, 158, 11, 0.12)',
+              border: '1.5px solid #F59E0B',
+              borderRadius: '18px',
+              padding: '1.25rem',
+              marginBottom: '1.5rem',
+              textAlign: 'center'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '0.4rem' }}>
+                <Crown size={22} color="#F59E0B" />
+                <span style={{ color: '#F59E0B', fontWeight: 900, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Acreditación de Prensa Oficial
+                </span>
+              </div>
+              <p style={{ color: '#FDE68A', fontSize: '0.85rem', margin: '0 0 0.5rem 0', lineHeight: 1.4, fontWeight: 700 }}>
+                ¡Bienvenido al Lanzamiento Oficial de Red Identidad!
+              </p>
+              <p style={{ color: 'var(--text-dim)', fontSize: '0.8rem', margin: 0, lineHeight: 1.4 }}>
+                Te obsequiamos este pase de cortesía de uso único (<strong>{(codeParam || serial).toUpperCase()}</strong>). Ingresa tu WhatsApp a continuación para activar tu membresía digital sin ningún costo.
+              </p>
+            </div>
+          )}
+
           {isDemoCode(codeParam || serial) && (
             <div style={{
               backgroundColor: 'rgba(212, 175, 55, 0.12)',
@@ -519,6 +564,25 @@ const Registro: React.FC = () => {
             </div>
           )}
         </div>
+
+        {(user.level === 'prensa' || user.code?.startsWith('PRENSA-')) && (
+          <div style={{
+            backgroundColor: 'rgba(245, 158, 11, 0.15)',
+            border: '1.5px solid #F59E0B',
+            padding: '1rem 1.2rem',
+            borderRadius: '16px',
+            marginBottom: '1.5rem',
+            textAlign: 'center',
+            boxShadow: '0 0 25px rgba(245, 158, 11, 0.25)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#FBBF24', fontWeight: 900, fontSize: '0.95rem', marginBottom: '4px' }}>
+              🎙️ Acreditación de Prensa Oficial • Invitado de Honor
+            </div>
+            <p style={{ color: '#FEF3C7', fontSize: '0.8rem', margin: 0, lineHeight: 1.4 }}>
+              Membresía Digital Oficial otorgada como invitado especial de prensa. Disfruta de todos los beneficios y descuentos en la Red de Comercios Aliados.
+            </p>
+          </div>
+        )}
 
         {user.code?.includes('DEMO') && (
           <div style={{ backgroundColor: 'rgba(212, 175, 55, 0.15)', border: '1px solid var(--accent-gold)', padding: '0.6rem 1rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.8rem', color: 'var(--accent-gold)', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
