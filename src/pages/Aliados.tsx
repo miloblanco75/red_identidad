@@ -4,7 +4,8 @@ import 'leaflet/dist/leaflet.css';
 import { 
   Utensils, Car, Loader2, Wine, HeartPulse, Building2, MapPin, 
   Globe, CreditCard, Briefcase, Sparkles, Navigation, 
-  AlertCircle, X, Compass, RotateCcw, FerrisWheel 
+  AlertCircle, X, Compass, RotateCcw, FerrisWheel,
+  ShoppingBag, Smartphone
 } from 'lucide-react';
 import L from 'leaflet';
 import { supabase } from '../lib/supabase';
@@ -148,7 +149,18 @@ const Aliados: React.FC = () => {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [sortByProximity, setSortByProximity] = useState<boolean>(false);
 
-  const categories = ['Todas', 'Comida', 'Auto', 'Servicios', 'Estética', 'Entretenimiento', 'Salud', 'Parque de Diversiones / Diversión Infantil'];
+  const categories = [
+    'Todas', 
+    'Comida', 
+    'Auto', 
+    'Servicios', 
+    'Estética', 
+    'Entretenimiento', 
+    'Salud', 
+    'Ventas Diversas', 
+    'Servicios de Tecnología', 
+    'Parque de Diversiones / Diversión Infantil'
+  ];
 
   useEffect(() => {
     fetchAllies();
@@ -185,6 +197,10 @@ const Aliados: React.FC = () => {
       case 'Estética': return Sparkles;
       case 'Entretenimiento': return Wine;
       case 'Salud': return HeartPulse;
+      case 'Ventas Diversas': return ShoppingBag;
+      case 'Servicios de Tecnología':
+      case 'Tecnología':
+        return Smartphone;
       case 'Parque de Diversiones / Diversión Infantil':
       case 'Parque de Diversiones':
       case 'Diversión Infantil':
@@ -306,6 +322,19 @@ const Aliados: React.FC = () => {
                  item.category === 'Parque de Diversiones' ||
                  item.category === 'Diversión Infantil' ||
                  item.category === 'Parque / Infantil';
+        }
+        if (selectedCategory === 'Ventas Diversas') {
+          return item.category === 'Ventas Diversas' ||
+                 item.category === 'Ventas diversas' ||
+                 item.category === 'Ventas' ||
+                 item.category === 'Zapatería' ||
+                 item.category === 'Zapateria';
+        }
+        if (selectedCategory === 'Servicios de Tecnología') {
+          return item.category === 'Servicios de Tecnología' ||
+                 item.category === 'Servicios de Tecnologia' ||
+                 item.category === 'Tecnología' ||
+                 item.category === 'Tecnologia';
         }
         return item.category === selectedCategory;
       });

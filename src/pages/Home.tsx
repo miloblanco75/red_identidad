@@ -4,7 +4,7 @@ import {
   ChevronRight, ShieldCheck, Sparkles, Utensils, Car, Wine, 
   HeartPulse, Building2, MapPin, Loader2, Globe, QrCode, 
   Award, Heart, Store, Camera, Flame, DollarSign, ChevronDown, ChevronUp, Briefcase, Navigation,
-  Gift, Trophy
+  Gift, Trophy, ShoppingBag, Smartphone, FerrisWheel
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -226,6 +226,15 @@ const Home: React.FC = () => {
       case 'Estética': return Sparkles;
       case 'Entretenimiento': return Wine;
       case 'Salud': return HeartPulse;
+      case 'Ventas Diversas': return ShoppingBag;
+      case 'Servicios de Tecnología':
+      case 'Tecnología':
+        return Smartphone;
+      case 'Parque de Diversiones / Diversión Infantil':
+      case 'Parque de Diversiones':
+      case 'Diversión Infantil':
+      case 'Parque / Infantil':
+        return FerrisWheel;
       default: return Building2;
     }
   };
