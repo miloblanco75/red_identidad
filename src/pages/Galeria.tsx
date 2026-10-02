@@ -9,11 +9,14 @@ import {
   CheckCircle, 
   ArrowLeft, 
   Info,
-  Camera
+  Camera,
+  X,
+  ZoomIn
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { UploadStickerPhotoModal } from '../components/UploadStickerPhotoModal';
+import { COMMUNITY_PHOTOS } from '../lib/communityPhotos';
 
 interface StickerInfo {
   id: string;
@@ -131,6 +134,7 @@ const Galeria: React.FC = () => {
   const [selectedSticker, setSelectedSticker] = useState<StickerInfo>(STICKERS_DATA[0]);
   const [simulatorMode, setSimulatorMode] = useState<'car' | 'phone'>('car');
   const [showUploadPhotoModal, setShowUploadPhotoModal] = useState(false);
+  const [zoomPhoto, setZoomPhoto] = useState<string | null>(null);
   
   // Simulator adjustment states
   const [scale, setScale] = useState(1);
@@ -778,12 +782,66 @@ const Galeria: React.FC = () => {
           })}
         </div>
 
+        {/* =========================================================
+            SECCIÓN: MURAL COMUNITARIO (SOLO FOTOS)
+           ========================================================= */}
+        <div style={{ marginTop: '3.5rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <Camera size={20} color="var(--accent-gold)" />
+            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#FFF' }}>
+              Mural Comunitario
+            </h3>
+          </div>
+          <p style={{ color: 'var(--text-dim)', fontSize: '0.84rem', margin: 0 }}>
+            Distintivos oficiales portados en las calles por nuestra comunidad.
+          </p>
+        </div>
+
+        {/* Cuadrícula de fotos - SOLO LA FOTO */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+          gap: '0.8rem',
+          marginBottom: '2rem'
+        }}>
+          {COMMUNITY_PHOTOS.map((photo) => (
+            <motion.div
+              key={photo.id}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setZoomPhoto(photo.url)}
+              style={{
+                aspectRatio: '1 / 1',
+                borderRadius: '18px',
+                overflow: 'hidden',
+                border: '1.5px solid rgba(212,175,55,0.35)',
+                backgroundColor: 'rgba(20,20,22,0.9)',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                cursor: 'pointer',
+                position: 'relative'
+              }}
+            >
+              <img
+                src={photo.url}
+                alt={photo.alt || 'Foto comunitaria oficial'}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block'
+                }}
+                loading="lazy"
+              />
+            </motion.div>
+          ))}
+        </div>
+
         {/* Banner CTA para subir foto del distintivo */}
         <motion.div
           whileHover={{ scale: 1.01 }}
           className="glass premium-glow-gold"
           style={{
-            marginTop: '2rem',
+            marginTop: '1.5rem',
             padding: '1.4rem',
             borderRadius: '20px',
             textAlign: 'center',
@@ -818,6 +876,78 @@ const Galeria: React.FC = () => {
           </button>
         </motion.div>
       </section>
+
+      {/* Lightbox / Visor de foto en pantalla completa */}
+      <AnimatePresence>
+        {zoomPhoto && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setZoomPhoto(null)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 10000,
+              backgroundColor: 'rgba(0,0,0,0.92)',
+              backdropFilter: 'blur(12px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: 'relative',
+                maxWidth: '92vw',
+                maxHeight: '90vh',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                border: '2px solid rgba(212,175,55,0.4)',
+                boxShadow: '0 0 40px rgba(0,0,0,0.8)'
+              }}
+            >
+              <button
+                onClick={() => setZoomPhoto(null)}
+                style={{
+                  position: 'absolute',
+                  top: '12px',
+                  right: '12px',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(0,0,0,0.65)',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  color: '#FFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  zIndex: 2
+                }}
+              >
+                <X size={18} />
+              </button>
+              <img
+                src={zoomPhoto}
+                alt="Vista ampliada"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: '85vh',
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <UploadStickerPhotoModal isOpen={showUploadPhotoModal} onClose={() => setShowUploadPhotoModal(false)} />
     </div>
