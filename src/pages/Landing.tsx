@@ -6,7 +6,8 @@ import {
   ChevronRight, CheckCircle2, ChevronDown, ChevronUp,
   CreditCard, Smartphone, Car, Utensils, Wine, HeartPulse, 
   Briefcase, ArrowRight, MessageCircle, Star, Users,
-  Calculator, Check, ExternalLink, Menu, X, Compass, Award
+  Calculator, Check, ExternalLink, Menu, X, Compass, Award,
+  Info
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { BuyStickerModal } from '../components/BuyStickerModal';
@@ -14,6 +15,115 @@ import { useAuth } from '../contexts/AuthContext';
 
 // WhatsApp oficial de atención
 const ADMIN_WHATSAPP = '529811971305';
+
+// Definición exacta de distintivos oficiales (idéntica a Galeria.tsx)
+interface StickerInfo {
+  id: string;
+  name: string;
+  category: 'campechano' | 'campechana' | 'carmelita';
+  colorName: string;
+  colorType: 'black' | 'white' | 'pink';
+  rarity: 'essential' | 'special';
+  imagePath: string;
+  description: string;
+  perk: string;
+}
+
+const STICKERS_DATA: StickerInfo[] = [
+  // Campechano Soy
+  {
+    id: 'campechano_blanca',
+    name: 'Campechano Soy (Blanca)',
+    category: 'campechano',
+    colorName: 'Blanca',
+    colorType: 'white',
+    rarity: 'essential',
+    imagePath: '/campechano_oficial.svg',
+    description: 'Edición Blanca oficial de Puerta de Tierra en vinil de alta resistencia para vehículo o cristal.',
+    perk: 'Acceso a la Red de Aliados y beneficios en todo el estado.'
+  },
+  {
+    id: 'campechano_negra',
+    name: 'Campechano Soy (Negra)',
+    category: 'campechano',
+    colorName: 'Negra',
+    colorType: 'black',
+    rarity: 'essential',
+    imagePath: '/campechano_oficial.svg',
+    description: 'Edición Negra mate oficial de Puerta de Tierra con corte de precisión.',
+    perk: 'Acceso a la Red de Aliados y beneficios en todo el estado.'
+  },
+
+  // Campechana Soy
+  {
+    id: 'campechana_blanca',
+    name: 'Campechana Soy (Blanca)',
+    category: 'campechana',
+    colorName: 'Blanca',
+    colorType: 'white',
+    rarity: 'essential',
+    imagePath: '/campechana_rosada.png',
+    description: 'Edición Campechana Blanca oficial en vinil automotriz brillante de alta resistencia para vehículo o cristal.',
+    perk: 'Acceso a la Red de Aliados y descuentos en todo el estado.'
+  },
+  {
+    id: 'campechana_negra',
+    name: 'Campechana Soy (Negra)',
+    category: 'campechana',
+    colorName: 'Negra',
+    colorType: 'black',
+    rarity: 'essential',
+    imagePath: '/campechana_rosada.png',
+    description: 'Edición Campechana Negra mate oficial en vinil automotriz de alta resistencia.',
+    perk: 'Acceso a la Red de Aliados y descuentos en todo el estado.'
+  },
+  {
+    id: 'campechana_rosa',
+    name: 'Campechana Soy (Rosa)',
+    category: 'campechana',
+    colorName: 'Rosa',
+    colorType: 'pink',
+    rarity: 'special',
+    imagePath: '/campechana_rosada.png',
+    description: 'Edición Campechana Rosa oficial en vinil de colección inspirada en la calidez campechana.',
+    perk: 'Acceso a la Red de Aliados y descuentos en todo el estado.'
+  },
+
+  // Carmelita Soy
+  {
+    id: 'carmelita_blanca',
+    name: 'Carmelita Soy (Blanca)',
+    category: 'carmelita',
+    colorName: 'Blanca',
+    colorType: 'white',
+    rarity: 'essential',
+    imagePath: '/carmelita_rosada.png',
+    description: 'Edición Carmelita Blanca con el símbolo emblemático del Camarón de la Isla de Carmen.',
+    perk: 'Acceso a la Red de Aliados y beneficios en la isla.'
+  },
+  {
+    id: 'carmelita_negra',
+    name: 'Carmelita Soy (Negra)',
+    category: 'carmelita',
+    colorName: 'Negra',
+    colorType: 'black',
+    rarity: 'essential',
+    imagePath: '/carmelita_rosada.png',
+    description: 'Edición Carmelita Negra mate de alta resistencia.',
+    perk: 'Acceso a la Red de Aliados y beneficios en la isla.'
+  },
+  {
+    id: 'carmelita_rosa',
+    name: 'Carmelita Soy (Rosa)',
+    category: 'carmelita',
+    colorName: 'Rosa',
+    colorType: 'pink',
+    rarity: 'special',
+    imagePath: '/carmelita_rosada.png',
+    description: 'Edición Carmelita Rosa en vinil pastel con corte de precisión.',
+    perk: 'Acceso a la Red de Aliados y promociones especiales en Ciudad del Carmen.'
+  }
+];
 
 export const Landing: React.FC = () => {
   const navigate = useNavigate();
@@ -25,9 +135,10 @@ export const Landing: React.FC = () => {
   const [selectedStickerForModal, setSelectedStickerForModal] = useState<string>('campechano_negra');
   const [showMerchantModal, setShowMerchantModal] = useState(false);
 
-  // Estado para el visor del distintivo
-  const [activeTabRegion, setActiveTabRegion] = useState<'campeche' | 'carmen'>('campeche');
-  const [selectedColor, setSelectedColor] = useState<'oro' | 'negra' | 'blanca' | 'rosa'>('oro');
+  // Estados del visor de la colección oficial (idéntico a Galeria.tsx)
+  const [galleryCategory, setGalleryCategory] = useState<'todos' | 'campechano' | 'campechana' | 'carmelita'>('todos');
+  const [selectedSticker, setSelectedSticker] = useState<StickerInfo>(STICKERS_DATA[0]);
+  const [simulatorMode, setSimulatorMode] = useState<'car' | 'phone'>('car');
 
   // Estado para comercios aliados
   const [allies, setAllies] = useState<any[]>([]);
@@ -84,73 +195,69 @@ export const Landing: React.FC = () => {
     fetchAllies();
   }, []);
 
-  // Catálogo de distintivos para el visor interactivo
-  const stickerData = {
-    campeche: {
-      title: 'Campechano Soy / Campechana Soy',
-      subtitle: 'Símbolo del Baluarte y la Muralla Histórica de Campeche',
-      models: {
-        oro: {
-          name: 'Edición Oro Real',
-          img: '/campechana_oro.png',
-          desc: 'Acabado dorado metálico de alto impacto. El distintivo más exclusivo.',
-          id: 'campechano_oro'
-        },
-        negra: {
-          name: 'Edición Negra Sigilo',
-          img: '/campechano_negra_publicidad.png',
-          desc: 'Diseño sobrio y elegante en negro mate con grabado de alta visibilidad.',
-          id: 'campechano_negra'
-        },
-        blanca: {
-          name: 'Edición Blanca Clásica',
-          img: '/campechano_soy_coche.jpg',
-          desc: 'El distintivo más visible para cristales y medallones tintados.',
-          id: 'campechano_blanca'
-        },
-        rosa: {
-          name: 'Edición Rosa Campechana',
-          img: '/campechana_rosada.png',
-          desc: 'Tono rosa vibrante con la silueta clásica de nuestra identidad.',
-          id: 'campechana_rosa'
-        }
-      }
-    },
-    carmen: {
-      title: 'Carmelita Soy',
-      subtitle: 'El icónico Camarón, emblema del orgullo de la Isla del Carmen',
-      models: {
-        oro: {
-          name: 'Edición Oro Isla',
-          img: '/carmelita_oro.png',
-          desc: 'Diseño dorado resplandeciente del camarón carmelita en vinil automotriz.',
-          id: 'carmelita_oro'
-        },
-        negra: {
-          name: 'Edición Negra Nocturna',
-          img: '/carmelita_negra_publicidad.png',
-          desc: 'Detalles finos y presencia imponente para tu vehículo.',
-          id: 'carmelita_negra'
-        },
-        blanca: {
-          name: 'Edición Blanca Carmen',
-          img: '/premium_stickers.png',
-          desc: 'Brillante y nítido para reflejar el orgullo carmelita en carretera.',
-          id: 'carmelita_blanca'
-        },
-        rosa: {
-          name: 'Edición Rosa Encanto',
-          img: '/carmelita_rosada.png',
-          desc: 'Color rosa fucsia distintivo con corte de contorno de precisión.',
-          id: 'carmelita_rosa'
-        }
-      }
+  // Helper CSS Filter para colores de calcomanías (idéntico a Galeria.tsx)
+  const getFilterStyle = (colorType: 'black' | 'white' | 'pink') => {
+    switch (colorType) {
+      case 'black':
+        return {
+          filter: 'brightness(0) drop-shadow(0 2px 8px rgba(0,0,0,0.5))'
+        };
+      case 'white':
+        return {
+          filter: 'brightness(0) invert(1) drop-shadow(0 2px 10px rgba(255,255,255,0.7))'
+        };
+      case 'pink':
+        return {
+          filter: 'drop-shadow(0 2px 8px rgba(244,143,177,0.45))'
+        };
     }
   };
 
-  const currentSticker = stickerData[activeTabRegion].models[selectedColor] || stickerData[activeTabRegion].models.oro;
+  // Dynamic card background color (idéntico a Galeria.tsx) para que las calcomanías negras contrasten perfectamente
+  const getCardStyle = (colorType: 'black' | 'white' | 'pink', isSelected: boolean) => {
+    if (colorType === 'black') {
+      return {
+        background: isSelected 
+          ? 'linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)' 
+          : 'linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 100%)',
+        border: isSelected ? '3px solid #000000' : '2px solid #CBD5E1',
+        textColor: '#000000',
+        subTextColor: '#334155',
+        badgeBg: '#000000',
+        badgeText: '#FFFFFF'
+      };
+    }
+    if (colorType === 'pink') {
+      return {
+        background: isSelected 
+          ? 'linear-gradient(135deg, #351C2B 0%, #1A0D15 100%)' 
+          : 'linear-gradient(135deg, #25131E 0%, #0E070B 100%)',
+        border: isSelected ? '3px solid #F48FB1' : '2px solid rgba(244,143,177,0.4)',
+        textColor: '#FFFFFF',
+        subTextColor: '#F48FB1',
+        badgeBg: 'rgba(244,143,177,0.2)',
+        badgeText: '#F48FB1'
+      };
+    }
+    // white
+    return {
+      background: isSelected 
+        ? 'linear-gradient(135deg, #1E1E24 0%, #0F0F14 100%)' 
+        : 'linear-gradient(135deg, #141418 0%, #08080A 100%)',
+      border: isSelected ? '3px solid var(--accent-gold)' : '2px solid rgba(255,255,255,0.2)',
+      textColor: '#FFFFFF',
+      subTextColor: 'var(--text-dim)',
+      badgeBg: 'rgba(255,255,255,0.15)',
+      badgeText: '#FFFFFF'
+    };
+  };
 
-  // Cálculo de ahorro aproximado (10% a 15% en promedio)
+  // Filtrar calcomanías para la sección oficial
+  const filteredStickers = galleryCategory === 'todos'
+    ? STICKERS_DATA
+    : STICKERS_DATA.filter(s => s.category === galleryCategory);
+
+  // Cálculo de ahorro aproximado (12% en promedio)
   const totalMonthlySpend = monthlyDining + monthlyAuto + monthlyServices;
   const estimatedMonthlySavings = Math.round(totalMonthlySpend * 0.12);
   const estimatedAnnualSavings = estimatedMonthlySavings * 12;
@@ -179,7 +286,7 @@ export const Landing: React.FC = () => {
       name: 'Refaccionaria Bahía',
       zone: 'Avenida Hidalgo',
       city: 'San Francisco de Campeche',
-      desc: 'Disponibles todas las ediciones en vinil de grado automotriz.'
+      desc: 'Disponibles todas las ediciones oficiales en vinil automotriz.'
     },
     {
       name: 'Gesti+',
@@ -194,6 +301,10 @@ export const Landing: React.FC = () => {
     {
       q: '¿Qué es exactamente Red Identidad?',
       a: 'Red Identidad es una iniciativa ciudadana y comercial que celebra el orgullo campechano y carmelita. Es un distintivo físico en vinil automotriz para tu vehículo (o pase digital) que te da acceso inmediato a una red exclusiva de descuentos y beneficios en más de 15 comercios locales de Campeche.'
+    },
+    {
+      q: '¿Qué colores y modelos de calcomanía están disponibles?',
+      a: 'Contamos con 3 líneas oficiales: Campechano Soy (Blanca y Negra), Campechana Soy (Blanca, Negra y Rosa) y Carmelita Soy (Blanca, Negra y Rosa). Todas fabricadas en vinil de grado automotriz de alta durabilidad.'
     },
     {
       q: '¿La calcomanía resiste el sol, la lluvia y lavados a presión?',
@@ -316,7 +427,7 @@ export const Landing: React.FC = () => {
           {/* Desktop Nav Links */}
           <div style={{ display: 'none', gap: '1.8rem', alignItems: 'center' }} className="d-lg-flex">
             <a href="#como-funciona" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}>¿Cómo Funciona?</a>
-            <a href="#distintivo" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}>El Distintivo</a>
+            <a href="#distintivo" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}>Colección Oficial</a>
             <a href="#aliados" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}>Comercios Aliados</a>
             <a href="#calculadora" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}>Calculadora</a>
             <a href="#puntos-venta" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}>Puntos de Venta</a>
@@ -391,7 +502,7 @@ export const Landing: React.FC = () => {
                 onClick={() => setMobileMenuOpen(false)}
                 style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem', padding: '0.4rem 0' }}
               >
-                El Distintivo de Colección
+                Colección Oficial de Calcomanías
               </a>
               <a 
                 href="#aliados" 
@@ -538,7 +649,7 @@ export const Landing: React.FC = () => {
               </div>
             </div>
 
-            {/* Columna Derecha: Showcase Visual de Alto Impacto */}
+            {/* Columna Derecha: Showcase Visual de Alto Impacto con Fotos Reales */}
             <div style={{ position: 'relative' }}>
               <div 
                 className="landing-card"
@@ -551,15 +662,15 @@ export const Landing: React.FC = () => {
                   boxShadow: '0 20px 50px rgba(0,0,0,0.6)'
                 }}
               >
-                {/* Imagen del coche real o stickers premium */}
+                {/* Foto real instalada en vehículo */}
                 <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', marginBottom: '1.2rem' }}>
                   <img 
-                    src="/premium_stickers.png" 
-                    alt="Distintivo Campechano Soy y Carmelita Soy" 
+                    src="/campechano_soy_coche.jpg" 
+                    alt="Distintivo Campechano Soy instalado en automóvil" 
                     style={{
                       width: '100%',
                       height: 'auto',
-                      maxHeight: '340px',
+                      maxHeight: '320px',
                       objectFit: 'cover',
                       display: 'block'
                     }}
@@ -570,7 +681,7 @@ export const Landing: React.FC = () => {
                     position: 'absolute',
                     top: '12px',
                     right: '12px',
-                    background: 'rgba(18, 18, 22, 0.85)',
+                    background: 'rgba(18, 18, 22, 0.88)',
                     backdropFilter: 'blur(8px)',
                     border: '1px solid rgba(212, 175, 55, 0.4)',
                     padding: '0.4rem 0.9rem',
@@ -583,11 +694,11 @@ export const Landing: React.FC = () => {
                     gap: '0.4rem'
                   }}>
                     <Award size={14} />
-                    <span>Colección Oficial 2026</span>
+                    <span>Vinil de Grado Automotriz</span>
                   </div>
                 </div>
 
-                {/* Subtarjetas de visualización rápida */}
+                {/* Subtarjetas de visualización: Sobre Sellado + Tres Líneas */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
                   <div style={{
                     background: 'rgba(255, 255, 255, 0.04)',
@@ -599,13 +710,13 @@ export const Landing: React.FC = () => {
                     gap: '0.7rem'
                   }}>
                     <img 
-                      src="/campechano_soy_coche.jpg" 
-                      alt="En vehículo" 
+                      src="/qr_calcomania_sobre.jpg" 
+                      alt="Sobre oficial sellado" 
                       style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }}
                     />
                     <div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>En tu Auto o Moto</div>
-                      <div style={{ fontSize: '0.72rem', color: '#9E9EA8' }}>Identidad en el camino</div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>Sobre Sellado</div>
+                      <div style={{ fontSize: '0.72rem', color: '#9E9EA8' }}>QR único $90 MXN</div>
                     </div>
                   </div>
 
@@ -618,14 +729,21 @@ export const Landing: React.FC = () => {
                     alignItems: 'center',
                     gap: '0.7rem'
                   }}>
-                    <img 
-                      src="/qr_calcomania_sobre.jpg" 
-                      alt="Sobre oficial" 
-                      style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }}
-                    />
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '8px',
+                      background: 'rgba(212, 175, 55, 0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--accent-gold)'
+                    }}>
+                      <ShieldCheck size={24} />
+                    </div>
                     <div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>Sobre Sellado con QR</div>
-                      <div style={{ fontSize: '0.72rem', color: '#9E9EA8' }}>Código único personal</div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>3 Líneas Oficiales</div>
+                      <div style={{ fontSize: '0.72rem', color: '#9E9EA8' }}>Blanca, Negra y Rosa</div>
                     </div>
                   </div>
                 </div>
@@ -801,24 +919,24 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* ── SECCIÓN 2: EL DISTINTIVO DE COLECCIÓN (SHOWCASE DE PRODUCTO) ── */}
+      {/* ── SECCIÓN 2: COLECCIÓN OFICIAL DE CALCOMANÍAS (100% FIDEDIGNA A LA GALERÍA) ── */}
       <section id="distintivo" style={{ padding: '6rem 0', backgroundColor: '#0F0F13' }}>
         <div className="landing-container">
           
           <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 3.5rem' }}>
             <div className="landing-badge" style={{ marginBottom: '1rem' }}>
               <ShieldCheck size={14} />
-              <span>Calidad Grado Automotriz</span>
+              <span>Colección Oficial de Calcomanías</span>
             </div>
             <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.7rem)', fontWeight: 800, marginBottom: '1rem' }}>
-              El Distintivo Oficial de Colección
+              El Distintivo de Colección
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
-              Fabricado con vinil automotriz alemán tricapa de corte de precisión. No se despinta, no se desprende y soporta las inclemencias del clima de Campeche.
+              Fabricado con vinil automotriz alemán tricapa de corte de precisión. No se despinta, no se desprende y resiste el sol, la lluvia y los lavados a presión.
             </p>
           </div>
 
-          {/* Selector de Región (Campeche / Carmen) */}
+          {/* Filtros de Categoría Oficial (Idéntico a Galeria.tsx) */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '2.5rem' }}>
             <div style={{
               background: 'rgba(255, 255, 255, 0.05)',
@@ -826,180 +944,285 @@ export const Landing: React.FC = () => {
               borderRadius: '9999px',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               display: 'flex',
-              gap: '0.5rem'
+              gap: '0.4rem',
+              flexWrap: 'wrap',
+              justifyContent: 'center'
             }}>
-              <button
-                onClick={() => setActiveTabRegion('campeche')}
-                style={{
-                  padding: '0.65rem 1.6rem',
-                  borderRadius: '9999px',
-                  fontWeight: 700,
-                  fontSize: '0.92rem',
-                  backgroundColor: activeTabRegion === 'campeche' ? 'var(--accent-gold)' : 'transparent',
-                  color: activeTabRegion === 'campeche' ? '#121212' : '#C0C0C5',
-                  transition: 'all 0.25s ease'
-                }}
-              >
-                Campechano Soy (La Muralla)
-              </button>
-              <button
-                onClick={() => setActiveTabRegion('carmen')}
-                style={{
-                  padding: '0.65rem 1.6rem',
-                  borderRadius: '9999px',
-                  fontWeight: 700,
-                  fontSize: '0.92rem',
-                  backgroundColor: activeTabRegion === 'carmen' ? 'var(--accent-gold)' : 'transparent',
-                  color: activeTabRegion === 'carmen' ? '#121212' : '#C0C0C5',
-                  transition: 'all 0.25s ease'
-                }}
-              >
-                Carmelita Soy (El Camarón)
-              </button>
+              {(['todos', 'campechano', 'campechana', 'carmelita'] as const).map((cat) => {
+                const label = cat === 'todos' ? 'Todas las Ediciones' :
+                              cat === 'campechano' ? 'Campechano Soy' :
+                              cat === 'campechana' ? 'Campechana Soy' : 'Carmelita Soy';
+                const isActive = galleryCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setGalleryCategory(cat)}
+                    style={{
+                      padding: '0.6rem 1.4rem',
+                      borderRadius: '9999px',
+                      fontWeight: 700,
+                      fontSize: '0.88rem',
+                      backgroundColor: isActive ? 'var(--accent-gold)' : 'transparent',
+                      color: isActive ? '#121212' : '#C0C0C5',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.25s ease'
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Previsualizador Interactivo */}
-          <div className="landing-card" style={{ padding: '2.5rem', maxWidth: '900px', margin: '0 auto' }}>
+          {/* Grid de Calcomanías Oficiales usando la estética y contraste exacto de la galería */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: '1.5rem',
+            marginBottom: '3rem'
+          }}>
+            {filteredStickers.map((sticker) => {
+              const isSelected = selectedSticker.id === sticker.id;
+              const cardTheme = getCardStyle(sticker.colorType, isSelected);
+
+              return (
+                <div
+                  key={sticker.id}
+                  onClick={() => setSelectedSticker(sticker)}
+                  style={{
+                    borderRadius: '20px',
+                    padding: '1.5rem',
+                    background: cardTheme.background,
+                    border: cardTheme.border,
+                    boxShadow: isSelected ? '0 12px 30px rgba(212, 175, 55, 0.3)' : '0 6px 18px rgba(0,0,0,0.3)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    minHeight: '270px',
+                    position: 'relative',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  {/* Badge de color / edición */}
+                  <div style={{
+                    alignSelf: 'flex-start',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    padding: '0.25rem 0.7rem',
+                    borderRadius: '9999px',
+                    backgroundColor: cardTheme.badgeBg,
+                    color: cardTheme.badgeText
+                  }}>
+                    Edición {sticker.colorName}
+                  </div>
+
+                  {/* Imagen del distintivo con filtro oficial */}
+                  <div style={{
+                    width: '120px',
+                    height: '120px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '1rem 0'
+                  }}>
+                    <img 
+                      src={sticker.imagePath} 
+                      alt={sticker.name}
+                      style={{
+                        maxWidth: '100%',
+                        maxHeight: '100%',
+                        objectFit: 'contain',
+                        ...getFilterStyle(sticker.colorType)
+                      }}
+                    />
+                  </div>
+
+                  {/* Información y botón */}
+                  <div style={{ textAlign: 'center', width: '100%' }}>
+                    <h4 style={{ fontSize: '1rem', fontWeight: 800, color: cardTheme.textColor, marginBottom: '0.3rem' }}>
+                      {sticker.name}
+                    </h4>
+                    <p style={{ fontSize: '0.78rem', color: cardTheme.subTextColor, lineHeight: 1.4, marginBottom: '1rem' }}>
+                      {sticker.description}
+                    </p>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenBuy(sticker.id);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '0.65rem 1rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        backgroundColor: sticker.colorType === 'black' ? '#000000' : 'var(--accent-gold)',
+                        color: sticker.colorType === 'black' ? '#FFFFFF' : '#121212',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.4rem',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      <ShoppingBag size={14} />
+                      <span>Pedir ({sticker.colorName}) $90 MXN</span>
+                    </button>
+                  </div>
+
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Detalle del distintivo seleccionado con Simulador Interactivo */}
+          <div className="landing-card" style={{ padding: '2.5rem', maxWidth: '960px', margin: '0 auto' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem', alignItems: 'center' }}>
               
-              {/* Vista del distintivo con animación */}
-              <div style={{
-                background: 'radial-gradient(circle, rgba(35, 35, 42, 0.9) 0%, rgba(18, 18, 22, 1) 100%)',
-                borderRadius: '16px',
-                padding: '2.5rem 1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '320px',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                position: 'relative'
-              }}>
-                <motion.img 
-                  key={`${activeTabRegion}-${selectedColor}`}
-                  initial={{ opacity: 0, scale: 0.88 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.35 }}
-                  src={currentSticker.img} 
-                  alt={currentSticker.name}
-                  style={{
-                    maxHeight: '220px',
-                    maxWidth: '100%',
-                    objectFit: 'contain',
-                    filter: selectedColor === 'oro' 
-                      ? 'drop-shadow(0 8px 24px rgba(212, 175, 55, 0.4))' 
-                      : 'drop-shadow(0 8px 20px rgba(0,0,0,0.5))'
-                  }}
-                />
-
-                <span style={{
-                  marginTop: '1.2rem',
-                  fontSize: '0.85rem',
-                  color: 'var(--accent-gold)',
-                  fontWeight: 600,
-                  letterSpacing: '0.04em'
-                }}>
-                  {currentSticker.name}
-                </span>
-              </div>
-
-              {/* Controles de color y detalles */}
+              {/* Simulador interactivo en auto o celular */}
               <div>
-                <span style={{ fontSize: '0.85rem', color: 'var(--accent-gold)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  {stickerData[activeTabRegion].subtitle}
-                </span>
-                <h3 style={{ fontSize: '1.8rem', fontWeight: 700, margin: '0.4rem 0 1rem' }}>
-                  {stickerData[activeTabRegion].title}
-                </h3>
-                <p style={{ color: '#A0A0AA', fontSize: '0.98rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                  {currentSticker.desc}
-                </p>
-
-                {/* Botones de selección de color */}
-                <div style={{ marginBottom: '2rem' }}>
-                  <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#C0C0C8', marginBottom: '0.8rem' }}>
-                    Selecciona tu color preferido:
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.8rem' }}>
-                    
-                    <button
-                      onClick={() => setSelectedColor('oro')}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--accent-gold)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Simulador en Vivo
+                  </span>
+                  
+                  <div style={{ display: 'flex', gap: '4px', backgroundColor: 'rgba(0,0,0,0.4)', padding: '3px', borderRadius: '100px' }}>
+                    <button 
+                      onClick={() => setSimulatorMode('car')}
                       style={{
-                        padding: '0.5rem 1rem',
-                        borderRadius: '8px',
-                        background: selectedColor === 'oro' ? 'rgba(212, 175, 55, 0.25)' : 'rgba(255, 255, 255, 0.05)',
-                        border: selectedColor === 'oro' ? '2px solid var(--accent-gold)' : '1px solid rgba(255, 255, 255, 0.1)',
-                        color: selectedColor === 'oro' ? 'var(--accent-gold)' : '#FFF',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
+                        padding: '5px 12px',
+                        borderRadius: '100px',
+                        fontSize: '0.75rem',
+                        backgroundColor: simulatorMode === 'car' ? 'var(--accent-gold)' : 'transparent',
+                        color: simulatorMode === 'car' ? '#121212' : '#AAA',
+                        fontWeight: 700,
+                        border: 'none',
                         cursor: 'pointer'
                       }}
                     >
-                      Oro VIP
+                      En Auto
                     </button>
-
-                    <button
-                      onClick={() => setSelectedColor('negra')}
+                    <button 
+                      onClick={() => setSimulatorMode('phone')}
                       style={{
-                        padding: '0.5rem 1rem',
-                        borderRadius: '8px',
-                        background: selectedColor === 'negra' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-                        border: selectedColor === 'negra' ? '2px solid #FFF' : '1px solid rgba(255, 255, 255, 0.1)',
-                        color: '#FFF',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
+                        padding: '5px 12px',
+                        borderRadius: '100px',
+                        fontSize: '0.75rem',
+                        backgroundColor: simulatorMode === 'phone' ? 'var(--accent-gold)' : 'transparent',
+                        color: simulatorMode === 'phone' ? '#121212' : '#AAA',
+                        fontWeight: 700,
+                        border: 'none',
                         cursor: 'pointer'
                       }}
                     >
-                      Negra Mate
+                      En Celular
                     </button>
-
-                    <button
-                      onClick={() => setSelectedColor('blanca')}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        borderRadius: '8px',
-                        background: selectedColor === 'blanca' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-                        border: selectedColor === 'blanca' ? '2px solid #FFF' : '1px solid rgba(255, 255, 255, 0.1)',
-                        color: '#FFF',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Blanca
-                    </button>
-
-                    <button
-                      onClick={() => setSelectedColor('rosa')}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        borderRadius: '8px',
-                        background: selectedColor === 'rosa' ? 'rgba(255, 105, 180, 0.25)' : 'rgba(255, 255, 255, 0.05)',
-                        border: selectedColor === 'rosa' ? '2px solid #FF69B4' : '1px solid rgba(255, 255, 255, 0.1)',
-                        color: selectedColor === 'rosa' ? '#FF69B4' : '#FFF',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Rosa
-                    </button>
-
                   </div>
                 </div>
 
-                {/* Botón de compra inmediata de este modelo */}
+                {/* Contenedor del simulador */}
+                <div style={{
+                  position: 'relative',
+                  height: '240px',
+                  backgroundColor: selectedSticker.colorType === 'black' ? '#F1F5F9' : '#0c0c0e',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  boxShadow: 'inset 0 0 20px rgba(0,0,0,0.3)',
+                  transition: 'background-color 0.4s ease'
+                }}>
+                  {simulatorMode === 'car' ? (
+                    <div style={{ position: 'relative', width: '85%', height: '75%', backgroundColor: selectedSticker.colorType === 'black' ? '#E2E8F0' : selectedSticker.colorType === 'pink' ? '#231822' : '#141e24', border: '3px solid #64748B', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img 
+                        src={selectedSticker.imagePath} 
+                        alt="Sticker Preview"
+                        style={{
+                          width: '100px',
+                          height: '100px',
+                          objectFit: 'contain',
+                          ...getFilterStyle(selectedSticker.colorType)
+                        }}
+                      />
+                      <span style={{ position: 'absolute', bottom: '6px', fontSize: '0.65rem', color: selectedSticker.colorType === 'black' ? '#475569' : 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
+                        Vista en cristal de vehículo
+                      </span>
+                    </div>
+                  ) : (
+                    <div style={{ width: '120px', height: '190px', backgroundColor: selectedSticker.colorType === 'black' ? '#FFFFFF' : selectedSticker.colorType === 'pink' ? '#2D1D27' : '#1E1E22', borderRadius: '20px', border: '3px solid #444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img 
+                        src={selectedSticker.imagePath} 
+                        alt="Sticker Preview"
+                        style={{
+                          width: '75px',
+                          height: '75px',
+                          objectFit: 'contain',
+                          ...getFilterStyle(selectedSticker.colorType)
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Ficha descriptiva y botón para pedir */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    color: selectedSticker.colorType === 'pink' ? '#F48FB1' : 'var(--accent-gold)'
+                  }}>
+                    {selectedSticker.category === 'carmelita' ? 'Isla del Carmen' : 'Campeche Histórico'}
+                  </span>
+                  <span>•</span>
+                  <span style={{ fontSize: '0.8rem', color: '#BBB' }}>Edición {selectedSticker.colorName}</span>
+                </div>
+
+                <h3 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.8rem' }}>
+                  {selectedSticker.name}
+                </h3>
+
+                <p style={{ color: '#A0A0AA', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '1.2rem' }}>
+                  {selectedSticker.description}
+                </p>
+
+                <div style={{
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  background: 'rgba(255,255,255,0.03)',
+                  borderLeft: `3px solid ${selectedSticker.colorType === 'pink' ? '#F48FB1' : 'var(--accent-gold)'}`,
+                  marginBottom: '1.8rem',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.6rem'
+                }}>
+                  <Info size={16} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700, color: 'var(--accent-gold)' }}>Beneficio Activo</div>
+                    <div style={{ fontSize: '0.85rem', color: '#FFF' }}>{selectedSticker.perk}</div>
+                  </div>
+                </div>
+
                 <button 
-                  onClick={() => handleOpenBuy(currentSticker.id)}
+                  onClick={() => handleOpenBuy(selectedSticker.id)}
                   className="landing-btn-gold"
-                  style={{ width: '100%', padding: '0.9rem' }}
+                  style={{ width: '100%', padding: '0.95rem', fontSize: '1rem' }}
                 >
                   <ShoppingBag size={18} />
-                  <span>Pedir {currentSticker.name} ($90 MXN)</span>
+                  <span>Adquirir {selectedSticker.name} ($90 MXN)</span>
                 </button>
-
               </div>
 
             </div>
@@ -1453,8 +1676,9 @@ export const Landing: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '2rem' }}>
                   {[
                     'Calcomanía física en vinil de grado automotriz tricapa',
-                    'Elección de modelo: Campechano Soy o Carmelita Soy',
-                    'Sobre oficial de colección con código QR personal',
+                    'Elección de modelo: Campechano Soy, Campechana Soy o Carmelita Soy',
+                    'Colores disponibles: Blanco, Negro o Rosa oficial',
+                    'Sobre oficial de colección sellado con código QR personal',
                     'Incluye toda la Membresía Digital en tu celular',
                     'Recoge hoy en puntos de venta o recibe a domicilio'
                   ].map((feat, idx) => (
@@ -1740,7 +1964,7 @@ export const Landing: React.FC = () => {
               <h5 style={{ color: '#FFF', fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem' }}>Navegación</h5>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 <a href="#como-funciona" style={{ color: '#90909A', textDecoration: 'none' }}>¿Cómo Funciona?</a>
-                <a href="#distintivo" style={{ color: '#90909A', textDecoration: 'none' }}>El Distintivo de Colección</a>
+                <a href="#distintivo" style={{ color: '#90909A', textDecoration: 'none' }}>Colección Oficial</a>
                 <a href="#aliados" style={{ color: '#90909A', textDecoration: 'none' }}>Directorio de Aliados</a>
                 <a href="#puntos-venta" style={{ color: '#90909A', textDecoration: 'none' }}>Puntos de Venta Físicos</a>
                 <a href="#planes" style={{ color: '#90909A', textDecoration: 'none' }}>Planes y Membresías</a>
