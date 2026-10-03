@@ -182,7 +182,7 @@ export const Landing: React.FC = () => {
             { id: '2', name: 'Lavadero Royal Shine', category: 'Auto', discount: 'Lavado Gratis en tu 3ra visita', city: 'Campeche' },
             { id: '3', name: 'Barbería Mdoce', category: 'Servicios', discount: 'Bebida de cortesía + 10% en corte', city: 'Campeche' },
             { id: '4', name: 'Club 59 Lounge', category: 'Entretenimiento', discount: 'Shot de bienvenida de cortesía', city: 'Campeche' },
-            { id: '5', name: 'Spa Sentidos', category: 'Salud', discount: '20% OFF en masajes relajantes', city: 'Campeche' },
+            { id: '5', name: 'Spa Sentidos', category: 'Salud', discount: '15% OFF en masajes relajantes', city: 'Campeche' },
             { id: '6', name: 'Refaccionaria Bahía', category: 'Auto', discount: '10% de Descuento en refacciones', city: 'Campeche' }
           ]);
         }
@@ -796,7 +796,7 @@ export const Landing: React.FC = () => {
               <div style={{ fontSize: '0.9rem', color: '#A0A0A8', marginTop: '0.2rem' }}>Comercios y Negocios Aliados</div>
             </div>
             <div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--accent-gold)' }}>Hasta 25%</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--accent-gold)' }}>Hasta 15%</div>
               <div style={{ fontSize: '0.9rem', color: '#A0A0A8', marginTop: '0.2rem' }}>De Descuento en Cada Visita</div>
             </div>
             <div>
