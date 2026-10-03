@@ -10,8 +10,7 @@ import {
   ArrowLeft, 
   Info,
   Camera,
-  X,
-  ZoomIn
+  X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -283,7 +282,7 @@ const Galeria: React.FC = () => {
       {/* Header */}
       <header style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1rem', marginBottom: '2rem' }}>
         <button 
-          onClick={() => navigate('/')}
+          onClick={() => navigate(-1)}
           style={{ 
             backgroundColor: 'rgba(255,255,255,0.05)', 
             padding: '0.6rem', 

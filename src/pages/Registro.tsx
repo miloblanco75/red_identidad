@@ -86,7 +86,7 @@ const Registro: React.FC = () => {
       level: 'gold',
       code: 'PASE-DEMO-009'
     });
-    navigate('/');
+    navigate('/app');
   };
 
   const handleActivate = async (e?: React.FormEvent) => {
@@ -200,7 +200,7 @@ const Registro: React.FC = () => {
           level: (newSticker && newSticker.level) || derivedLevel,
           code: (newSticker && newSticker.code) || cleanCode
         });
-        navigate('/');
+        navigate('/app');
         return;
       }
 
@@ -222,7 +222,7 @@ const Registro: React.FC = () => {
           level: isPrensa ? 'prensa' : (isDig ? 'digital' : sticker.level),
           code: sticker.code
         });
-        navigate('/');
+        navigate('/app');
         return;
       }
 
@@ -248,7 +248,7 @@ const Registro: React.FC = () => {
           level: isPrensaSticker ? 'prensa' : (isDigSticker ? 'digital' : sticker.level),
           code: sticker.code
         });
-        navigate('/');
+        navigate('/app');
       }
 
       // 3. Éxito: Guardar en local storage (Login local) y redirigir
@@ -258,7 +258,7 @@ const Registro: React.FC = () => {
         level: updatedSticker.level,
         code: updatedSticker.code
       });
-      navigate('/');
+      navigate('/app');
 
     } catch (err: any) {
       console.warn("Activando con fallback:", err.message);
@@ -280,7 +280,7 @@ const Registro: React.FC = () => {
         level: mockLevel,
         code: upperSerial
       });
-      navigate('/');
+      navigate('/app');
     } finally {
       setIsActivating(false);
     }

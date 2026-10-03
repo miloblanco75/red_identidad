@@ -4,7 +4,7 @@ import { Home, CreditCard, MapPin, Store } from 'lucide-react';
 
 const BottomNavigation: React.FC = () => {
   const tabs = [
-    { path: '/', icon: Home, label: 'Inicio' },
+    { path: '/app', icon: Home, label: 'Inicio' },
     { path: '/registro', icon: CreditCard, label: 'Mi Pase' },
     { path: '/aliados', icon: MapPin, label: 'Aliados' },
     { path: '/aliado-panel', icon: Store, label: 'Mi Negocio' },
