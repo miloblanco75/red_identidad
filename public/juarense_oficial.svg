@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <!-- Filtro sutil para relieve -->
+    <filter id="badgeShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Grupo Principal de la Insignia Vive Juárez -->
+  <g id="insignia-juarez" filter="url(#badgeShadow)">
+    
+    <!-- La icónica 'X' de Ciudad Juárez (Estilizada geométrica) -->
+    <!-- Brazo izquierdo superior a derecho inferior -->
+    <path d="M 120 70 L 195 70 L 380 400 L 305 400 Z" fill="currentColor" stroke="currentColor" stroke-width="2" />
+    
+    <!-- Brazo derecho superior a izquierdo inferior -->
+    <path d="M 380 70 L 305 70 L 120 400 L 195 400 Z" fill="currentColor" stroke="currentColor" stroke-width="2" />
+
+    <!-- Ojo / Ventana central característica de la X de Sebastián -->
+    <circle cx="250" cy="235" r="26" fill="#121212" stroke="currentColor" stroke-width="6" />
+
+    <!-- Remate estilizado de la base -->
+    <rect x="140" y="415" width="220" height="10" rx="5" fill="currentColor" />
+
+    <!-- Tipografía estilizada de la insignia -->
+    <text x="250" y="465" 
+      font-family="'Outfit', 'Segoe UI', -apple-system, sans-serif" 
+      font-size="34" 
+      font-weight="900" 
+      letter-spacing="5" 
+      fill="currentColor" 
+      text-anchor="middle"
+    >
+      VIVE JUÁREZ
+    </text>
+
+    <text x="250" y="492" 
+      font-family="'Outfit', 'Segoe UI', -apple-system, sans-serif" 
+      font-size="16" 
+      font-weight="600" 
+      letter-spacing="4" 
+      fill="currentColor" 
+      opacity="0.85"
+      text-anchor="middle"
+    >
+      JUARENSE SOY
+    </text>
+  </g>
+</svg>

@@ -7,6 +7,7 @@ import InstallPwaBanner from './components/InstallPwaBanner';
 
 // Lazy load pages for performance
 const Landing = React.lazy(() => import('./pages/Landing'));
+const LandingJuarez = React.lazy(() => import('./pages/LandingJuarez'));
 const Home = React.lazy(() => import('./pages/Home'));
 const Registro = React.lazy(() => import('./pages/Registro'));
 const Aliados = React.lazy(() => import('./pages/Aliados'));
@@ -38,14 +39,28 @@ function App() {
     return <SplashScreen onEnter={() => setShowSplash(false)} />;
   }
 
+  // Detección automática del subdominio de Ciudad Juárez (juarez.redidentidad.app o juarez.*)
+  const isJuarezSubdomain = typeof window !== 'undefined' && (
+    window.location.hostname.startsWith('juarez.') ||
+    window.location.hostname.includes('juarez')
+  );
+
   return (
     <AuthProvider>
       <Router>
-        <React.Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0B0B0E', color: '#F5F5F7' }}>Cargando Red Identidad...</div>}>
+        <React.Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0B0B0E', color: '#F5F5F7' }}>Cargando...</div>}>
           <Routes>
-            {/* Landing Page Principal Full-Width */}
-            <Route path="/" element={<Landing />} />
+            {/* Si entra desde juarez.redidentidad.app, la raíz '/' muestra Vive Juárez; sino, muestra Campeche */}
+            <Route path="/" element={isJuarezSubdomain ? <LandingJuarez /> : <Landing />} />
+            
+            {/* Rutas explícitas para Campeche */}
+            <Route path="/campeche" element={<Landing />} />
             <Route path="/landing" element={<Landing />} />
+
+            {/* Rutas explícitas para Vive Juárez (Ciudad Juárez) */}
+            <Route path="/juarez" element={<LandingJuarez />} />
+            <Route path="/juarez/landing" element={<LandingJuarez />} />
+            <Route path="/vivejuarez" element={<LandingJuarez />} />
 
             {/* Rutas de la Web App Móvil y PWA de Miembros */}
             <Route element={<MobileAppLayout />}>
