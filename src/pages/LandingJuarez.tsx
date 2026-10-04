@@ -10,6 +10,7 @@ import {
   Info, Globe
 } from 'lucide-react';
 import { BuyStickerModal } from '../components/BuyStickerModal';
+import { useCity } from '../contexts/CityContext';
 
 // WhatsApp oficial de atención para Ciudad Juárez
 const JUAREZ_WHATSAPP = '529811971305'; // Configurable para Lada 656
@@ -60,6 +61,13 @@ const JUAREZ_STICKERS: JuarezStickerInfo[] = [
 
 export const LandingJuarez: React.FC = () => {
   const navigate = useNavigate();
+  const { setCity } = useCity();
+
+  // Helper de navegación a la app móvil con contexto de Juárez
+  const goToApp = (path: string = '/app') => {
+    setCity('juarez');
+    navigate(`${path}?city=juarez`);
+  };
 
   // Estados de navegación y modales
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -351,7 +359,7 @@ export const LandingJuarez: React.FC = () => {
           {/* Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <button 
-              onClick={() => navigate('/app')}
+              onClick={() => goToApp('/app')}
               className="landing-btn-glass"
               style={{ padding: '0.65rem 1.25rem', fontSize: '0.88rem' }}
             >
@@ -409,7 +417,7 @@ export const LandingJuarez: React.FC = () => {
               <a href="#planes" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Planes ($45 / $90 MXN)</a>
               <a href="#negocios" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '1rem', fontWeight: 600 }}>Afiliar mi Negocio</a>
               <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem' }}>
-                <button onClick={() => { setMobileMenuOpen(false); navigate('/app'); }} className="landing-btn-glass" style={{ flex: 1, padding: '0.75rem' }}>Abrir App</button>
+                <button onClick={() => { setMobileMenuOpen(false); goToApp('/app'); }} className="landing-btn-glass" style={{ flex: 1, padding: '0.75rem' }}>Abrir App</button>
                 <button onClick={() => { setMobileMenuOpen(false); handleOpenBuy('juarense_blanca'); }} className="landing-btn-gold" style={{ flex: 1, padding: '0.75rem' }}>Comprar</button>
               </div>
             </motion.div>
@@ -970,7 +978,7 @@ export const LandingJuarez: React.FC = () => {
             </div>
 
             <button 
-              onClick={() => navigate('/aliados')}
+              onClick={() => goToApp('/aliados')}
               className="landing-btn-glass"
             >
               <span>Ver mapa de aliados</span>
@@ -1548,9 +1556,9 @@ export const LandingJuarez: React.FC = () => {
             <div>
               <h5 style={{ color: '#FFF', fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem' }}>Portales</h5>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                <button onClick={() => navigate('/app')} style={{ textAlign: 'left', color: '#90909A', textDecoration: 'none' }}>App de Miembros</button>
-                <button onClick={() => navigate('/registro')} style={{ textAlign: 'left', color: '#90909A', textDecoration: 'none' }}>Activar mi Código QR</button>
-                <button onClick={() => navigate('/aliado-panel')} style={{ textAlign: 'left', color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 600 }}>Portal de Comercios Aliados</button>
+                <button onClick={() => goToApp('/app')} style={{ textAlign: 'left', color: '#90909A', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>App de Miembros</button>
+                <button onClick={() => goToApp('/registro')} style={{ textAlign: 'left', color: '#90909A', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Activar mi Código QR</button>
+                <button onClick={() => goToApp('/aliado-panel')} style={{ textAlign: 'left', color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Portal de Comercios Aliados</button>
                 <a href="/" style={{ textAlign: 'left', color: '#90909A', textDecoration: 'none' }}>Ver Red Identidad Campeche</a>
               </div>
             </div>
@@ -1768,7 +1776,7 @@ export const LandingJuarez: React.FC = () => {
           zIndex: 90
         }}
       >
-        <button onClick={() => navigate('/app')} className="landing-btn-glass" style={{ flex: 1, padding: '0.7rem', fontSize: '0.85rem' }}>
+        <button onClick={() => goToApp('/app')} className="landing-btn-glass" style={{ flex: 1, padding: '0.7rem', fontSize: '0.85rem' }}>
           <Smartphone size={16} />
           <span>Abrir App</span>
         </button>

@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { AllyPromoCarousel } from '../components/AllyPromoCarousel';
 import { parsePromotions } from '../lib/promotionsHelper';
+import { useCity } from '../contexts/CityContext';
 
 const FacebookIcon = ({ size = 14, color = '#1877F2' }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -44,10 +45,11 @@ interface Ally {
   facebook_url?: string;
   website_url?: string;
   logo_url?: string;
+  address?: string;
   created_at?: string;
 }
 
-export type Zone = 'todas' | 'campeche' | 'carmen' | 'digitales';
+export type Zone = 'todas' | 'campeche' | 'carmen' | 'juarez' | 'digitales';
 
 export interface ZoneOption {
   id: Zone;
@@ -61,8 +63,8 @@ export interface ZoneOption {
 export const ZONES: ZoneOption[] = [
   {
     id: 'todas',
-    label: 'Todo el Estado',
-    shortLabel: 'Todo el Estado',
+    label: 'Todas las Zonas',
+    shortLabel: 'Todas',
     icon: '📍',
     center: [19.25, -91.1],
     zoom: 9
@@ -81,6 +83,14 @@ export const ZONES: ZoneOption[] = [
     shortLabel: 'Cd. del Carmen',
     icon: '🏖️',
     center: [18.6481, -91.8219],
+    zoom: 13
+  },
+  {
+    id: 'juarez',
+    label: 'Ciudad Juárez, Chihuahua',
+    shortLabel: 'Cd. Juárez',
+    icon: '🌵',
+    center: [31.6904, -106.4245],
     zoom: 13
   },
   {
@@ -111,12 +121,16 @@ export function formatDistance(km: number): string {
   return `${km.toFixed(1)} km`;
 }
 
-export function getAllyZone(ally: Ally): 'campeche' | 'carmen' | 'digitales' {
+export function getAllyZone(ally: Ally): 'campeche' | 'carmen' | 'juarez' | 'digitales' {
   const isDigital = !ally.lat || !ally.lng || isNaN(Number(ally.lat)) || isNaN(Number(ally.lng)) || (Number(ally.lat) === 0 && Number(ally.lng) === 0);
   if (isDigital) return 'digitales';
   const lng = Number(ally.lng);
   const nameLower = (ally.name || '').toLowerCase();
-  if (lng < -91.2 || nameLower.includes('carmen')) {
+  const addressLower = (ally.address || '').toLowerCase();
+  if (lng < -100 || nameLower.includes('juarez') || nameLower.includes('juárez') || addressLower.includes('juarez') || addressLower.includes('juárez')) {
+    return 'juarez';
+  }
+  if (lng < -91.2 || nameLower.includes('carmen') || addressLower.includes('carmen')) {
     return 'carmen';
   }
   return 'campeche';
@@ -134,14 +148,85 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
   return null;
 }
 
+const juarezAlliesList: Ally[] = [
+  {
+    id: 'j-ally-1',
+    name: 'Burritos & Tradición Fronteriza',
+    category: 'Comida',
+    discount: '15% de Descuento en tu consumo',
+    lat: 31.7058,
+    lng: -106.4150,
+    promotions_given: 120,
+    facebook_url: 'https://facebook.com',
+    website_url: ''
+  },
+  {
+    id: 'j-ally-2',
+    name: 'Royal Shine Auto Spa Juárez',
+    category: 'Auto',
+    discount: 'Lavado Express Gratis en tu 3ra visita',
+    lat: 31.6980,
+    lng: -106.4020,
+    promotions_given: 85,
+    facebook_url: 'https://facebook.com',
+    website_url: ''
+  },
+  {
+    id: 'j-ally-3',
+    name: 'Barbería & Grooming El Paso del Norte',
+    category: 'Servicios',
+    discount: '10% OFF en corte y barba',
+    lat: 31.7290,
+    lng: -106.4510,
+    promotions_given: 90,
+    facebook_url: 'https://facebook.com',
+    website_url: ''
+  },
+  {
+    id: 'j-ally-4',
+    name: 'Café de la X Terraza',
+    category: 'Comida',
+    discount: 'Bebida de cortesía al ordenar alimento',
+    lat: 31.7370,
+    lng: -106.4480,
+    promotions_given: 160,
+    facebook_url: 'https://facebook.com',
+    website_url: ''
+  },
+  {
+    id: 'j-ally-5',
+    name: 'Lounge 656',
+    category: 'Entretenimiento',
+    discount: 'Bebida de bienvenida de cortesía',
+    lat: 31.7010,
+    lng: -106.4180,
+    promotions_given: 195,
+    facebook_url: 'https://facebook.com',
+    website_url: ''
+  },
+  {
+    id: 'j-ally-6',
+    name: 'Refacciones & Detallado Frontera',
+    category: 'Auto',
+    discount: '10% de Descuento en accesorios',
+    lat: 31.6850,
+    lng: -106.4290,
+    promotions_given: 65,
+    facebook_url: 'https://facebook.com',
+    website_url: ''
+  }
+];
+
 const Aliados: React.FC = () => {
   const navigate = useNavigate();
+  const { isJuarez } = useCity();
+
   const [allies, setAllies] = useState<Ally[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([19.8301, -90.5349]);
-  const [mapZoom, setMapZoom] = useState<number>(12);
+  const [mapCenter, setMapCenter] = useState<[number, number]>(() => isJuarez ? [31.6904, -106.4245] : [19.8301, -90.5349]);
+  const [mapZoom, setMapZoom] = useState<number>(() => isJuarez ? 13 : 12);
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
-  const [selectedZone, setSelectedZone] = useState<Zone>('todas');
+  const [selectedZone, setSelectedZone] = useState<Zone>(() => isJuarez ? 'juarez' : 'todas');
 
   // Estados de Geolocalización "Cerca de Mí"
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -163,6 +248,14 @@ const Aliados: React.FC = () => {
   ];
 
   useEffect(() => {
+    if (isJuarez) {
+      setSelectedZone('juarez');
+      setMapCenter([31.6904, -106.4245]);
+      setMapZoom(13);
+    }
+  }, [isJuarez]);
+
+  useEffect(() => {
     fetchAllies();
   }, []);
 
@@ -174,9 +267,11 @@ const Aliados: React.FC = () => {
         .order('promotions_given', { ascending: false });
       
       if (error) throw error;
-      if (data) setAllies(data);
+      const combined = [...(data || []), ...juarezAlliesList];
+      setAllies(combined);
     } catch (error) {
       console.error('Error fetching allies:', error);
+      setAllies(juarezAlliesList);
     } finally {
       setLoading(false);
     }
@@ -362,7 +457,9 @@ const Aliados: React.FC = () => {
     <div className="animate-fade-in" style={{ padding: '1.5rem', paddingBottom: '100px' }}>
       <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', marginTop: '1rem' }}>Aliados de la Red</h1>
       <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-        Encuentra comercios en Campeche y Ciudad del Carmen que recompensan tu identidad.
+        {isJuarez 
+          ? 'Encuentra comercios en Ciudad Juárez que recompensan tu identidad con hasta 15% de descuento.'
+          : 'Encuentra comercios en Campeche, Carmen y aliados que recompensan tu identidad.'}
       </p>
 
       {/* How to use banner */}

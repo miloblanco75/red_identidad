@@ -17,6 +17,7 @@ import { SorteosPublicModal } from '../components/SorteosPublicModal';
 import { LoyaltyPassportModal } from '../components/LoyaltyPassportModal';
 import { TrialPassModal } from '../components/TrialPassModal';
 import { useAuth } from '../contexts/AuthContext';
+import { useCity } from '../contexts/CityContext';
 import { getUserGamificationProfile } from '../lib/challengesService';
 
 const FacebookIcon = ({ size = 14, color = '#1877F2' }: { size?: number; color?: string }) => (
@@ -60,11 +61,64 @@ const mockPromotions = [
     id: 'mock-4',
     name: 'Spa Sentidos',
     category: 'Salud',
-    discount: '20% OFF en Masaje Relajante',
+    discount: '15% OFF en Masaje Relajante',
     visits: 45,
     isMock: true,
     facebook_url: 'https://facebook.com',
     website_url: 'https://spasentidos.com'
+  }
+];
+
+const juarezMockPromotions = [
+  {
+    id: 'mock-j-1',
+    name: 'Burritos & Tradición Fronteriza',
+    category: 'Comida',
+    discount: '15% de Descuento en Consumo Total',
+    visits: 145,
+    isMock: true,
+    facebook_url: 'https://facebook.com',
+    website_url: ''
+  },
+  {
+    id: 'mock-j-2',
+    name: 'Royal Shine Auto Spa Juárez',
+    category: 'Auto',
+    discount: 'Lavado Express Gratis en tu 3ra Visita',
+    visits: 110,
+    isMock: true,
+    facebook_url: 'https://facebook.com',
+    website_url: 'https://autospajuarez.com'
+  },
+  {
+    id: 'mock-j-3',
+    name: 'Barbería El Paso del Norte',
+    category: 'Servicios',
+    discount: '10% OFF en Corte y Arreglo de Barba',
+    visits: 95,
+    isMock: true,
+    facebook_url: 'https://facebook.com',
+    website_url: ''
+  },
+  {
+    id: 'mock-j-4',
+    name: 'Café de la X Terraza',
+    category: 'Comida',
+    discount: 'Bebida de Cortesía al Ordenar Alimento',
+    visits: 180,
+    isMock: true,
+    facebook_url: 'https://facebook.com',
+    website_url: ''
+  },
+  {
+    id: 'mock-j-5',
+    name: 'Lounge 656 Gómez Morín',
+    category: 'Entretenimiento',
+    discount: 'Bebida de Bienvenida de Cortesía',
+    visits: 230,
+    isMock: true,
+    facebook_url: 'https://facebook.com',
+    website_url: ''
   }
 ];
 
@@ -89,10 +143,33 @@ const communityShowcase = [
   }
 ];
 
+const juarezCommunityShowcase = [
+  {
+    name: 'Carlos M.',
+    location: 'Gómez Morín',
+    quote: 'Llevar el distintivo de la X en mi auto representa el orgullo juarense. Los descuentos se pagan solos.',
+    tag: 'Socio Fundador'
+  },
+  {
+    name: 'Sofía R.',
+    location: 'Las Misiones',
+    quote: 'Me encanta que los comercios locales de la frontera nos reconozcan y apoyen nuestra economía.',
+    tag: 'Miembro Activo'
+  },
+  {
+    name: 'Jorge L.',
+    location: 'Valle del Sol',
+    quote: 'Una gran iniciativa para unir a los juarenses que consumimos local y movemos esta frontera.',
+    tag: 'Miembro Activo'
+  }
+];
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const { city, setCity, isJuarez } = useCity();
+
   const [allies, setAllies] = useState<any[]>([]);
   const [newAllies, setNewAllies] = useState<any[]>([]);
   const [claimedCount, setClaimedCount] = useState<number>(0);
@@ -104,9 +181,15 @@ const Home: React.FC = () => {
   const [showUploadPhotoModal, setShowUploadPhotoModal] = useState(false);
   const [showSorteosModal, setShowSorteosModal] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-  const [initialStickerSelection, setInitialStickerSelection] = useState<string>('campechano_negra');
+  const [initialStickerSelection, setInitialStickerSelection] = useState<string>(() => isJuarez ? 'juarense_blanca' : 'campechano_negra');
   const [gamificationProfile, setGamificationProfile] = useState<any>(null);
   const [showTrialModal, setShowTrialModal] = useState(() => searchParams.get('trial') === 'true' || searchParams.get('prueba') === 'true');
+
+  useEffect(() => {
+    if (isJuarez) {
+      setInitialStickerSelection('juarense_blanca');
+    }
+  }, [isJuarez]);
 
   useEffect(() => {
     if (searchParams.get('trial') === 'true' || searchParams.get('prueba') === 'true') {
@@ -117,6 +200,39 @@ const Home: React.FC = () => {
   useEffect(() => {
     setGamificationProfile(getUserGamificationProfile(user?.code, user?.member_number));
   }, [user, showPassportModal, showTrialModal]);
+
+  const juarezOfficialStores = [
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Gómez Morín',
+      address: 'Corredor Gómez Morín (Zona Gastronómica)',
+      phone: '529811971305'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Las Misiones',
+      address: 'Av. Paseo de la Victoria',
+      phone: '529811971305'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Pronaf / San Lorenzo',
+      address: 'Zona Pronaf',
+      phone: '529811971305'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Av. Tecnológico',
+      address: 'Av. Tecnológico',
+      phone: '529811971305'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Valle del Sol',
+      address: 'Zona Residencial Valle del Sol',
+      phone: '529811971305'
+    }
+  ];
 
   const officialStores = [
     {
@@ -239,12 +355,64 @@ const Home: React.FC = () => {
     }
   };
 
-  const displayPromotions = allies.length > 0 ? allies : mockPromotions;
-  const totalAlliesCount = allies.length > 0 ? allies.length : 12;
+  const displayPromotions = isJuarez 
+    ? juarezMockPromotions 
+    : (allies.length > 0 ? allies : mockPromotions);
+  const displayCommunity = isJuarez ? juarezCommunityShowcase : communityShowcase;
+  const displayStores = isJuarez ? juarezOfficialStores : officialStores;
+  const totalAlliesCount = allies.length > 0 ? allies.length : (isJuarez ? 6 : 12);
   const totalMembersCount = claimedCount > 0 ? claimedCount : 350;
 
   return (
     <div className="animate-fade-in" style={{ padding: '1.2rem 1.5rem 5rem' }}>
+
+      {/* ── Barra Superior de Selector de Ciudad ── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        border: '1px solid rgba(212, 175, 55, 0.25)',
+        borderRadius: '16px',
+        padding: '0.45rem 0.75rem',
+        marginBottom: '1.2rem',
+        gap: '0.5rem',
+        overflowX: 'auto'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+          <MapPin size={15} color="var(--accent-gold)" />
+          <span style={{ fontSize: '0.75rem', color: '#FFF', fontWeight: 700 }}>Ciudad:</span>
+        </div>
+        <div style={{ display: 'flex', gap: '0.4rem' }}>
+          {[
+            { id: 'campeche', label: '🏛️ Campeche' },
+            { id: 'carmen', label: '🏖️ Carmen' },
+            { id: 'juarez', label: '🌵 Cd. Juárez' }
+          ].map(c => {
+            const isSelected = city === c.id;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setCity(c.id as any)}
+                style={{
+                  background: isSelected ? 'var(--accent-gold)' : 'rgba(255, 255, 255, 0.06)',
+                  color: isSelected ? '#121212' : '#C0C0C5',
+                  border: isSelected ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+                  borderRadius: '10px',
+                  padding: '0.35rem 0.7rem',
+                  fontSize: '0.74rem',
+                  fontWeight: isSelected ? 800 : 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* ── Saludo personalizado si ya tiene pase activo ── */}
       {user && (
@@ -513,7 +681,11 @@ const Home: React.FC = () => {
                 fontWeight: 700
               }}>
                 <Flame size={15} color="#EF4444" />
-                <span>🔥 18 campechanos han solicitado su distintivo esta semana en Campeche y Carmen</span>
+                <span>
+                  🔥 {isJuarez 
+                    ? '24 juarenses han solicitado su distintivo esta semana en Ciudad Juárez' 
+                    : '18 campechanos han solicitado su distintivo esta semana en Campeche y Carmen'}
+                </span>
               </div>
             </div>
 
@@ -524,7 +696,15 @@ const Home: React.FC = () => {
               letterSpacing: '-0.02em', 
               marginBottom: '0.8rem' 
             }}>
-              <span className="gold-text">CAMPECHANO</span> SOY
+              {isJuarez ? (
+                <>
+                  <span className="gold-text">VIVE</span> JUÁREZ
+                </>
+              ) : (
+                <>
+                  <span className="gold-text">CAMPECHANO</span> SOY
+                </>
+              )}
             </h1>
 
             {/* OBLIGATORIO: Imagen del Distintivo Físico Completo en Mobile/Desktop */}
@@ -557,17 +737,18 @@ const Home: React.FC = () => {
                 }}
               >
                 <img 
-                  src="/campechano_soy_coche.jpg" 
-                  alt="Distintivo Oficial Campechano Soy (Puerta de Tierra)" 
+                  src={isJuarez ? "/juarense_oficial.svg" : "/campechano_soy_coche.jpg"} 
+                  alt={isJuarez ? "Distintivo Oficial Vive Juárez (Plaza de la Mexicanidad)" : "Distintivo Oficial Campechano Soy (Puerta de Tierra)"} 
                   style={{
                     width: '100%',
                     height: 'auto',
                     maxHeight: '260px',
-                    objectFit: 'cover',
+                    objectFit: isJuarez ? 'contain' : 'cover',
                     borderRadius: '16px',
                     border: '1px solid rgba(212,175,55,0.4)',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)',
-                    display: 'block'
+                    display: 'block',
+                    padding: isJuarez ? '1rem' : 0
                   }}
                 />
                 <div style={{
@@ -580,7 +761,7 @@ const Home: React.FC = () => {
                   alignItems: 'center',
                   gap: '5px'
                 }}>
-                  <ShieldCheck size={14} /> Distintivo Físico Oficial
+                  <ShieldCheck size={14} /> {isJuarez ? 'Distintivo Oficial Vive Juárez' : 'Distintivo Físico Oficial'}
                 </div>
               </div>
             </motion.div>
@@ -594,113 +775,221 @@ const Home: React.FC = () => {
               margin: '0 auto 1.4rem',
               fontWeight: 400 
             }}>
-              El distintivo que identifica a quienes sienten orgullo por Campeche y les da acceso a beneficios exclusivos dentro de una red de negocios aliados.
+              {isJuarez
+                ? 'El distintivo que identifica a quienes sienten orgullo por Ciudad Juárez y les da acceso a hasta 15% de descuento dentro de una red de comercios y restaurantes aliados en toda la frontera.'
+                : 'El distintivo que identifica a quienes sienten orgullo por Campeche y les da acceso a beneficios exclusivos dentro de una red de negocios aliados.'
+              }
             </p>
 
-            {/* Selector Visual de Pertenencia Territorial con Calcomanías Reales de la Galería */}
+            {/* Selector Visual de Pertenencia Territorial */}
             <div style={{ marginBottom: '1.8rem', textAlign: 'center' }}>
               <span style={{ fontSize: '0.74rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, display: 'block', marginBottom: '0.8rem' }}>
                 Elige tu Distintivo Oficial ($90 MXN):
               </span>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', maxWidth: '460px', margin: '0 auto' }}>
-                {/* Campechano Soy */}
-                <motion.div
-                  whileHover={{ scale: 1.04, y: -2 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => { setInitialStickerSelection('campechano_negra'); setShowBuyModal(true); }}
-                  className="glass"
-                  style={{
-                    padding: '0.9rem 0.4rem 0.75rem',
-                    borderRadius: '18px',
-                    border: '1.5px solid rgba(212,175,55,0.4)',
-                    backgroundColor: 'rgba(30,30,35,0.85)',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
-                  }}
-                >
-                  <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
-                    <img 
-                      src="/campechano_oficial.svg" 
-                      alt="Campechano Soy" 
-                      style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'brightness(0) invert(1) drop-shadow(0 2px 6px rgba(255,255,255,0.5))' }} 
-                    />
-                  </div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#FFF', whiteSpace: 'nowrap', marginBottom: '2px' }}>CAMPECHANO</div>
-                  <span style={{ fontSize: '0.6rem', color: 'var(--accent-gold)', fontWeight: 800, backgroundColor: 'rgba(212,175,55,0.15)', padding: '2px 6px', borderRadius: '6px' }}>
-                    Blanca / Negra
-                  </span>
-                </motion.div>
+                {isJuarez ? (
+                  <>
+                    {/* Vive Juárez Blanca */}
+                    <motion.div
+                      whileHover={{ scale: 1.04, y: -2 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => { setInitialStickerSelection('juarense_blanca'); setShowBuyModal(true); }}
+                      className="glass"
+                      style={{
+                        padding: '0.9rem 0.4rem 0.75rem',
+                        borderRadius: '18px',
+                        border: '1.5px solid rgba(255,255,255,0.4)',
+                        backgroundColor: 'rgba(30,30,35,0.85)',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
+                      }}
+                    >
+                      <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
+                        <img 
+                          src="/juarense_oficial.svg" 
+                          alt="Vive Juárez Blanca" 
+                          style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(255,255,255,0.7))' }} 
+                        />
+                      </div>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 900, color: '#FFF', whiteSpace: 'nowrap', marginBottom: '2px' }}>BLANCA</div>
+                      <span style={{ fontSize: '0.6rem', color: 'var(--accent-gold)', fontWeight: 800, backgroundColor: 'rgba(212,175,55,0.15)', padding: '2px 6px', borderRadius: '6px' }}>
+                        Oficial
+                      </span>
+                    </motion.div>
 
-                {/* Campechana Soy */}
-                <motion.div
-                  whileHover={{ scale: 1.04, y: -2 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => { setInitialStickerSelection('campechana_rosa'); setShowBuyModal(true); }}
-                  className="glass"
-                  style={{
-                    padding: '0.9rem 0.4rem 0.75rem',
-                    borderRadius: '18px',
-                    border: '1.5px solid rgba(244,143,177,0.45)',
-                    backgroundColor: 'rgba(35,20,30,0.85)',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
-                  }}
-                >
-                  <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
-                    <img 
-                      src="/campechana_rosada.png" 
-                      alt="Campechana Soy" 
-                      style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(244,143,177,0.5))' }} 
-                    />
-                  </div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#FFF', whiteSpace: 'nowrap', marginBottom: '2px' }}>CAMPECHANA</div>
-                  <span style={{ fontSize: '0.6rem', color: '#F48FB1', fontWeight: 800, backgroundColor: 'rgba(244,143,177,0.15)', padding: '2px 6px', borderRadius: '6px' }}>
-                    Blanca / Negra / Rosa
-                  </span>
-                </motion.div>
+                    {/* Vive Juárez Negra */}
+                    <motion.div
+                      whileHover={{ scale: 1.04, y: -2 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => { setInitialStickerSelection('juarense_negra'); setShowBuyModal(true); }}
+                      className="glass"
+                      style={{
+                        padding: '0.9rem 0.4rem 0.75rem',
+                        borderRadius: '18px',
+                        border: '1.5px solid #000',
+                        backgroundColor: '#FFFFFF',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
+                      }}
+                    >
+                      <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
+                        <img 
+                          src="/juarense_oficial.svg" 
+                          alt="Vive Juárez Negra" 
+                          style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }} 
+                        />
+                      </div>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 900, color: '#000', whiteSpace: 'nowrap', marginBottom: '2px' }}>NEGRA</div>
+                      <span style={{ fontSize: '0.6rem', color: '#FFF', fontWeight: 800, backgroundColor: '#000', padding: '2px 6px', borderRadius: '6px' }}>
+                        Mate
+                      </span>
+                    </motion.div>
 
-                {/* Carmelita Soy */}
-                <motion.div
-                  whileHover={{ scale: 1.04, y: -2 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => { setInitialStickerSelection('carmelita_rosa'); setShowBuyModal(true); }}
-                  className="glass"
-                  style={{
-                    padding: '0.9rem 0.4rem 0.75rem',
-                    borderRadius: '18px',
-                    border: '1.5px solid rgba(96,165,250,0.45)',
-                    backgroundColor: 'rgba(20,25,40,0.85)',
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
-                  }}
-                >
-                  <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
-                    <img 
-                      src="/carmelita_rosada.png" 
-                      alt="Carmelita Soy" 
-                      style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(96,165,250,0.5))' }} 
-                    />
-                  </div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#FFF', whiteSpace: 'nowrap', marginBottom: '2px' }}>CARMELITA</div>
-                  <span style={{ fontSize: '0.6rem', color: '#60A5FA', fontWeight: 800, backgroundColor: 'rgba(96,165,250,0.15)', padding: '2px 6px', borderRadius: '6px' }}>
-                    Blanca/Negra/Rosa
-                  </span>
-                </motion.div>
+                    {/* Vive Juárez Rosa */}
+                    <motion.div
+                      whileHover={{ scale: 1.04, y: -2 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => { setInitialStickerSelection('juarense_rosa'); setShowBuyModal(true); }}
+                      className="glass"
+                      style={{
+                        padding: '0.9rem 0.4rem 0.75rem',
+                        borderRadius: '18px',
+                        border: '1.5px solid rgba(244,143,177,0.45)',
+                        backgroundColor: 'rgba(35,20,30,0.85)',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
+                      }}
+                    >
+                      <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
+                        <img 
+                          src="/juarense_oficial.svg" 
+                          alt="Vive Juárez Rosa" 
+                          style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(244,143,177,0.6))' }} 
+                        />
+                      </div>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 900, color: '#FFF', whiteSpace: 'nowrap', marginBottom: '2px' }}>ROSA</div>
+                      <span style={{ fontSize: '0.6rem', color: '#F48FB1', fontWeight: 800, backgroundColor: 'rgba(244,143,177,0.15)', padding: '2px 6px', borderRadius: '6px' }}>
+                        Fucsia
+                      </span>
+                    </motion.div>
+                  </>
+                ) : (
+                  <>
+                    {/* Campechano Soy */}
+                    <motion.div
+                      whileHover={{ scale: 1.04, y: -2 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => { setInitialStickerSelection('campechano_negra'); setShowBuyModal(true); }}
+                      className="glass"
+                      style={{
+                        padding: '0.9rem 0.4rem 0.75rem',
+                        borderRadius: '18px',
+                        border: '1.5px solid rgba(212,175,55,0.4)',
+                        backgroundColor: 'rgba(30,30,35,0.85)',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
+                      }}
+                    >
+                      <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
+                        <img 
+                          src="/campechano_oficial.svg" 
+                          alt="Campechano Soy" 
+                          style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'brightness(0) invert(1) drop-shadow(0 2px 6px rgba(255,255,255,0.5))' }} 
+                        />
+                      </div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#FFF', whiteSpace: 'nowrap', marginBottom: '2px' }}>CAMPECHANO</div>
+                      <span style={{ fontSize: '0.6rem', color: 'var(--accent-gold)', fontWeight: 800, backgroundColor: 'rgba(212,175,55,0.15)', padding: '2px 6px', borderRadius: '6px' }}>
+                        Blanca / Negra
+                      </span>
+                    </motion.div>
+
+                    {/* Campechana Soy */}
+                    <motion.div
+                      whileHover={{ scale: 1.04, y: -2 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => { setInitialStickerSelection('campechana_rosa'); setShowBuyModal(true); }}
+                      className="glass"
+                      style={{
+                        padding: '0.9rem 0.4rem 0.75rem',
+                        borderRadius: '18px',
+                        border: '1.5px solid rgba(244,143,177,0.45)',
+                        backgroundColor: 'rgba(35,20,30,0.85)',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
+                      }}
+                    >
+                      <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
+                        <img 
+                          src="/campechana_rosada.png" 
+                          alt="Campechana Soy" 
+                          style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(244,143,177,0.5))' }} 
+                        />
+                      </div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#FFF', whiteSpace: 'nowrap', marginBottom: '2px' }}>CAMPECHANA</div>
+                      <span style={{ fontSize: '0.6rem', color: '#F48FB1', fontWeight: 800, backgroundColor: 'rgba(244,143,177,0.15)', padding: '2px 6px', borderRadius: '6px' }}>
+                        Blanca / Negra / Rosa
+                      </span>
+                    </motion.div>
+
+                    {/* Carmelita Soy */}
+                    <motion.div
+                      whileHover={{ scale: 1.04, y: -2 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => { setInitialStickerSelection('carmelita_rosa'); setShowBuyModal(true); }}
+                      className="glass"
+                      style={{
+                        padding: '0.9rem 0.4rem 0.75rem',
+                        borderRadius: '18px',
+                        border: '1.5px solid rgba(96,165,250,0.45)',
+                        backgroundColor: 'rgba(20,25,40,0.85)',
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
+                      }}
+                    >
+                      <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
+                        <img 
+                          src="/carmelita_rosada.png" 
+                          alt="Carmelita Soy" 
+                          style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(96,165,250,0.5))' }} 
+                        />
+                      </div>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 900, color: '#FFF', whiteSpace: 'nowrap', marginBottom: '2px' }}>CARMELITA</div>
+                      <span style={{ fontSize: '0.6rem', color: '#60A5FA', fontWeight: 800, backgroundColor: 'rgba(96,165,250,0.15)', padding: '2px 6px', borderRadius: '6px' }}>
+                        Blanca/Negra/Rosa
+                      </span>
+                    </motion.div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -903,7 +1192,7 @@ const Home: React.FC = () => {
               ¡Tu distintivo se paga solo desde tu 1ra o 2da visita! 💡
             </h3>
             <p style={{ fontSize: '0.86rem', color: 'var(--text-dim)', lineHeight: 1.5, margin: 0 }}>
-              Tu calcomanía cuesta solo <strong>$90 MXN</strong>, pero te otorga entre <strong>10% y 20% de descuento directo</strong> en restaurantes, lavacoches, cafeterías y servicios en todo Campeche y Carmen. Ahorras en promedio más de <strong>$600 MXN al mes</strong> con solo portar tu distintivo.
+              Tu calcomanía cuesta solo <strong>$90 MXN</strong>, pero te otorga hasta <strong>15% de descuento directo</strong> en restaurantes, autolavados, cafeterías y servicios en {isJuarez ? 'toda Ciudad Juárez' : 'todo Campeche y Carmen'}. Ahorras en promedio más de <strong>$600 MXN al mes</strong> con solo portar tu distintivo.
             </p>
           </div>
         </motion.div>
@@ -925,7 +1214,10 @@ const Home: React.FC = () => {
             PERTENECER TIENE BENEFICIOS
           </h2>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.94rem', lineHeight: 1.55 }}>
-            Tu distintivo te identifica y tu pertenencia te da acceso a promociones, descuentos y tratos preferenciales en negocios locales de nuestro estado.
+            {isJuarez
+              ? 'Tu distintivo te identifica y tu pertenencia te da acceso a promociones, descuentos y tratos preferenciales en negocios locales de Ciudad Juárez.'
+              : 'Tu distintivo te identifica y tu pertenencia te da acceso a promociones, descuentos y tratos preferenciales en negocios locales de nuestro estado.'
+            }
           </p>
         </div>
 
@@ -1179,10 +1471,18 @@ const Home: React.FC = () => {
         </div>
 
         <h3 style={{ fontSize: '1.35rem', fontWeight: 800, textAlign: 'center', marginBottom: '0.6rem' }}>
-          La Red Comunitaria que Conecta a Campeche
+          {isJuarez ? 'La Red Comunitaria que Conecta a Ciudad Juárez' : 'La Red Comunitaria que Conecta a Campeche'}
         </h3>
         <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', lineHeight: 1.6, textAlign: 'center', maxWidth: '440px', margin: '0 auto 1.2rem' }}>
-          <strong>Red Identidad</strong> es la plataforma tecnológica y comunitaria que impulsa nuestra economía local. Conectamos personas, comercios independientes y talento regional alrededor del orgullo campechano.
+          {isJuarez ? (
+            <>
+              <strong>Vive Juárez</strong> by Red Identidad es la plataforma tecnológica y comunitaria que impulsa nuestra economía fronteriza. Conectamos personas, comercios independientes y talento local alrededor del orgullo juarense.
+            </>
+          ) : (
+            <>
+              <strong>Red Identidad</strong> es la plataforma tecnológica y comunitaria que impulsa nuestra economía local. Conectamos personas, comercios independientes y talento regional alrededor del orgullo campechano.
+            </>
+          )}
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginTop: '1.2rem' }}>
@@ -1200,7 +1500,7 @@ const Home: React.FC = () => {
       </section>
 
       {/* =========================================================
-          SECCIÓN 6: COMUNIDAD (CAMPECHANOS QUE YA LO LLEVAN)
+          SECCIÓN 6: COMUNIDAD (CAMPECHANOS / JUARENSES QUE YA LO LLEVAN)
          ========================================================= */}
       <section style={{ marginBottom: '3.5rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
@@ -1212,7 +1512,7 @@ const Home: React.FC = () => {
           </div>
 
           <h2 style={{ fontSize: '1.65rem', fontWeight: 800, marginBottom: '0.4rem' }}>
-            CAMPECHANOS QUE YA LO LLEVAN
+            {isJuarez ? 'JUARENSES QUE YA LO LLEVAN' : 'CAMPECHANOS QUE YA LO LLEVAN'}
           </h2>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.88rem', lineHeight: 1.5, maxWidth: '420px', margin: '0 auto' }}>
             Personas reales que forman parte de este movimiento y portan su distintivo con orgullo.
@@ -1220,7 +1520,7 @@ const Home: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {communityShowcase.map((item, idx) => (
+          {displayCommunity.map((item, idx) => (
             <motion.div
               key={idx}
               whileHover={{ y: -2 }}
@@ -1347,13 +1647,13 @@ const Home: React.FC = () => {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-          {officialStores.map((store, idx) => (
+          {displayStores.map((store, idx) => (
             <div key={idx} className="glass" style={{ padding: '1.2rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.3)', backgroundColor: 'rgba(20,20,22,0.8)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '6px' }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>📍 {store.city}</span>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                   <a 
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${store.name} ${store.address} Campeche`)}`} 
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${store.name} ${store.address} ${store.city}`)}`} 
                     target="_blank" 
                     rel="noopener noreferrer" 
                     style={{ fontSize: '0.75rem', color: '#4285F4', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
@@ -1450,7 +1750,7 @@ const Home: React.FC = () => {
           </p>
 
           <div style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '2rem' }} className="gold-text">
-            CAMPECHANO SOY.
+            {isJuarez ? 'VIVE JUÁREZ.' : 'CAMPECHANO SOY.'}
           </div>
 
           <motion.button

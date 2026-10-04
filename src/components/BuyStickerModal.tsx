@@ -42,6 +42,10 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
     { id: 'campechana_blanca', label: 'Campechana — Blanca', tag: 'Blanca', bg: '#FFF', color: '#000' },
     { id: 'campechana_negra', label: 'Campechana — Negra', tag: 'Negra', bg: '#333', color: '#FFF' },
     { id: 'campechana_rosa', label: 'Campechana — Rosa', tag: 'Rosa', bg: '#FF69B4', color: '#FFF' },
+
+    { id: 'juarense_blanca', label: 'Vive Juárez — Blanca Oficial', tag: 'Blanca', bg: '#FFF', color: '#000' },
+    { id: 'juarense_negra', label: 'Vive Juárez — Negra Mate', tag: 'Negra', bg: '#333', color: '#FFF' },
+    { id: 'juarense_rosa', label: 'Vive Juárez — Rosa Fucsia', tag: 'Rosa', bg: '#FF69B4', color: '#FFF' },
   ];
 
   // Puntos de Venta Físicos
@@ -80,6 +84,41 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
       address: 'Av. Ruiz Cortines (contra esquina del Palacio Federal)',
       hours: 'Punto de Venta Oficial',
       phone: '9811971305'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Gómez Morín',
+      address: 'Corredor Gómez Morín (Zona Gastronómica)',
+      hours: 'Punto de Venta Oficial',
+      phone: '529811971305'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Las Misiones',
+      address: 'Av. Paseo de la Victoria',
+      hours: 'Punto de Venta Oficial',
+      phone: '529811971305'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Pronaf / San Lorenzo',
+      address: 'Zona Pronaf',
+      hours: 'Punto de Venta Oficial',
+      phone: '529811971305'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Av. Tecnológico',
+      address: 'Av. Tecnológico',
+      hours: 'Punto de Venta Oficial',
+      phone: '529811971305'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Valle del Sol',
+      address: 'Zona Residencial Valle del Sol',
+      hours: 'Punto de Venta Oficial',
+      phone: '529811971305'
     }
   ];
 
