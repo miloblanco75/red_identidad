@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export type CityId = 'campeche' | 'carmen' | 'juarez';
 
@@ -14,6 +15,15 @@ interface CityContextType {
 const CityContext = createContext<CityContextType | undefined>(undefined);
 
 export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  let locationSearch = '';
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const location = useLocation();
+    locationSearch = location.search;
+  } catch {
+    if (typeof window !== 'undefined') locationSearch = window.location.search;
+  }
+
   const [city, setCityState] = useState<CityId>(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -41,18 +51,17 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const queryCity = urlParams.get('city') || urlParams.get('ciudad');
-      if (queryCity === 'juarez' && city !== 'juarez') {
-        setCity('juarez');
-      } else if (queryCity === 'campeche' && city !== 'campeche') {
-        setCity('campeche');
-      } else if (queryCity === 'carmen' && city !== 'carmen') {
-        setCity('carmen');
-      }
+    const rawSearch = locationSearch || (typeof window !== 'undefined' ? window.location.search : '');
+    const urlParams = new URLSearchParams(rawSearch);
+    const queryCity = urlParams.get('city') || urlParams.get('ciudad');
+    if (queryCity === 'juarez' && city !== 'juarez') {
+      setCity('juarez');
+    } else if (queryCity === 'campeche' && city !== 'campeche') {
+      setCity('campeche');
+    } else if (queryCity === 'carmen' && city !== 'carmen') {
+      setCity('carmen');
     }
-  }, []);
+  }, [locationSearch, city]);
 
   const cityName = city === 'juarez' 
     ? 'Ciudad Juárez' 

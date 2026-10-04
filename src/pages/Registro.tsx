@@ -8,6 +8,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import BrandLogo from '../components/BrandLogo';
 import { generateDynamicQrPayload } from '../lib/dynamicQr';
 import { TrialPassModal } from '../components/TrialPassModal';
+import { useCity } from '../contexts/CityContext';
 
 const Registro: React.FC = () => {
   const { user, loginLocal, signOut, isLoading } = useAuth();
@@ -15,8 +16,13 @@ const Registro: React.FC = () => {
   const navigate = useNavigate();
   const codeParam = searchParams.get('c') || '';
 
+  const { isJuarez } = useCity();
   const [serial, setSerial] = useState(codeParam);
   const [phone, setPhone] = useState('');
+  const isJuarezUser = isJuarez || 
+    user?.level?.toLowerCase().includes('juarez') || 
+    user?.code?.toLowerCase().includes('jua') || 
+    user?.code?.toLowerCase().includes('vj');
   const [isActivating, setIsActivating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [showTrialModal, setShowTrialModal] = useState(() => searchParams.get('trial') === 'true' || searchParams.get('prueba') === 'true');
@@ -701,7 +707,17 @@ const Registro: React.FC = () => {
             boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
             zIndex: 1
           }}>
-            <QRCodeSVG value={dynamicPayload.url} size={190} level="H" />
+            <QRCodeSVG 
+              value={dynamicPayload.url} 
+              size={190} 
+              level="H" 
+              imageSettings={isJuarezUser ? {
+                src: '/vive_juarez_qr_icon.png',
+                height: 44,
+                width: 44,
+                excavate: true
+              } : undefined}
+            />
           </div>
 
           {/* Instruction below QR */}

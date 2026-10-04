@@ -52,21 +52,17 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          <div style={{
-            width: badgeSize,
-            height: badgeSize,
-            borderRadius: '10px',
-            background: 'linear-gradient(135deg, #F3E5AB 0%, #D4AF37 100%)',
-            color: '#121212',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 900,
-            fontSize: size === 'small' ? '1.2rem' : '1.5rem',
-            boxShadow: '0 4px 14px rgba(212, 175, 55, 0.4)'
-          }}>
-            X
-          </div>
+          <img 
+            src="/vive_juarez_qr_icon.png"
+            alt="Vive Juárez Oficial"
+            style={{
+              width: badgeSize,
+              height: badgeSize,
+              borderRadius: '10px',
+              objectFit: 'contain',
+              boxShadow: '0 4px 14px rgba(212, 175, 55, 0.4)'
+            }}
+          />
           <div>
             <div style={{ fontSize: textSize, fontWeight: 900, letterSpacing: '0.04em', lineHeight: 1.1, color: '#FFFFFF' }}>
               VIVE <span className="gold-text">JUÁREZ</span>

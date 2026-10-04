@@ -7,8 +7,9 @@ import {
   CreditCard, Smartphone, Car, Utensils, Wine, 
   Briefcase, ArrowRight, MessageCircle, Star, Users,
   Calculator, Check, ExternalLink, Menu, X, Compass, Award,
-  Info, Globe
+  Globe, QrCode, Gift
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { BuyStickerModal } from '../components/BuyStickerModal';
 import { useCity } from '../contexts/CityContext';
 
@@ -18,46 +19,20 @@ const JUAREZ_WHATSAPP = '529811971305'; // Configurable para Lada 656
 interface JuarezStickerInfo {
   id: string;
   name: string;
-  colorName: string;
-  colorType: 'black' | 'white' | 'pink';
-  rarity: 'essential' | 'special';
+  edition: string;
   imagePath: string;
   description: string;
   perk: string;
 }
 
-const JUAREZ_STICKERS: JuarezStickerInfo[] = [
-  {
-    id: 'juarense_blanca',
-    name: 'Vive Juárez — Blanca Oficial',
-    colorName: 'Blanca',
-    colorType: 'white',
-    rarity: 'essential',
-    imagePath: '/juarense_oficial.svg',
-    description: 'Edición Blanca de la emblemática X de Juárez en vinil automotriz alemán para medallón o cristal.',
-    perk: 'Acceso a la Red de Aliados y descuentos en restaurantes y comercios de Ciudad Juárez.'
-  },
-  {
-    id: 'juarense_negra',
-    name: 'Vive Juárez — Negra Mate',
-    colorName: 'Negra',
-    colorType: 'black',
-    rarity: 'essential',
-    imagePath: '/juarense_oficial.svg',
-    description: 'Edición Negra mate de alta resistencia y corte de contorno de precisión.',
-    perk: 'Acceso a la Red de Aliados y beneficios exclusivos en toda la frontera.'
-  },
-  {
-    id: 'juarense_rosa',
-    name: 'Vive Juárez — Rosa Fucsia',
-    colorName: 'Rosa',
-    colorType: 'pink',
-    rarity: 'special',
-    imagePath: '/juarense_oficial.svg',
-    description: 'Edición Rosa especial de colección inspirada en la calidez y fuerza juarense.',
-    perk: 'Acceso a la Red de Aliados y promociones preferenciales en Ciudad Juárez.'
-  }
-];
+const JUAREZ_OFFICIAL_STICKER: JuarezStickerInfo = {
+  id: 'juarense_oficial',
+  name: 'Vive Juárez — Edición Oficial Única',
+  edition: 'Edición Oficial 2026',
+  imagePath: '/vive_juarez_oficial.png',
+  description: 'Insignia oficial con la emblemática X de Juárez en vías ferroviarias rojas y el corazón de nuestra frontera juarense.',
+  perk: 'Acceso a la Red de Aliados, descuentos directos de hasta 15% en restaurantes y comercios en Ciudad Juárez.'
+};
 
 export const LandingJuarez: React.FC = () => {
   const navigate = useNavigate();
@@ -72,11 +47,17 @@ export const LandingJuarez: React.FC = () => {
   // Estados de navegación y modales
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showBuyModal, setShowBuyModal] = useState(false);
-  const [selectedStickerForModal, setSelectedStickerForModal] = useState<string>('juarense_blanca');
+  const [selectedStickerForModal, setSelectedStickerForModal] = useState<string>('juarense_oficial');
   const [showMerchantModal, setShowMerchantModal] = useState(false);
 
-  // Selector de distintivo en la colección
-  const [selectedSticker, setSelectedSticker] = useState<JuarezStickerInfo>(JUAREZ_STICKERS[0]);
+  // Estados para el Pase QR Gratuito
+  const [showFreeQrModal, setShowFreeQrModal] = useState(false);
+  const [freeQrName, setFreeQrName] = useState('');
+  const [freeQrPhone, setFreeQrPhone] = useState('');
+  const [freeQrFolio, setFreeQrFolio] = useState('');
+  const [freeQrGenerated, setFreeQrGenerated] = useState(false);
+
+  // Simulador de calcomanía
   const [simulatorMode, setSimulatorMode] = useState<'car' | 'phone'>('car');
 
   // Filtros de comercios de muestra en Ciudad Juárez
@@ -111,62 +92,23 @@ export const LandingJuarez: React.FC = () => {
     { id: 'j-6', name: 'Refacciones & Detallado Frontera', category: 'Auto', discount: '10% de Descuento en accesorios y refacciones', zone: 'Av. Tecnológico' }
   ];
 
-  // Helper CSS Filter
-  const getFilterStyle = (colorType: 'black' | 'white' | 'pink') => {
-    switch (colorType) {
-      case 'black':
-        return {
-          filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))',
-          color: '#121212'
-        };
-      case 'white':
-        return {
-          filter: 'drop-shadow(0 2px 10px rgba(255,255,255,0.7))',
-          color: '#FFFFFF'
-        };
-      case 'pink':
-        return {
-          filter: 'drop-shadow(0 2px 8px rgba(244,143,177,0.5))',
-          color: '#F48FB1'
-        };
+  // Handler para generación del Pase QR Gratuito
+  const handleGenerateFreeQr = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!freeQrPhone || freeQrPhone.replace(/\D/g, '').length < 10) {
+      alert('Por favor ingresa tu número de WhatsApp a 10 dígitos.');
+      return;
     }
+    const cleanPhone = freeQrPhone.replace(/\D/g, '').slice(-10);
+    const folio = `VJ-FREE-${cleanPhone.slice(-4) || '2026'}`;
+    setFreeQrFolio(folio);
+    setFreeQrGenerated(true);
+    setShowFreeQrModal(true);
   };
 
-  const getCardStyle = (colorType: 'black' | 'white' | 'pink', isSelected: boolean) => {
-    if (colorType === 'black') {
-      return {
-        background: isSelected 
-          ? 'linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)' 
-          : 'linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 100%)',
-        border: isSelected ? '3px solid #000000' : '2px solid #CBD5E1',
-        textColor: '#000000',
-        subTextColor: '#334155',
-        badgeBg: '#000000',
-        badgeText: '#FFFFFF'
-      };
-    }
-    if (colorType === 'pink') {
-      return {
-        background: isSelected 
-          ? 'linear-gradient(135deg, #351C2B 0%, #1A0D15 100%)' 
-          : 'linear-gradient(135deg, #25131E 0%, #0E070B 100%)',
-        border: isSelected ? '3px solid #F48FB1' : '2px solid rgba(244,143,177,0.4)',
-        textColor: '#FFFFFF',
-        subTextColor: '#F48FB1',
-        badgeBg: 'rgba(244,143,177,0.2)',
-        badgeText: '#F48FB1'
-      };
-    }
-    return {
-      background: isSelected 
-        ? 'linear-gradient(135deg, #1E1E24 0%, #0F0F14 100%)' 
-        : 'linear-gradient(135deg, #141418 0%, #08080A 100%)',
-      border: isSelected ? '3px solid var(--accent-gold)' : '2px solid rgba(255,255,255,0.2)',
-      textColor: '#FFFFFF',
-      subTextColor: 'var(--text-dim)',
-      badgeBg: 'rgba(255,255,255,0.15)',
-      badgeText: '#FFFFFF'
-    };
+  const handleOpenBuy = (stickerId: string = 'juarense_oficial') => {
+    setSelectedStickerForModal(stickerId);
+    setShowBuyModal(true);
   };
 
   // Cálculo de ahorro
@@ -254,11 +196,6 @@ export const LandingJuarez: React.FC = () => {
     }, 2000);
   };
 
-  const handleOpenBuy = (stickerId: string = 'juarense_blanca') => {
-    setSelectedStickerForModal(stickerId);
-    setShowBuyModal(true);
-  };
-
   const filteredAllies = selectedCategory === 'Todos'
     ? juarezAllies
     : juarezAllies.filter(a => a.category?.toLowerCase().includes(selectedCategory.toLowerCase()));
@@ -321,20 +258,17 @@ export const LandingJuarez: React.FC = () => {
             style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer' }}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
-            <div style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #F3E5AB 0%, #D4AF37 100%)',
-              color: '#121212',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 900,
-              fontSize: '1.4rem'
-            }}>
-              X
-            </div>
+            <img 
+              src="/vive_juarez_qr_icon.png"
+              alt="Vive Juárez"
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '10px',
+                objectFit: 'contain',
+                boxShadow: '0 4px 12px rgba(220,38,38,0.35)'
+              }}
+            />
             <div>
               <div style={{ fontSize: '1.25rem', fontWeight: 900, letterSpacing: '0.04em', lineHeight: 1.1 }}>
                 VIVE <span className="gold-text">JUÁREZ</span>
@@ -349,31 +283,31 @@ export const LandingJuarez: React.FC = () => {
           <div style={{ display: 'none', gap: '1.8rem', alignItems: 'center' }} className="d-lg-flex">
             <a href="#como-funciona" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>¿Cómo Funciona?</a>
             <a href="#distintivo" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>El Distintivo</a>
+            <a href="#pase-gratuito" style={{ color: '#4ade80', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Pase QR Gratis</a>
             <a href="#aliados" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Comercios Aliados</a>
             <a href="#calculadora" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Calculadora</a>
-            <a href="#puntos-venta" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Puntos de Venta</a>
-            <a href="#planes" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Precios</a>
+            <a href="#planes" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Precios ($80)</a>
             <a href="#negocios" style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Para Negocios</a>
           </div>
 
           {/* Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <button 
-              onClick={() => goToApp('/app')}
+              onClick={() => setShowFreeQrModal(true)}
               className="landing-btn-glass"
-              style={{ padding: '0.65rem 1.25rem', fontSize: '0.88rem' }}
+              style={{ padding: '0.65rem 1.15rem', fontSize: '0.86rem' }}
             >
-              <Smartphone size={16} />
-              <span>Abrir App</span>
+              <QrCode size={16} color="#4ade80" />
+              <span>Pase QR Gratis</span>
             </button>
 
             <button 
-              onClick={() => handleOpenBuy('juarense_blanca')}
+              onClick={() => handleOpenBuy('juarense_oficial')}
               className="landing-btn-gold"
-              style={{ padding: '0.65rem 1.35rem', fontSize: '0.88rem' }}
+              style={{ padding: '0.65rem 1.25rem', fontSize: '0.86rem' }}
             >
               <ShoppingBag size={16} />
-              <span>Obtener Distintivo</span>
+              <span>Distintivo Digital $80</span>
             </button>
 
             <button 
@@ -410,15 +344,16 @@ export const LandingJuarez: React.FC = () => {
               }}
             >
               <a href="#como-funciona" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>¿Cómo Funciona?</a>
-              <a href="#distintivo" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>El Distintivo de Juárez</a>
+              <a href="#distintivo" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>El Distintivo Oficial Único</a>
+              <a href="#pase-gratuito" onClick={() => setMobileMenuOpen(false)} style={{ color: '#4ade80', textDecoration: 'none', fontSize: '1rem', fontWeight: 600 }}>Pase QR Gratuito ($0 MXN)</a>
               <a href="#aliados" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Comercios en Cd. Juárez</a>
               <a href="#calculadora" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Calculadora de Ahorro</a>
               <a href="#puntos-venta" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Puntos de Entrega</a>
-              <a href="#planes" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Planes ($45 / $90 MXN)</a>
+              <a href="#planes" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Planes ($0 / $80 MXN)</a>
               <a href="#negocios" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '1rem', fontWeight: 600 }}>Afiliar mi Negocio</a>
               <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem' }}>
-                <button onClick={() => { setMobileMenuOpen(false); goToApp('/app'); }} className="landing-btn-glass" style={{ flex: 1, padding: '0.75rem' }}>Abrir App</button>
-                <button onClick={() => { setMobileMenuOpen(false); handleOpenBuy('juarense_blanca'); }} className="landing-btn-gold" style={{ flex: 1, padding: '0.75rem' }}>Comprar</button>
+                <button onClick={() => { setMobileMenuOpen(false); setShowFreeQrModal(true); }} className="landing-btn-glass" style={{ flex: 1, padding: '0.75rem', fontSize: '0.85rem' }}>Pase QR Gratis</button>
+                <button onClick={() => { setMobileMenuOpen(false); handleOpenBuy('juarense_oficial'); }} className="landing-btn-gold" style={{ flex: 1, padding: '0.75rem', fontSize: '0.85rem' }}>Distintivo $80</button>
               </div>
             </motion.div>
           )}
@@ -468,45 +403,45 @@ export const LandingJuarez: React.FC = () => {
                 marginBottom: '2.2rem',
                 maxWidth: '560px'
               }}>
-                <strong>Vive Juárez</strong> es el distintivo oficial automotriz y tu pase digital para obtener <strong>hasta un 15% de descuento en comercios y restaurantes locales</strong> de Ciudad Juárez, impulsando la economía de nuestra gente.
+                <strong>Vive Juárez</strong> es el distintivo digital oficial y tu <strong>pase QR gratuito</strong> para obtener <strong>hasta un 15% de descuento en comercios y restaurantes locales</strong> de Ciudad Juárez, impulsando la economía de nuestra gente.
               </p>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '2.5rem' }}>
                 <button 
-                  onClick={() => handleOpenBuy('juarense_blanca')}
+                  onClick={() => handleOpenBuy('juarense_oficial')}
                   className="landing-btn-gold"
                   style={{ padding: '1rem 2rem', fontSize: '1.05rem' }}
                 >
                   <ShoppingBag size={19} />
-                  <span>Obtener Distintivo Físico ($90)</span>
+                  <span>Obtener Distintivo Digital ($80)</span>
                 </button>
 
                 <button 
-                  onClick={() => handleOpenBuy('digital')}
+                  onClick={() => setShowFreeQrModal(true)}
                   className="landing-btn-glass"
-                  style={{ padding: '1rem 1.8rem', fontSize: '1.05rem' }}
+                  style={{ padding: '1rem 1.8rem', fontSize: '1.05rem', borderColor: 'rgba(74,222,128,0.4)', color: '#4ade80' }}
                 >
-                  <Smartphone size={19} />
-                  <span>Pase Digital ($45)</span>
+                  <QrCode size={19} />
+                  <span>Pase QR Gratuito ($0)</span>
                 </button>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.8rem', color: '#9E9EA8', fontSize: '0.9rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <CheckCircle2 size={16} color="var(--accent-gold)" />
-                  <span>Vinil automotriz de alta durabilidad</span>
+                  <span>Distintivo 100% digital e inmediato ($80 MXN)</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <CheckCircle2 size={16} color="#4ade80" />
+                  <span>Pase QR gratuito con escudo oficial inserto</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <CheckCircle2 size={16} color="var(--accent-gold)" />
-                  <span>Activación con código QR en 30s</span>
+                  <span>Descuentos directos en Juárez de hasta 15%</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <CheckCircle2 size={16} color="var(--accent-gold)" />
-                  <span>Descuentos directos en Juárez</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <CheckCircle2 size={16} color="var(--accent-gold)" />
-                  <span>Puntos de entrega en Juárez</span>
+                  <span>Calcomanías físicas: próximamente</span>
                 </div>
               </div>
             </div>
@@ -559,67 +494,84 @@ export const LandingJuarez: React.FC = () => {
                   </div>
 
                   <img 
-                    src="/juarense_oficial.svg" 
+                    src="/vive_juarez_oficial.png" 
                     alt="Vive Juárez Insignia Oficial" 
                     style={{
-                      maxHeight: '180px',
+                      maxHeight: '190px',
                       maxWidth: '100%',
                       objectFit: 'contain',
-                      color: '#FFFFFF',
-                      filter: 'drop-shadow(0 4px 16px rgba(255,255,255,0.4))'
+                      filter: 'drop-shadow(0 6px 20px rgba(220,38,38,0.45))'
                     }}
                   />
 
-                  <div style={{ marginTop: '0.8rem', fontSize: '0.88rem', fontWeight: 700, color: 'var(--accent-gold)' }}>
-                    La "X" • Plaza de la Mexicanidad
+                  <div style={{ marginTop: '0.8rem', fontSize: '0.9rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
+                    La "X" Monumental • Red Identidad Juárez
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#A0A0A8' }}>
+                    Edición Oficial Única • Sin colores alternos
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
-                  <div style={{
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.07)',
-                    borderRadius: '12px',
-                    padding: '0.8rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.7rem'
-                  }}>
-                    <img 
-                      src="/qr_calcomania_sobre.jpg" 
-                      alt="Sobre Sellado con QR" 
-                      style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }}
-                    />
+                  <div 
+                    onClick={() => setShowFreeQrModal(true)}
+                    style={{
+                      background: 'rgba(74, 222, 128, 0.08)',
+                      border: '1px solid rgba(74, 222, 128, 0.25)',
+                      borderRadius: '12px',
+                      padding: '0.8rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.7rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <div style={{
+                      width: '44px',
+                      height: '44px',
+                      borderRadius: '8px',
+                      background: 'rgba(74, 222, 128, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#4ade80'
+                    }}>
+                      <QrCode size={22} />
+                    </div>
                     <div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>Sobre Sellado</div>
-                      <div style={{ fontSize: '0.72rem', color: '#9E9EA8' }}>QR irrepetible $90</div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#4ade80' }}>Pase QR Gratis</div>
+                      <div style={{ fontSize: '0.72rem', color: '#D0D0D8' }}>$0 • Con logo inserto</div>
                     </div>
                   </div>
 
-                  <div style={{
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    border: '1px solid rgba(255, 255, 255, 0.07)',
-                    borderRadius: '12px',
-                    padding: '0.8rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.7rem'
-                  }}>
+                  <div 
+                    onClick={() => handleOpenBuy('juarense_oficial')}
+                    style={{
+                      background: 'rgba(212, 175, 55, 0.08)',
+                      border: '1px solid rgba(212, 175, 55, 0.25)',
+                      borderRadius: '12px',
+                      padding: '0.8rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.7rem',
+                      cursor: 'pointer'
+                    }}
+                  >
                     <div style={{
-                      width: '48px',
-                      height: '48px',
+                      width: '44px',
+                      height: '44px',
                       borderRadius: '8px',
-                      background: 'rgba(212, 175, 55, 0.1)',
+                      background: 'rgba(212, 175, 55, 0.15)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       color: 'var(--accent-gold)'
                     }}>
-                      <ShieldCheck size={24} />
+                      <Award size={22} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>3 Colores</div>
-                      <div style={{ fontSize: '0.72rem', color: '#9E9EA8' }}>Blanco, Negro, Rosa</div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-gold)' }}>Distintivo Digital</div>
+                      <div style={{ fontSize: '0.72rem', color: '#D0D0D8' }}>$80 • Edición Única</div>
                     </div>
                   </div>
                 </div>
@@ -701,23 +653,23 @@ export const LandingJuarez: React.FC = () => {
           <div className="landing-grid-3">
             <div className="landing-card" style={{ padding: '2rem', position: 'relative' }}>
               <div style={{ position: 'absolute', top: '-15px', left: '24px', background: 'linear-gradient(135deg, #F3E5AB 0%, #D4AF37 100%)', color: '#121212', fontWeight: 800, width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>1</div>
-              <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(212, 175, 55, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', marginBottom: '1.5rem' }}>
-                <ShoppingBag size={28} />
+              <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(74, 222, 128, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4ade80', marginBottom: '1.5rem' }}>
+                <QrCode size={28} />
               </div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.8rem' }}>Elige tu Distintivo</h3>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.8rem' }}>Elige tu Acceso</h3>
               <p style={{ color: '#9E9EA8', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                Solicita tu sobre oficial con la calcomanía física en vinil de grado automotriz ($90) o tu membresía 100% digital ($45) en tu celular.
+                Genera tu <strong>Pase QR Gratuito ($0 MXN)</strong> o adquiere tu <strong>Distintivo Digital Oficial ($80 MXN)</strong> para beneficios certificados. (Calcomanías físicas próximamente).
               </p>
             </div>
 
             <div className="landing-card" style={{ padding: '2rem', position: 'relative' }}>
               <div style={{ position: 'absolute', top: '-15px', left: '24px', background: 'linear-gradient(135deg, #F3E5AB 0%, #D4AF37 100%)', color: '#121212', fontWeight: 800, width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>2</div>
               <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(212, 175, 55, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', marginBottom: '1.5rem' }}>
-                <Car size={28} />
+                <Smartphone size={28} />
               </div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.8rem' }}>Pégalo y Actívalo</h3>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.8rem' }}>QR con Escudo Insertado</h3>
               <p style={{ color: '#9E9EA8', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                Colócalo en tu auto o moto. Escanea el código QR de tu sobre sellado y activa tu número de miembro oficial en 30 segundos.
+                Tu código QR personal incluye el escudo oficial de Vive Juárez en su centro. Mantenlo en tu smartphone o guárdalo como imagen.
               </p>
             </div>
 
@@ -728,7 +680,7 @@ export const LandingJuarez: React.FC = () => {
               </div>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '0.8rem' }}>Ahorra y Pertenece</h3>
               <p style={{ color: '#9E9EA8', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                Visita los restaurantes, autolavados y negocios aliados en Juárez. Muestra tu calcomanía o tu QR y recibe descuentos directos.
+                Visita los restaurantes, autolavados y negocios aliados en Juárez. Muestra tu QR en el celular y recibe descuentos directos al instante.
               </p>
             </div>
           </div>
@@ -742,119 +694,136 @@ export const LandingJuarez: React.FC = () => {
           <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 3.5rem' }}>
             <div className="landing-badge" style={{ marginBottom: '1rem' }}>
               <ShieldCheck size={14} />
-              <span>Calidad Grado Automotriz</span>
+              <span>Identidad Oficial Fronteriza</span>
             </div>
             <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.7rem)', fontWeight: 800, marginBottom: '1rem' }}>
               El Distintivo Oficial de Juárez
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
-              Inspirado en la fuerza y monumentalidad de nuestra emblemática "X". Vinil automotriz tricapa resistente a los climas más demandantes.
+              Inspirado en la fuerza y monumentalidad de nuestra emblemática "X", las vías del ferrocarril y el corazón juarense. <strong>Un solo diseño oficial, sin variantes de color: una sola identidad para todo Juárez.</strong>
             </p>
           </div>
 
-          {/* Cards de las 3 ediciones oficiales */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1.5rem',
-            marginBottom: '3rem'
-          }}>
-            {JUAREZ_STICKERS.map((sticker) => {
-              const isSelected = selectedSticker.id === sticker.id;
-              const cardTheme = getCardStyle(sticker.colorType, isSelected);
-
-              return (
-                <div
-                  key={sticker.id}
-                  onClick={() => setSelectedSticker(sticker)}
+          {/* Tarjeta de presentación de la insignia única */}
+          <div style={{ maxWidth: '880px', margin: '0 auto 3.5rem' }}>
+            <div 
+              className="landing-card"
+              style={{
+                borderRadius: '24px',
+                padding: '2.5rem 2rem',
+                background: 'linear-gradient(145deg, rgba(28, 25, 20, 0.95) 0%, rgba(15, 15, 18, 0.98) 100%)',
+                border: '2px solid rgba(212, 175, 55, 0.45)',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.6)',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '2.5rem',
+                alignItems: 'center'
+              }}
+            >
+              <div style={{
+                background: 'radial-gradient(circle, rgba(40, 30, 25, 0.9) 0%, rgba(18, 18, 22, 1) 100%)',
+                borderRadius: '20px',
+                padding: '2.5rem 1.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                minHeight: '260px'
+              }}>
+                <img 
+                  src={JUAREZ_OFFICIAL_STICKER.imagePath} 
+                  alt={JUAREZ_OFFICIAL_STICKER.name}
                   style={{
-                    borderRadius: '20px',
-                    padding: '1.8rem',
-                    background: cardTheme.background,
-                    border: cardTheme.border,
-                    boxShadow: isSelected ? '0 12px 30px rgba(212, 175, 55, 0.3)' : '0 6px 18px rgba(0,0,0,0.3)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    minHeight: '280px',
-                    transition: 'all 0.3s ease'
+                    maxWidth: '100%',
+                    maxHeight: '200px',
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 6px 20px rgba(220,38,38,0.5))'
                   }}
-                >
-                  <div style={{
-                    alignSelf: 'flex-start',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    padding: '0.25rem 0.7rem',
-                    borderRadius: '9999px',
-                    backgroundColor: cardTheme.badgeBg,
-                    color: cardTheme.badgeText
-                  }}>
-                    Edición {sticker.colorName}
-                  </div>
+                />
+                <div style={{ marginTop: '1rem', fontSize: '0.82rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  ⭐ Edición Oficial Única 2026
+                </div>
+              </div>
 
-                  <div style={{
-                    width: '120px',
-                    height: '120px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '1rem 0'
-                  }}>
-                    <img 
-                      src={sticker.imagePath} 
-                      alt={sticker.name}
-                      style={{
-                        maxWidth: '100%',
-                        maxHeight: '100%',
-                        objectFit: 'contain',
-                        ...getFilterStyle(sticker.colorType)
-                      }}
-                    />
-                  </div>
+              <div>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  padding: '0.25rem 0.75rem',
+                  borderRadius: '9999px',
+                  backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                  color: 'var(--accent-gold)',
+                  marginBottom: '0.8rem'
+                }}>
+                  <Award size={13} />
+                  <span>Sin Colores Alternos • Solo el Oficial</span>
+                </div>
 
-                  <div style={{ textAlign: 'center', width: '100%' }}>
-                    <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: cardTheme.textColor, marginBottom: '0.3rem' }}>
-                      {sticker.name}
-                    </h4>
-                    <p style={{ fontSize: '0.8rem', color: cardTheme.subTextColor, lineHeight: 1.4, marginBottom: '1rem' }}>
-                      {sticker.description}
-                    </p>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenBuy(sticker.id);
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '0.7rem 1rem',
-                        borderRadius: '9999px',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        backgroundColor: sticker.colorType === 'black' ? '#000000' : 'var(--accent-gold)',
-                        color: sticker.colorType === 'black' ? '#FFFFFF' : '#121212',
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.4rem'
-                      }}
-                    >
-                      <ShoppingBag size={14} />
-                      <span>Pedir ({sticker.colorName}) $90 MXN</span>
-                    </button>
+                <h3 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#FFF', marginBottom: '0.8rem' }}>
+                  {JUAREZ_OFFICIAL_STICKER.name}
+                </h3>
+
+                <p style={{ color: '#B0B0B8', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '1.2rem' }}>
+                  {JUAREZ_OFFICIAL_STICKER.description}
+                </p>
+
+                <div style={{
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  background: 'rgba(255,255,255,0.03)',
+                  borderLeft: '3px solid var(--accent-gold)',
+                  marginBottom: '1.5rem'
+                }}>
+                  <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700, color: 'var(--accent-gold)', marginBottom: '2px' }}>
+                    Beneficio Certificado
+                  </div>
+                  <div style={{ fontSize: '0.86rem', color: '#FFF' }}>
+                    {JUAREZ_OFFICIAL_STICKER.perk}
                   </div>
                 </div>
-              );
-            })}
+
+                <div style={{
+                  padding: '0.75rem 1rem',
+                  borderRadius: '10px',
+                  backgroundColor: 'rgba(212,175,55,0.08)',
+                  border: '1px dashed rgba(212,175,55,0.3)',
+                  marginBottom: '1.5rem',
+                  fontSize: '0.82rem',
+                  color: '#DDD'
+                }}>
+                  📍 <strong>Lanzamiento 100% digital ($80 MXN)</strong>: No hay calcomanía física aún. Recibirás tu distintivo y folio de socio oficial de inmediato en tu celular. Las piezas físicas se anunciarán próximamente.
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
+                  <button 
+                    onClick={() => handleOpenBuy('juarense_oficial')}
+                    className="landing-btn-gold"
+                    style={{ flex: 1, padding: '0.85rem 1.4rem', fontSize: '0.92rem', minWidth: '200px' }}
+                  >
+                    <ShoppingBag size={17} />
+                    <span>Distintivo Digital ($80)</span>
+                  </button>
+
+                  <button 
+                    onClick={() => setShowFreeQrModal(true)}
+                    className="landing-btn-glass"
+                    style={{ padding: '0.85rem 1.2rem', fontSize: '0.92rem', color: '#4ade80', borderColor: 'rgba(74,222,128,0.35)' }}
+                  >
+                    <QrCode size={17} />
+                    <span>Pase QR Gratis ($0)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Simulador Interactivo */}
-          <div className="landing-card" style={{ padding: '2.5rem', maxWidth: '960px', margin: '0 auto' }}>
+          <div className="landing-card" style={{ padding: '2.5rem', maxWidth: '850px', margin: '0 auto' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem', alignItems: 'center' }}>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
@@ -880,7 +849,7 @@ export const LandingJuarez: React.FC = () => {
                 <div style={{
                   position: 'relative',
                   height: '240px',
-                  backgroundColor: selectedSticker.colorType === 'black' ? '#F1F5F9' : '#0c0c0e',
+                  backgroundColor: '#0c0c0e',
                   borderRadius: '16px',
                   overflow: 'hidden',
                   display: 'flex',
@@ -889,23 +858,24 @@ export const LandingJuarez: React.FC = () => {
                   border: '1px solid rgba(255,255,255,0.1)'
                 }}>
                   {simulatorMode === 'car' ? (
-                    <div style={{ position: 'relative', width: '85%', height: '75%', backgroundColor: selectedSticker.colorType === 'black' ? '#E2E8F0' : selectedSticker.colorType === 'pink' ? '#231822' : '#141e24', border: '3px solid #64748B', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ position: 'relative', width: '85%', height: '75%', backgroundColor: '#141e24', border: '3px solid #64748B', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <img 
-                        src={selectedSticker.imagePath} 
+                        src={JUAREZ_OFFICIAL_STICKER.imagePath} 
                         alt="Sticker Preview"
-                        style={{ width: '100px', height: '100px', objectFit: 'contain', ...getFilterStyle(selectedSticker.colorType) }}
+                        style={{ width: '130px', height: '100px', objectFit: 'contain', filter: 'drop-shadow(0 4px 14px rgba(220,38,38,0.5))' }}
                       />
-                      <span style={{ position: 'absolute', bottom: '6px', fontSize: '0.65rem', color: selectedSticker.colorType === 'black' ? '#475569' : 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
-                        Vista en cristal de vehículo
+                      <span style={{ position: 'absolute', bottom: '6px', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
+                        Vista en cristal o medallón de vehículo
                       </span>
                     </div>
                   ) : (
-                    <div style={{ width: '120px', height: '190px', backgroundColor: selectedSticker.colorType === 'black' ? '#FFFFFF' : selectedSticker.colorType === 'pink' ? '#2D1D27' : '#1E1E22', borderRadius: '20px', border: '3px solid #444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '130px', height: '190px', backgroundColor: '#1E1E22', borderRadius: '20px', border: '3px solid #444', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px' }}>
                       <img 
-                        src={selectedSticker.imagePath} 
+                        src={JUAREZ_OFFICIAL_STICKER.imagePath} 
                         alt="Sticker Preview"
-                        style={{ width: '75px', height: '75px', objectFit: 'contain', ...getFilterStyle(selectedSticker.colorType) }}
+                        style={{ width: '90px', height: '70px', objectFit: 'contain', filter: 'drop-shadow(0 2px 10px rgba(220,38,38,0.5))' }}
                       />
+                      <span style={{ fontSize: '0.58rem', color: 'var(--accent-gold)', fontWeight: 700 }}>Pase Digital</span>
                     </div>
                   )}
                 </div>
@@ -917,46 +887,184 @@ export const LandingJuarez: React.FC = () => {
                     Ciudad Juárez, Chih.
                   </span>
                   <span>•</span>
-                  <span style={{ fontSize: '0.8rem', color: '#BBB' }}>Edición {selectedSticker.colorName}</span>
+                  <span style={{ fontSize: '0.8rem', color: '#BBB' }}>Distintivo Digital $80 MXN</span>
                 </div>
 
-                <h3 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '0.8rem' }}>
-                  {selectedSticker.name}
+                <h3 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: '0.8rem' }}>
+                  Tu Pase Oficial en Pantalla
                 </h3>
 
-                <p style={{ color: '#A0A0AA', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '1.2rem' }}>
-                  {selectedSticker.description}
+                <p style={{ color: '#A0A0AA', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '1.4rem' }}>
+                  Muestra tu distintivo digital o tu código QR gratuito directamente desde tu smartphone en cualquier restaurante o comercio aliado para hacer válidos tus descuentos.
                 </p>
 
-                <div style={{
-                  padding: '1rem',
-                  borderRadius: '12px',
-                  background: 'rgba(255,255,255,0.03)',
-                  borderLeft: '3px solid var(--accent-gold)',
-                  marginBottom: '1.8rem',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.6rem'
-                }}>
-                  <Info size={16} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <div>
-                    <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 700, color: 'var(--accent-gold)' }}>Beneficio Activo</div>
-                    <div style={{ fontSize: '0.85rem', color: '#FFF' }}>{selectedSticker.perk}</div>
-                  </div>
-                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                  <button 
+                    onClick={() => handleOpenBuy('juarense_oficial')}
+                    className="landing-btn-gold"
+                    style={{ width: '100%', padding: '0.85rem', fontSize: '0.95rem' }}
+                  >
+                    <ShoppingBag size={17} />
+                    <span>Obtener Distintivo Digital ($80 MXN)</span>
+                  </button>
 
-                <button 
-                  onClick={() => handleOpenBuy(selectedSticker.id)}
-                  className="landing-btn-gold"
-                  style={{ width: '100%', padding: '0.95rem', fontSize: '1rem' }}
-                >
-                  <ShoppingBag size={18} />
-                  <span>Adquirir {selectedSticker.name} ($90 MXN)</span>
-                </button>
+                  <button 
+                    onClick={() => setShowFreeQrModal(true)}
+                    className="landing-btn-glass"
+                    style={{ width: '100%', padding: '0.8rem', fontSize: '0.9rem', color: '#4ade80' }}
+                  >
+                    <QrCode size={16} />
+                    <span>Generar Pase QR Gratis ($0 MXN)</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
+        </div>
+      </section>
+
+      {/* ── SECCIÓN INTERACTIVA: PASE QR GRATUITO CON ESCUDO INSERTADO ── */}
+      <section id="pase-gratuito" style={{ padding: '6rem 0', backgroundColor: '#0B0B0E', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
+        <div className="landing-container">
+          <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 3.5rem' }}>
+            <div className="landing-badge" style={{ marginBottom: '1rem', backgroundColor: 'rgba(74, 222, 128, 0.12)', borderColor: 'rgba(74, 222, 128, 0.35)', color: '#4ade80' }}>
+              <Gift size={14} />
+              <span>100% Gratuito y Libre</span>
+            </div>
+            <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.7rem)', fontWeight: 800, marginBottom: '1rem' }}>
+              Tu Pase QR Gratuito Vive Juárez
+            </h2>
+            <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
+              El código QR es <strong>completamente gratuito</strong> y cuenta con el <strong>escudo oficial de Vive Juárez inserto en su centro</strong>. Solo ingresa tu nombre y WhatsApp para generarlo en 30 segundos.
+            </p>
+          </div>
+
+          <div 
+            className="landing-card"
+            style={{
+              maxWidth: '820px',
+              margin: '0 auto',
+              padding: '2.5rem 2rem',
+              background: 'linear-gradient(145deg, rgba(20, 24, 22, 0.95) 0%, rgba(14, 16, 16, 0.98) 100%)',
+              border: '2px solid rgba(74, 222, 128, 0.35)',
+              boxShadow: '0 15px 40px rgba(0, 0, 0, 0.6)'
+            }}
+          >
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem', alignItems: 'center' }}>
+              
+              {/* Formulario */}
+              <div>
+                <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#FFF', marginBottom: '0.6rem' }}>
+                  Genera tu Código QR al Instante
+                </h3>
+                <p style={{ color: '#9E9EA8', fontSize: '0.88rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
+                  Sin pagos, sin registrar tarjetas y sin letras chiquitas. Accede de inmediato a los comercios participantes en Ciudad Juárez.
+                </p>
+
+                <form onSubmit={handleGenerateFreeQr} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div>
+                    <label style={{ fontSize: '0.78rem', color: '#BBB', display: 'block', marginBottom: '0.35rem', fontWeight: 600 }}>
+                      Tu Nombre Completo
+                    </label>
+                    <input 
+                      type="text"
+                      placeholder="Ej. Carlos Hernández"
+                      value={freeQrName}
+                      onChange={(e) => setFreeQrName(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 0.9rem',
+                        borderRadius: '10px',
+                        background: '#19191E',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        color: '#FFF',
+                        fontSize: '0.9rem'
+                      }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ fontSize: '0.78rem', color: '#BBB', display: 'block', marginBottom: '0.35rem', fontWeight: 600 }}>
+                      WhatsApp (10 dígitos) *
+                    </label>
+                    <input 
+                      type="tel"
+                      required
+                      placeholder="Ej. 656 123 4567"
+                      value={freeQrPhone}
+                      onChange={(e) => setFreeQrPhone(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 0.9rem',
+                        borderRadius: '10px',
+                        background: '#19191E',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        color: '#FFF',
+                        fontSize: '0.9rem'
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    style={{
+                      width: '100%',
+                      padding: '0.95rem',
+                      borderRadius: '12px',
+                      backgroundColor: '#22C55E',
+                      color: '#121212',
+                      fontWeight: 800,
+                      fontSize: '0.95rem',
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      boxShadow: '0 4px 16px rgba(34, 197, 94, 0.4)',
+                      marginTop: '0.5rem'
+                    }}
+                  >
+                    <QrCode size={18} />
+                    <span>Generar mi Pase QR Gratuito ($0)</span>
+                  </button>
+                </form>
+              </div>
+
+              {/* Vista previa del QR con logo incrustado */}
+              <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{
+                  backgroundColor: '#FFFFFF',
+                  padding: '1.2rem',
+                  borderRadius: '24px',
+                  display: 'inline-block',
+                  boxShadow: '0 12px 35px rgba(0,0,0,0.6)',
+                  border: '3px solid rgba(74, 222, 128, 0.5)'
+                }}>
+                  <QRCodeSVG 
+                    value={`https://redidentidad.vercel.app/registro?c=${freeQrFolio || 'VJ-GRATIS-2026'}&city=juarez`}
+                    size={190}
+                    level="H"
+                    imageSettings={{
+                      src: '/vive_juarez_qr_icon.png',
+                      height: 48,
+                      width: 48,
+                      excavate: true
+                    }}
+                  />
+                </div>
+
+                <div style={{ marginTop: '0.8rem', fontSize: '0.82rem', fontWeight: 800, color: '#4ade80' }}>
+                  {freeQrFolio ? `Folio Oficial: ${freeQrFolio}` : 'Escudo Oficial Vive Juárez Insertado'}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#9E9EA8', maxWidth: '240px', marginTop: '4px' }}>
+                  Muestra este QR en los negocios aliados de Ciudad Juárez para tus descuentos.
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1159,12 +1267,12 @@ export const LandingJuarez: React.FC = () => {
                 </p>
 
                 <button 
-                  onClick={() => handleOpenBuy('juarense_blanca')}
+                  onClick={() => handleOpenBuy('juarense_oficial')}
                   className="landing-btn-gold"
                   style={{ width: '100%', padding: '0.85rem' }}
                 >
                   <ShoppingBag size={17} />
-                  <span>Obtener mi Distintivo por $90</span>
+                  <span>Obtener mi Distintivo Digital por $80</span>
                 </button>
               </div>
 
@@ -1179,13 +1287,13 @@ export const LandingJuarez: React.FC = () => {
           <div style={{ textAlign: 'center', maxWidth: '650px', margin: '0 auto 3.5rem' }}>
             <div className="landing-badge" style={{ marginBottom: '1rem' }}>
               <MapPin size={14} />
-              <span>Entrega Inmediata en Ciudad Juárez</span>
+              <span>Red de Puntos Autorizados en Juárez</span>
             </div>
             <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.7rem)', fontWeight: 800, marginBottom: '1rem' }}>
               Puntos de Entrega en Juárez
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
-              Recoge tu sobre oficial sellado en persona en cualquiera de nuestras sucursales y puntos autorizados.
+              <strong>Lanzamiento Fase 1:</strong> Distintivo 100% Digital ($80 MXN) y Pase QR Gratuito disponibles hoy mismo en tu smartphone. Próximamente distribución de calcomanías físicas oficiales en sobre sellado en estos puntos autorizados.
             </p>
           </div>
 
@@ -1226,12 +1334,12 @@ export const LandingJuarez: React.FC = () => {
                 }}>
                   <span>{store.city}</span>
                   <a 
-                    href={`https://wa.me/${JUAREZ_WHATSAPP}?text=${encodeURIComponent(`Hola, me gustaría apartar un distintivo de Vive Juárez para recogerlo en ${store.name} (${store.zone}).`)}`}
+                    href={`https://wa.me/${JUAREZ_WHATSAPP}?text=${encodeURIComponent(`Hola, me gustaría más información sobre el distintivo de Vive Juárez en el punto ${store.name} (${store.zone}).`)}`}
                     target="_blank"
                     rel="noreferrer"
                     style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                   >
-                    <span>Apartar</span>
+                    <span>Consultar</span>
                     <ArrowRight size={13} />
                   </a>
                 </div>
@@ -1247,40 +1355,43 @@ export const LandingJuarez: React.FC = () => {
           <div style={{ textAlign: 'center', maxWidth: '650px', margin: '0 auto 3.5rem' }}>
             <div className="landing-badge" style={{ marginBottom: '1rem' }}>
               <CreditCard size={14} />
-              <span>Un Solo Pago, Beneficios Permanentes</span>
+              <span>Opciones para Todos los Juarenses</span>
             </div>
             <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.7rem)', fontWeight: 800, marginBottom: '1rem' }}>
-              Elige tu Membresía
+              Elige tu Modalidad
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
-              Sin mensualidades. Acceso inmediato a la red de beneficios de Ciudad Juárez.
+              Iniciamos con distintivos 100% digitales y pase QR gratuito con el logo oficial de Vive Juárez incrustado.
             </p>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '900px', margin: '0 auto' }}>
             
-            <div className="landing-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            {/* PLAN 1: PASE QR GRATIS */}
+            <div className="landing-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
               <div>
-                <span style={{ fontSize: '0.82rem', color: '#A0A0A8', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Activación Inmediata
+                <span style={{ fontSize: '0.82rem', color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 700 }}>
+                  Acceso Inmediato
                 </span>
                 <h3 style={{ fontSize: '1.6rem', fontWeight: 700, margin: '0.4rem 0 1rem' }}>
-                  Membresía 100% Digital
+                  Pase QR Gratuito
                 </h3>
                 
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '3rem', fontWeight: 800 }}>$45</span>
-                  <span style={{ fontSize: '1rem', color: '#A0A0A8' }}>MXN / pago único</span>
+                  <span style={{ fontSize: '3rem', fontWeight: 800, color: '#4ade80' }}>$0</span>
+                  <span style={{ fontSize: '1rem', color: '#A0A0A8' }}>MXN / 100% Gratis</span>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '2rem' }}>
                   {[
-                    'Pase digital con QR dinámico en tu smartphone',
-                    'Descuentos en comercios afiliados en Juárez',
-                    'Activación instantánea en menos de 1 minuto'
+                    'Código QR dinámico con la insignia Vive Juárez incrustada',
+                    'Acceso a promociones y descuentos en comercios afiliados',
+                    'Guardado directo en tu smartphone',
+                    'Sin comisiones, sin pagos ni tarjetas de crédito',
+                    'Activación instantánea con tu WhatsApp'
                   ].map((feat, idx) => (
                     <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', fontSize: '0.9rem', color: '#D0D0D8' }}>
-                      <Check size={16} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '3px' }} />
+                      <Check size={16} color="#4ade80" style={{ flexShrink: 0, marginTop: '3px' }} />
                       <span>{feat}</span>
                     </div>
                   ))}
@@ -1288,14 +1399,20 @@ export const LandingJuarez: React.FC = () => {
               </div>
 
               <button 
-                onClick={() => handleOpenBuy('digital')}
+                onClick={() => {
+                  const el = document.getElementById('pase-gratuito');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  else setShowFreeQrModal(true);
+                }}
                 className="landing-btn-glass"
                 style={{ width: '100%', padding: '0.95rem' }}
               >
-                <span>Comprar Pase Digital ($45)</span>
+                <QrCode size={18} />
+                <span>Generar Pase QR Gratis ($0)</span>
               </button>
             </div>
 
+            {/* PLAN 2: DISTINTIVO DIGITAL OFICIAL */}
             <div 
               className="landing-card" 
               style={{
@@ -1322,29 +1439,29 @@ export const LandingJuarez: React.FC = () => {
                 letterSpacing: '0.04em',
                 textTransform: 'uppercase'
               }}>
-                ⭐ El Más Popular
+                ⭐ Lanzamiento Oficial
               </div>
 
               <div>
                 <span style={{ fontSize: '0.82rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
-                  Kit Oficial de Colección
+                  Distintivo Digital Oficial
                 </span>
                 <h3 style={{ fontSize: '1.6rem', fontWeight: 700, margin: '0.4rem 0 1rem' }}>
-                  Calcomanía Oficial + Sobre + Membresía
+                  Distintivo Vive Juárez
                 </h3>
                 
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--accent-gold)' }}>$90</span>
+                  <span style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--accent-gold)' }}>$80</span>
                   <span style={{ fontSize: '1rem', color: '#A0A0A8' }}>MXN / pago único</span>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '2rem' }}>
                   {[
-                    'Calcomanía física de la X de Juárez en vinil automotriz',
-                    'Elección de color: Blanco, Negro o Rosa oficial',
-                    'Sobre sellado de colección con código QR personal',
-                    'Incluye toda la Membresía Digital en tu celular',
-                    'Recoge hoy en puntos de Juárez o recibe a domicilio'
+                    'Distintivo Digital Oficial en alta resolución con la X de Juárez',
+                    'Diseño único oficial sin variaciones de color',
+                    'Acceso completo a todos los beneficios y descuentos de la Red',
+                    'Folio de socio oficial y perfil digital en la App',
+                    'Próximamente opción de calcomanía física en puntos de entrega'
                   ].map((feat, idx) => (
                     <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', fontSize: '0.9rem', color: '#FFF' }}>
                       <Check size={16} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '3px' }} />
@@ -1355,12 +1472,12 @@ export const LandingJuarez: React.FC = () => {
               </div>
 
               <button 
-                onClick={() => handleOpenBuy('juarense_blanca')}
+                onClick={() => handleOpenBuy('juarense_oficial')}
                 className="landing-btn-gold"
                 style={{ width: '100%', padding: '0.95rem' }}
               >
                 <ShoppingBag size={18} />
-                <span>Pedir Distintivo en Sobre ($90)</span>
+                <span>Obtener Distintivo Digital ($80)</span>
               </button>
             </div>
 
@@ -1759,6 +1876,145 @@ export const LandingJuarez: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Modal Pase QR Gratuito */}
+      <AnimatePresence>
+        {showFreeQrModal && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            backgroundColor: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem'
+          }}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="landing-card"
+              style={{
+                width: '100%',
+                maxWidth: '460px',
+                padding: '2rem',
+                border: '1px solid rgba(212, 175, 55, 0.4)',
+                textAlign: 'center',
+                maxHeight: '90vh',
+                overflowY: 'auto'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <QrCode size={22} color="var(--accent-gold)" />
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Pase QR Vive Juárez</h3>
+                </div>
+                <button onClick={() => setShowFreeQrModal(false)} style={{ color: '#AAA' }}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              {!freeQrGenerated ? (
+                <form onSubmit={handleGenerateFreeQr} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
+                  <p style={{ color: '#A0A0AA', fontSize: '0.9rem' }}>
+                    Genera tu Pase Digital gratuito en 10 segundos para acceder a los beneficios en Ciudad Juárez.
+                  </p>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', color: '#BBB', display: 'block', marginBottom: '0.3rem' }}>Tu Nombre</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ej. Roberto Martínez"
+                      value={freeQrName}
+                      onChange={(e) => setFreeQrName(e.target.value)}
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: '#19191E', border: '1px solid rgba(255,255,255,0.15)', color: '#FFF' }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', color: '#BBB', display: 'block', marginBottom: '0.3rem' }}>WhatsApp (10 dígitos) *</label>
+                    <input 
+                      type="tel" 
+                      required
+                      placeholder="656 123 4567"
+                      value={freeQrPhone}
+                      onChange={(e) => setFreeQrPhone(e.target.value)}
+                      style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: '#19191E', border: '1px solid rgba(255,255,255,0.15)', color: '#FFF' }}
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    className="landing-btn-gold"
+                    style={{ width: '100%', padding: '0.9rem', marginTop: '0.5rem' }}
+                  >
+                    <QrCode size={18} />
+                    <span>Generar Pase Gratis ($0)</span>
+                  </button>
+                </form>
+              ) : (
+                <div>
+                  <div style={{
+                    background: '#FFFFFF',
+                    padding: '1.2rem',
+                    borderRadius: '16px',
+                    display: 'inline-block',
+                    margin: '0.5rem auto 1.2rem',
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.5)'
+                  }}>
+                    <QRCodeSVG
+                      value={`https://redidentidad.vercel.app/app?city=juarez&member=${freeQrFolio}&name=${encodeURIComponent(freeQrName || 'Socio Juarense')}`}
+                      size={200}
+                      level="H"
+                      bgColor="#FFFFFF"
+                      fgColor="#121212"
+                      imageSettings={{
+                        src: '/vive_juarez_qr_icon.png',
+                        x: undefined,
+                        y: undefined,
+                        height: 48,
+                        width: 48,
+                        excavate: true
+                      }}
+                    />
+                  </div>
+
+                  <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.2rem' }}>
+                    {freeQrName || 'Socio Juarense'}
+                  </h4>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--accent-gold)', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '0.8rem' }}>
+                    FOLIO: {freeQrFolio}
+                  </div>
+                  <p style={{ fontSize: '0.82rem', color: '#90909A', lineHeight: 1.4, marginBottom: '1.5rem' }}>
+                    Muestra este código QR con el distintivo oficial en comercios aliados de Ciudad Juárez para identificarte.
+                  </p>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    <button 
+                      onClick={() => goToApp('/app')}
+                      className="landing-btn-gold"
+                      style={{ width: '100%', padding: '0.85rem' }}
+                    >
+                      <Smartphone size={17} />
+                      <span>Abrir en Plataforma Web</span>
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setShowFreeQrModal(false);
+                        handleOpenBuy('juarense_oficial');
+                      }}
+                      className="landing-btn-glass"
+                      style={{ width: '100%', padding: '0.8rem' }}
+                    >
+                      <ShoppingBag size={16} />
+                      <span>Mejorar a Distintivo Digital ($80)</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Barra móvil inferior */}
       <div 
         className="d-lg-none"
@@ -1776,14 +2032,26 @@ export const LandingJuarez: React.FC = () => {
           zIndex: 90
         }}
       >
-        <button onClick={() => goToApp('/app')} className="landing-btn-glass" style={{ flex: 1, padding: '0.7rem', fontSize: '0.85rem' }}>
-          <Smartphone size={16} />
-          <span>Abrir App</span>
+        <button 
+          onClick={() => {
+            const el = document.getElementById('pase-gratuito');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+            else setShowFreeQrModal(true);
+          }} 
+          className="landing-btn-glass" 
+          style={{ flex: 1, padding: '0.7rem', fontSize: '0.82rem' }}
+        >
+          <QrCode size={15} />
+          <span>Pase QR $0</span>
         </button>
 
-        <button onClick={() => handleOpenBuy('juarense_blanca')} className="landing-btn-gold" style={{ flex: 1.4, padding: '0.7rem', fontSize: '0.85rem' }}>
+        <button 
+          onClick={() => handleOpenBuy('juarense_oficial')} 
+          className="landing-btn-gold" 
+          style={{ flex: 1.4, padding: '0.7rem', fontSize: '0.85rem' }}
+        >
           <ShoppingBag size={16} />
-          <span>Distintivo $90</span>
+          <span>Distintivo $80</span>
         </button>
       </div>
 

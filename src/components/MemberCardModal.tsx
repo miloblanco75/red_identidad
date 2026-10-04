@@ -5,6 +5,7 @@ import { X, ShieldCheck, Crown, Sparkles, Smartphone, Award, Clock, Gift } from 
 import { motion } from 'framer-motion';
 import { LoyaltyPassportModal } from './LoyaltyPassportModal';
 import { generateDynamicQrPayload } from '../lib/dynamicQr';
+import { useCity } from '../contexts/CityContext';
 
 interface LocalUser {
   phone: string;
@@ -20,6 +21,11 @@ interface MemberCardModalProps {
 
 export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose }) => {
   const [showPassport, setShowPassport] = useState(false);
+  const { isJuarez: contextIsJuarez } = useCity();
+  const isJuarezMember = contextIsJuarez || 
+    user.level?.toLowerCase().includes('juarez') || 
+    user.code?.toLowerCase().includes('jua') ||
+    user.code?.toLowerCase().includes('vj');
   
   // Estado para el QR dinámico con rotación de 60 segundos
   const [dynamicPayload, setDynamicPayload] = useState(() => 
@@ -237,7 +243,17 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
             marginBottom: '0.6rem',
           }}
         >
-          <QRCodeSVG value={qrValue} size={190} level="H" />
+          <QRCodeSVG 
+            value={qrValue} 
+            size={190} 
+            level="H" 
+            imageSettings={isJuarezMember ? {
+              src: '/vive_juarez_qr_icon.png',
+              height: 44,
+              width: 44,
+              excavate: true
+            } : undefined}
+          />
         </div>
 
         <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', marginBottom: '0.8rem' }}>

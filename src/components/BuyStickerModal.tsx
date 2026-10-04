@@ -5,6 +5,7 @@ import {
   Store, Navigation, CreditCard, Smartphone, Car 
 } from 'lucide-react';
 import { getStripeCheckoutUrl, PRODUCTS } from '../lib/paymentsService';
+import { useCity } from '../contexts/CityContext';
 
 interface BuyStickerModalProps {
   isOpen: boolean;
@@ -13,22 +14,30 @@ interface BuyStickerModalProps {
 }
 
 export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClose, initialSticker }) => {
+  const { isJuarez } = useCity();
+  const effectiveIsJuarez = isJuarez || initialSticker?.includes('juarense') || initialSticker?.includes('juarez');
+
   const [activeTab, setActiveTab] = useState<'online' | 'stores'>('online');
   const [membershipType, setMembershipType] = useState<'digital' | 'physical'>('digital');
-  const [selectedSticker, setSelectedSticker] = useState<string>(initialSticker || 'campechano_negra');
+  const [selectedSticker, setSelectedSticker] = useState<string>(
+    effectiveIsJuarez ? 'juarense_oficial' : (initialSticker || 'campechano_negra')
+  );
   const [fullName, setFullName] = useState('');
   const [userPhone, setUserPhone] = useState('');
   const [isOrdered, setIsOrdered] = useState(false);
   const [formError, setFormError] = useState('');
 
   React.useEffect(() => {
-    if (initialSticker) {
+    if (effectiveIsJuarez) {
+      setSelectedSticker('juarense_oficial');
+      setMembershipType('digital');
+    } else if (initialSticker) {
       setSelectedSticker(initialSticker);
     }
-  }, [initialSticker]);
+  }, [initialSticker, effectiveIsJuarez]);
 
-  const ADMIN_PHONE = '9811971305';
-  const currentPrice = membershipType === 'digital' ? PRODUCTS.digital.price : PRODUCTS.physical.price;
+  const ADMIN_PHONE = effectiveIsJuarez ? '529811971305' : '9811971305';
+  const currentPrice = effectiveIsJuarez ? 80 : (membershipType === 'digital' ? PRODUCTS.digital.price : PRODUCTS.physical.price);
 
   // Catálogo exacto de distintivos físicos
   const stickerOptions = [
@@ -43,9 +52,7 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
     { id: 'campechana_negra', label: 'Campechana — Negra', tag: 'Negra', bg: '#333', color: '#FFF' },
     { id: 'campechana_rosa', label: 'Campechana — Rosa', tag: 'Rosa', bg: '#FF69B4', color: '#FFF' },
 
-    { id: 'juarense_blanca', label: 'Vive Juárez — Blanca Oficial', tag: 'Blanca', bg: '#FFF', color: '#000' },
-    { id: 'juarense_negra', label: 'Vive Juárez — Negra Mate', tag: 'Negra', bg: '#333', color: '#FFF' },
-    { id: 'juarense_rosa', label: 'Vive Juárez — Rosa Fucsia', tag: 'Rosa', bg: '#FF69B4', color: '#FFF' },
+    { id: 'juarense_oficial', label: 'Vive Juárez — Edición Oficial Única', tag: 'Oficial', bg: '#121212', color: '#D4AF37' },
   ];
 
   // Puntos de Venta Físicos
@@ -149,20 +156,31 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
     }
 
     const chosenOption = stickerOptions.find(s => s.id === selectedSticker);
-    const chosenName = chosenOption ? chosenOption.label : 'Campechano — Negra';
+    const chosenName = effectiveIsJuarez ? 'Vive Juárez — Edición Oficial Única' : (chosenOption ? chosenOption.label : 'Campechano — Negra');
 
-    const message = `¡Hola! 👋 Deseo adquirir mi Membresía Oficial Red Identidad.\n\n` +
-      `📋 *Detalles del Pedido:*\n` +
-      `• Formato: ${membershipType === 'digital' ? '📱 Membresía 100% Digital' : '🚗 Calcomanía Física en Sobre'}\n` +
-      `${membershipType === 'physical' ? `• Variante: ${chosenName}\n` : ''}` +
-      `• Total a Pagar: $${currentPrice} MXN\n\n` +
-      `👤 *Mis Datos:*\n` +
-      `• Nombre: ${fullName.trim()}\n` +
-      `• WhatsApp: ${userPhone.trim()}\n\n` +
-      `Por favor compártanme los datos de transferencia SPEI / OXXO para liquidar mi membresía. ¡Muchas gracias!`;
+    const message = effectiveIsJuarez
+      ? `¡Hola! 👋 Deseo adquirir mi Distintivo Digital Oficial Vive Juárez ($80 MXN).\n\n` +
+        `📋 *Detalles del Pedido:*\n` +
+        `• Formato: 📱 Distintivo 100% Digital Oficial\n` +
+        `• Ciudad: Ciudad Juárez, Chih.\n` +
+        `• Total a Pagar: $80 MXN\n\n` +
+        `👤 *Mis Datos:*\n` +
+        `• Nombre: ${fullName.trim()}\n` +
+        `• WhatsApp: ${userPhone.trim()}\n\n` +
+        `Por favor compártanme los datos para pagar mi membresía digital. ¡Muchas gracias!`
+      : `¡Hola! 👋 Deseo adquirir mi Membresía Oficial Red Identidad.\n\n` +
+        `📋 *Detalles del Pedido:*\n` +
+        `• Formato: ${membershipType === 'digital' ? '📱 Membresía 100% Digital' : '🚗 Calcomanía Física en Sobre'}\n` +
+        `${membershipType === 'physical' ? `• Variante: ${chosenName}\n` : ''}` +
+        `• Total a Pagar: $${currentPrice} MXN\n\n` +
+        `👤 *Mis Datos:*\n` +
+        `• Nombre: ${fullName.trim()}\n` +
+        `• WhatsApp: ${userPhone.trim()}\n\n` +
+        `Por favor compártanme los datos de transferencia SPEI / OXXO para liquidar mi membresía. ¡Muchas gracias!`;
 
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/52${ADMIN_PHONE}?text=${encodedMessage}`;
+    const whatsappPhone = ADMIN_PHONE.startsWith('52') ? ADMIN_PHONE : `52${ADMIN_PHONE}`;
+    const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodedMessage}`;
     
     window.open(whatsappUrl, '_blank');
     setIsOrdered(true);
@@ -319,107 +337,174 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
 
               {activeTab === 'online' ? (
                 <div>
-                  {/* 1. SELECTOR DUAL DE FORMATO ($45 Digital vs $90 Física) */}
-                  <label style={{ display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--accent-gold)', marginBottom: '0.5rem', letterSpacing: '0.08em', fontWeight: 800 }}>
-                    1. Elige tu formato:
-                  </label>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '1.1rem' }}>
-                    {/* Tarjeta Digital ($45) */}
-                    <div
-                      onClick={() => setMembershipType('digital')}
-                      style={{
-                        padding: '12px 10px',
-                        borderRadius: '16px',
-                        cursor: 'pointer',
-                        backgroundColor: membershipType === 'digital' ? 'rgba(74,222,128,0.12)' : 'rgba(255,255,255,0.04)',
-                        border: membershipType === 'digital' ? '2px solid #22C55E' : '1px solid rgba(255,255,255,0.1)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        position: 'relative',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                        <Smartphone size={18} color={membershipType === 'digital' ? '#4ADE80' : 'var(--text-dim)'} />
-                        <span style={{ fontSize: '0.62rem', fontWeight: 800, color: '#4ADE80', backgroundColor: 'rgba(74,222,128,0.2)', padding: '2px 6px', borderRadius: '6px' }}>
-                          ⚡ Instantánea
-                        </span>
-                      </div>
-                      <div style={{ fontWeight: 800, fontSize: '0.85rem', color: '#FFF' }}>
-                        Membresía Digital
-                      </div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#4ADE80', margin: '4px 0' }}>
-                        $45 <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-dim)' }}>MXN</span>
-                      </div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', lineHeight: 1.2 }}>
-                        Activación inmediata en tu celular. Cero esperas.
-                      </div>
-                    </div>
-
-                    {/* Tarjeta Física ($90) */}
-                    <div
-                      onClick={() => setMembershipType('physical')}
-                      style={{
-                        padding: '12px 10px',
-                        borderRadius: '16px',
-                        cursor: 'pointer',
-                        backgroundColor: membershipType === 'physical' ? 'rgba(212,175,55,0.14)' : 'rgba(255,255,255,0.04)',
-                        border: membershipType === 'physical' ? '2px solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.1)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        position: 'relative',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                        <Car size={18} color={membershipType === 'physical' ? 'var(--accent-gold)' : 'var(--text-dim)'} />
-                        <span style={{ fontSize: '0.62rem', fontWeight: 800, color: 'var(--accent-gold)', backgroundColor: 'rgba(212,175,55,0.2)', padding: '2px 6px', borderRadius: '6px' }}>
-                          ⭐ Popular
-                        </span>
-                      </div>
-                      <div style={{ fontWeight: 800, fontSize: '0.85rem', color: '#FFF' }}>
-                        Calcomanía + Digital
-                      </div>
-                      <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-gold)', margin: '4px 0' }}>
-                        $90 <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-dim)' }}>MXN</span>
-                      </div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', lineHeight: 1.2 }}>
-                        Vinil automotriz en sobre oficial + Membresía digital.
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Selector de variante de calcomanía (solo si eligió física) */}
-                  {membershipType === 'physical' && (
-                    <div style={{ marginBottom: '1.1rem' }}>
-                      <label style={{ display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem', letterSpacing: '0.08em', fontWeight: 700 }}>
-                        Variante del distintivo para tu vehículo:
-                      </label>
-                      <select
-                        value={selectedSticker}
-                        onChange={(e) => setSelectedSticker(e.target.value)}
+                  {effectiveIsJuarez ? (
+                    <div style={{ marginBottom: '1.2rem' }}>
+                      <div
                         style={{
-                          width: '100%',
-                          padding: '0.65rem 0.8rem',
-                          backgroundColor: 'rgba(255,255,255,0.06)',
-                          border: '1px solid rgba(212,175,55,0.3)',
-                          borderRadius: '10px',
-                          color: '#FFF',
-                          fontSize: '0.82rem',
-                          outline: 'none',
-                          cursor: 'pointer'
+                          padding: '14px',
+                          borderRadius: '18px',
+                          backgroundColor: 'rgba(212,175,55,0.12)',
+                          border: '2px solid var(--accent-gold)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '14px',
+                          position: 'relative'
                         }}
                       >
-                        {stickerOptions.map((s) => (
-                          <option key={s.id} value={s.id} style={{ color: '#000' }}>
-                            {s.label}
-                          </option>
-                        ))}
-                      </select>
+                        <div style={{ width: '80px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <img 
+                            src="/vive_juarez_oficial.png" 
+                            alt="Vive Juárez Distintivo Oficial" 
+                            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                          />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase' }}>
+                              Distintivo Digital Oficial
+                            </span>
+                            <span style={{ fontSize: '1.35rem', fontWeight: 900, color: 'var(--accent-gold)' }}>
+                              $80 MXN
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#FFF', margin: '2px 0' }}>
+                            Vive Juárez — Edición Única
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', lineHeight: 1.3 }}>
+                            Activación 100% digital inmediata. Descuentos en la red de comercios aliados. (Calcomanía física próximamente en puntos de entrega).
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ 
+                        marginTop: '0.6rem', 
+                        padding: '0.65rem 0.9rem', 
+                        borderRadius: '12px', 
+                        backgroundColor: 'rgba(74,222,128,0.1)', 
+                        border: '1px solid rgba(74,222,128,0.25)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '6px'
+                      }}>
+                        <span style={{ fontSize: '0.76rem', color: '#4ade80', fontWeight: 700 }}>
+                          🎁 ¿Prefieres empezar gratis?
+                        </span>
+                        <a 
+                          href="/juarez#pase-gratuito" 
+                          onClick={onClose}
+                          style={{ fontSize: '0.76rem', color: '#FFF', textDecoration: 'underline', fontWeight: 700 }}
+                        >
+                          Generar Pase QR Gratuito ($0)
+                        </a>
+                      </div>
                     </div>
+                  ) : (
+                    <>
+                      {/* 1. SELECTOR DUAL DE FORMATO ($45 Digital vs $90 Física) */}
+                      <label style={{ display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--accent-gold)', marginBottom: '0.5rem', letterSpacing: '0.08em', fontWeight: 800 }}>
+                        1. Elige tu formato:
+                      </label>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '1.1rem' }}>
+                        {/* Tarjeta Digital ($45) */}
+                        <div
+                          onClick={() => setMembershipType('digital')}
+                          style={{
+                            padding: '12px 10px',
+                            borderRadius: '16px',
+                            cursor: 'pointer',
+                            backgroundColor: membershipType === 'digital' ? 'rgba(74,222,128,0.12)' : 'rgba(255,255,255,0.04)',
+                            border: membershipType === 'digital' ? '2px solid #22C55E' : '1px solid rgba(255,255,255,0.1)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            position: 'relative',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                            <Smartphone size={18} color={membershipType === 'digital' ? '#4ADE80' : 'var(--text-dim)'} />
+                            <span style={{ fontSize: '0.62rem', fontWeight: 800, color: '#4ADE80', backgroundColor: 'rgba(74,222,128,0.2)', padding: '2px 6px', borderRadius: '6px' }}>
+                              ⚡ Instantánea
+                            </span>
+                          </div>
+                          <div style={{ fontWeight: 800, fontSize: '0.85rem', color: '#FFF' }}>
+                            Membresía Digital
+                          </div>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#4ADE80', margin: '4px 0' }}>
+                            $45 <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-dim)' }}>MXN</span>
+                          </div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', lineHeight: 1.2 }}>
+                            Activación inmediata en tu celular. Cero esperas.
+                          </div>
+                        </div>
+
+                        {/* Tarjeta Física ($90) */}
+                        <div
+                          onClick={() => setMembershipType('physical')}
+                          style={{
+                            padding: '12px 10px',
+                            borderRadius: '16px',
+                            cursor: 'pointer',
+                            backgroundColor: membershipType === 'physical' ? 'rgba(212,175,55,0.14)' : 'rgba(255,255,255,0.04)',
+                            border: membershipType === 'physical' ? '2px solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.1)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            position: 'relative',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                            <Car size={18} color={membershipType === 'physical' ? 'var(--accent-gold)' : 'var(--text-dim)'} />
+                            <span style={{ fontSize: '0.62rem', fontWeight: 800, color: 'var(--accent-gold)', backgroundColor: 'rgba(212,175,55,0.2)', padding: '2px 6px', borderRadius: '6px' }}>
+                              ⭐ Popular
+                            </span>
+                          </div>
+                          <div style={{ fontWeight: 800, fontSize: '0.85rem', color: '#FFF' }}>
+                            Calcomanía + Digital
+                          </div>
+                          <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--accent-gold)', margin: '4px 0' }}>
+                            $90 <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-dim)' }}>MXN</span>
+                          </div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)', lineHeight: 1.2 }}>
+                            Vinil automotriz en sobre oficial + Membresía digital.
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Selector de variante de calcomanía (solo si eligió física) */}
+                      {membershipType === 'physical' && (
+                        <div style={{ marginBottom: '1.1rem' }}>
+                          <label style={{ display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem', letterSpacing: '0.08em', fontWeight: 700 }}>
+                            Variante del distintivo para tu vehículo:
+                          </label>
+                          <select
+                            value={selectedSticker}
+                            onChange={(e) => setSelectedSticker(e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '0.65rem 0.8rem',
+                              backgroundColor: 'rgba(255,255,255,0.06)',
+                              border: '1px solid rgba(212,175,55,0.3)',
+                              borderRadius: '10px',
+                              color: '#FFF',
+                              fontSize: '0.82rem',
+                              outline: 'none',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {stickerOptions.map((s) => (
+                              <option key={s.id} value={s.id} style={{ color: '#000' }}>
+                                {s.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {/* 2. DATOS DEL COMPRADOR */}

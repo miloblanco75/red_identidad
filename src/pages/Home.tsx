@@ -784,113 +784,52 @@ const Home: React.FC = () => {
             {/* Selector Visual de Pertenencia Territorial */}
             <div style={{ marginBottom: '1.8rem', textAlign: 'center' }}>
               <span style={{ fontSize: '0.74rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, display: 'block', marginBottom: '0.8rem' }}>
-                Elige tu Distintivo Oficial ($90 MXN):
+                {isJuarez ? 'Distintivo Digital Oficial ($80 MXN) • Calcomanía física próximamente' : 'Elige tu Distintivo Oficial ($90 MXN):'}
               </span>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', maxWidth: '460px', margin: '0 auto' }}>
-                {isJuarez ? (
-                  <>
-                    {/* Vive Juárez Blanca */}
-                    <motion.div
-                      whileHover={{ scale: 1.04, y: -2 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => { setInitialStickerSelection('juarense_blanca'); setShowBuyModal(true); }}
-                      className="glass"
-                      style={{
-                        padding: '0.9rem 0.4rem 0.75rem',
-                        borderRadius: '18px',
-                        border: '1.5px solid rgba(255,255,255,0.4)',
-                        backgroundColor: 'rgba(30,30,35,0.85)',
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
-                      }}
-                    >
-                      <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
-                        <img 
-                          src="/juarense_oficial.svg" 
-                          alt="Vive Juárez Blanca" 
-                          style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(255,255,255,0.7))' }} 
-                        />
+              {isJuarez ? (
+                <div style={{ maxWidth: '380px', margin: '0 auto' }}>
+                  <motion.div
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => { setInitialStickerSelection('juarense_oficial'); setShowBuyModal(true); }}
+                    className="glass"
+                    style={{
+                      padding: '1.2rem 1.4rem',
+                      borderRadius: '20px',
+                      border: '1.5px solid rgba(212,175,55,0.45)',
+                      backgroundColor: 'rgba(25,25,30,0.92)',
+                      cursor: 'pointer',
+                      textAlign: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '1.2rem',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
+                    }}
+                  >
+                    <div style={{ width: '85px', height: '65px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <img 
+                        src="/vive_juarez_oficial.png" 
+                        alt="Vive Juárez Distintivo Oficial" 
+                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', filter: 'drop-shadow(0 2px 10px rgba(220,38,38,0.5))' }} 
+                      />
+                    </div>
+                    <div style={{ textAlign: 'left', flex: 1 }}>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 900, color: '#FFF' }}>VIVE JUÁREZ</div>
+                      <div style={{ fontSize: '0.74rem', color: 'var(--text-dim)', marginBottom: '6px' }}>Distintivo Oficial Único (100% Digital)</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.74rem', color: 'var(--accent-gold)', fontWeight: 800, backgroundColor: 'rgba(212,175,55,0.15)', padding: '2px 8px', borderRadius: '6px' }}>
+                          $80 MXN
+                        </span>
+                        <span style={{ fontSize: '0.7rem', color: '#4ade80', fontWeight: 700, backgroundColor: 'rgba(74,222,128,0.12)', padding: '2px 8px', borderRadius: '6px' }}>
+                          Pase QR Gratis
+                        </span>
                       </div>
-                      <div style={{ fontSize: '0.72rem', fontWeight: 900, color: '#FFF', whiteSpace: 'nowrap', marginBottom: '2px' }}>BLANCA</div>
-                      <span style={{ fontSize: '0.6rem', color: 'var(--accent-gold)', fontWeight: 800, backgroundColor: 'rgba(212,175,55,0.15)', padding: '2px 6px', borderRadius: '6px' }}>
-                        Oficial
-                      </span>
-                    </motion.div>
-
-                    {/* Vive Juárez Negra */}
-                    <motion.div
-                      whileHover={{ scale: 1.04, y: -2 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => { setInitialStickerSelection('juarense_negra'); setShowBuyModal(true); }}
-                      className="glass"
-                      style={{
-                        padding: '0.9rem 0.4rem 0.75rem',
-                        borderRadius: '18px',
-                        border: '1.5px solid #000',
-                        backgroundColor: '#FFFFFF',
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
-                      }}
-                    >
-                      <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
-                        <img 
-                          src="/juarense_oficial.svg" 
-                          alt="Vive Juárez Negra" 
-                          style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }} 
-                        />
-                      </div>
-                      <div style={{ fontSize: '0.72rem', fontWeight: 900, color: '#000', whiteSpace: 'nowrap', marginBottom: '2px' }}>NEGRA</div>
-                      <span style={{ fontSize: '0.6rem', color: '#FFF', fontWeight: 800, backgroundColor: '#000', padding: '2px 6px', borderRadius: '6px' }}>
-                        Mate
-                      </span>
-                    </motion.div>
-
-                    {/* Vive Juárez Rosa */}
-                    <motion.div
-                      whileHover={{ scale: 1.04, y: -2 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => { setInitialStickerSelection('juarense_rosa'); setShowBuyModal(true); }}
-                      className="glass"
-                      style={{
-                        padding: '0.9rem 0.4rem 0.75rem',
-                        borderRadius: '18px',
-                        border: '1.5px solid rgba(244,143,177,0.45)',
-                        backgroundColor: 'rgba(35,20,30,0.85)',
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.4)'
-                      }}
-                    >
-                      <div style={{ width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '6px' }}>
-                        <img 
-                          src="/juarense_oficial.svg" 
-                          alt="Vive Juárez Rosa" 
-                          style={{ width: '50px', height: '50px', objectFit: 'contain', filter: 'drop-shadow(0 2px 8px rgba(244,143,177,0.6))' }} 
-                        />
-                      </div>
-                      <div style={{ fontSize: '0.72rem', fontWeight: 900, color: '#FFF', whiteSpace: 'nowrap', marginBottom: '2px' }}>ROSA</div>
-                      <span style={{ fontSize: '0.6rem', color: '#F48FB1', fontWeight: 800, backgroundColor: 'rgba(244,143,177,0.15)', padding: '2px 6px', borderRadius: '6px' }}>
-                        Fucsia
-                      </span>
-                    </motion.div>
-                  </>
-                ) : (
-                  <>
-                    {/* Campechano Soy */}
+                    </div>
+                  </motion.div>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', maxWidth: '460px', margin: '0 auto' }}>
+                  {/* Campechano Soy */}
                     <motion.div
                       whileHover={{ scale: 1.04, y: -2 }}
                       whileTap={{ scale: 0.96 }}
@@ -988,9 +927,8 @@ const Home: React.FC = () => {
                         Blanca/Negra/Rosa
                       </span>
                     </motion.div>
-                  </>
+                  </div>
                 )}
-              </div>
             </div>
 
             {/* Botones de Acción (CTAs Inequívocos) */}
@@ -1192,7 +1130,11 @@ const Home: React.FC = () => {
               ¡Tu distintivo se paga solo desde tu 1ra o 2da visita! 💡
             </h3>
             <p style={{ fontSize: '0.86rem', color: 'var(--text-dim)', lineHeight: 1.5, margin: 0 }}>
-              Tu calcomanía cuesta solo <strong>$90 MXN</strong>, pero te otorga hasta <strong>15% de descuento directo</strong> en restaurantes, autolavados, cafeterías y servicios en {isJuarez ? 'toda Ciudad Juárez' : 'todo Campeche y Carmen'}. Ahorras en promedio más de <strong>$600 MXN al mes</strong> con solo portar tu distintivo.
+              {isJuarez ? (
+                <>Tu distintivo digital cuesta solo <strong>$80 MXN</strong>, pero te otorga hasta <strong>15% de descuento directo</strong> en restaurantes, autolavados, cafeterías y servicios en toda Ciudad Juárez. Ahorras en promedio más de <strong>$600 MXN al mes</strong> con solo portar tu distintivo digital.</>
+              ) : (
+                <>Tu calcomanía cuesta solo <strong>$90 MXN</strong>, pero te otorga hasta <strong>15% de descuento directo</strong> en restaurantes, autolavados, cafeterías y servicios en todo Campeche y Carmen. Ahorras en promedio más de <strong>$600 MXN al mes</strong> con solo portar tu distintivo.</>
+              )}
             </p>
           </div>
         </motion.div>
@@ -1642,7 +1584,9 @@ const Home: React.FC = () => {
             PUNTOS DE VENTA FÍSICOS
           </h2>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.88rem', lineHeight: 1.5, maxWidth: '420px', margin: '0 auto' }}>
-            Adquiere tu distintivo oficial de $90 MXN de forma presencial e inmediata en los siguientes puntos oficiales:
+            {isJuarez
+              ? 'Adquiere tu distintivo digital oficial de $80 MXN en línea o solicita información en puntos autorizados en Juárez:'
+              : 'Adquiere tu distintivo oficial de $90 MXN de forma presencial e inmediata en los siguientes puntos oficiales:'}
           </p>
         </div>
 

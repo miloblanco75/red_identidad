@@ -48,8 +48,8 @@ function App() {
 
   return (
     <AuthProvider>
-      <CityProvider>
-        <Router>
+      <Router>
+        <CityProvider>
           <React.Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0B0B0E', color: '#F5F5F7' }}>Cargando...</div>}>
             <Routes>
               {/* Si entra desde juarez.redidentidad.app, la raíz '/' muestra Vive Juárez; sino, muestra Campeche */}
@@ -82,8 +82,8 @@ function App() {
               </Route>
             </Routes>
           </React.Suspense>
-        </Router>
-      </CityProvider>
+        </CityProvider>
+      </Router>
     </AuthProvider>
   );
 }
