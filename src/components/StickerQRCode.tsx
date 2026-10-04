@@ -25,10 +25,27 @@ export const StickerQRCode: React.FC<StickerQRCodeProps> = ({
     normLevel.includes('pink') || 
     normValue.includes('rosa');
 
+  const isJuarez =
+    normLevel.includes('juarez') ||
+    normLevel.includes('juarense') ||
+    normValue.includes('city=juarez') ||
+    normValue.includes('juarez') ||
+    normValue.startsWith('vj') ||
+    normValue.includes('c=vj');
+
   // Garantizar que la URL sea directa a la plataforma de registro
-  const targetUrl = value.startsWith('http') 
-    ? value 
-    : `https://redidentidad.vercel.app/registro?c=${encodeURIComponent(value || 'TUL0035')}`;
+  let targetUrl = '';
+  if (value.startsWith('http')) {
+    targetUrl = value;
+    if (isJuarez && !targetUrl.includes('city=juarez')) {
+      targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'city=juarez';
+    }
+  } else {
+    const defaultCode = isJuarez ? 'VJ0001' : 'TUL0035';
+    const codeParam = encodeURIComponent(value || defaultCode);
+    const cityParam = isJuarez ? '&city=juarez' : '';
+    targetUrl = `https://redidentidad.vercel.app/registro?c=${codeParam}${cityParam}`;
+  }
 
   const qrFgColor = isRosa ? '#FF5C9D' : '#000000';
 
@@ -36,9 +53,15 @@ export const StickerQRCode: React.FC<StickerQRCodeProps> = ({
     <QRCodeSVG
       value={targetUrl}
       size={size}
-      level="M"
+      level={isJuarez ? "H" : "M"}
       bgColor="#FFFFFF"
       fgColor={qrFgColor}
+      imageSettings={isJuarez ? {
+        src: '/vive_juarez_qr_icon.png',
+        height: Math.max(16, Math.round(size * 0.24)),
+        width: Math.max(16, Math.round(size * 0.24)),
+        excavate: true,
+      } : undefined}
       style={{ display: 'block', margin: '0 auto', ...style }}
       className={className}
     />

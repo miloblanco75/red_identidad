@@ -8,11 +8,11 @@ interface EnvelopeStickerDesignerProps {
 
 export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = ({ onBack }) => {
   // Settings
-  const [selectedStickerType, setSelectedStickerType] = useState<'campechana_rosa' | 'campechana_negra' | 'campechana_blanca' | 'sobre'>('campechana_rosa');
+  const [selectedStickerType, setSelectedStickerType] = useState<'campechana_rosa' | 'campechana_negra' | 'campechana_blanca' | 'juarense_oficial' | 'sobre'>('campechana_rosa');
   const [useExactImage] = useState<boolean>(false);
   const [headerText, setHeaderText] = useState<string>('RED IDENTIDAD');
   const [bottomLeftText, setBottomLeftText] = useState<string>('ESCANEA Y CONÓCENOS');
-  const [priceNumber] = useState<string>('90');
+  const [priceNumber, setPriceNumber] = useState<string>('90');
   const [priceSubtext] = useState<string>('PESOS');
   const [qrUrl, setQrUrl] = useState<string>('https://redidentidad.vercel.app/registro?c=PASE-DEMO-001');
 
@@ -58,7 +58,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
     setIsLoadingStickers(true);
     try {
       const list = Array.from({ length: totalQuantity }).map((_, i) => ({
-        code: `DEMO-${String(i + 1).padStart(4, '0')}`,
+        code: `${selectedStickerType === 'juarense_oficial' ? 'VJ' : 'DEMO'}-${String(i + 1).padStart(4, '0')}`,
         url: qrUrl
       }));
       setEnvelopeStickers(list);
@@ -68,6 +68,18 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
       setIsLoadingStickers(false);
     }
   };
+
+  useEffect(() => {
+    if (selectedStickerType === 'juarense_oficial') {
+      setPriceNumber('80');
+      setHeaderText('VIVE JUÁREZ');
+      setQrUrl('https://redidentidad.vercel.app/registro?c=VJ-DEMO-001&city=juarez');
+    } else {
+      setPriceNumber('90');
+      setHeaderText('RED IDENTIDAD');
+      setQrUrl('https://redidentidad.vercel.app/registro?c=PASE-DEMO-001');
+    }
+  }, [selectedStickerType]);
 
   useEffect(() => {
     fetchEnvelopeStickers();
@@ -277,6 +289,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
               onChange={(e) => setSelectedStickerType(e.target.value as any)}
               style={{ width: '100%', padding: '0.9rem 1rem', backgroundColor: '#141416', border: '1.5px solid #D4AF37', borderRadius: '12px', color: '#FFF', fontSize: '1.05rem', fontWeight: 800, outline: 'none', cursor: 'pointer' }}
             >
+              <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Vive Juárez — Distintivo Oficial ($80)</option>
               <option value="campechana_rosa" style={{ color: '#000' }}>🌸 Campechana — Rosa (Oficial QR)</option>
               <option value="campechana_negra" style={{ color: '#000' }}>🖤 Campechana — Negra (Oficial QR)</option>
               <option value="campechana_blanca" style={{ color: '#000' }}>🤍 Campechana — Blanca (Oficial QR)</option>
@@ -307,14 +320,14 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                   fontFamily: 'system-ui, -apple-system, sans-serif',
                   position: 'relative',
                   overflow: 'hidden',
-                  border: selectedStickerType === 'campechana_rosa' ? '3px solid #FD80BF' : selectedStickerType === 'campechana_blanca' ? '3px solid #D4AF37' : '3px solid #333'
+                  border: selectedStickerType === 'juarense_oficial' ? '3px solid #D4AF37' : selectedStickerType === 'campechana_rosa' ? '3px solid #FD80BF' : selectedStickerType === 'campechana_blanca' ? '3px solid #D4AF37' : '3px solid #333'
                 }}
               >
                 <div style={{
                   width: '100%',
-                  backgroundColor: selectedStickerType === 'campechana_rosa' ? '#FD80BF' : selectedStickerType === 'campechana_blanca' ? '#F4F4F6' : '#121212',
+                  backgroundColor: selectedStickerType === 'juarense_oficial' ? '#991B1B' : selectedStickerType === 'campechana_rosa' ? '#FD80BF' : selectedStickerType === 'campechana_blanca' ? '#F4F4F6' : '#121212',
                   color: selectedStickerType === 'campechana_blanca' ? '#121212' : '#FFFFFF',
-                  border: selectedStickerType === 'campechana_blanca' ? '1.5px solid #D4AF37' : 'none',
+                  border: (selectedStickerType === 'juarense_oficial' || selectedStickerType === 'campechana_blanca') ? '1.5px solid #D4AF37' : 'none',
                   fontSize: '13px',
                   fontWeight: '900',
                   letterSpacing: '0.04em',
@@ -326,7 +339,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                   justifyContent: 'center',
                   gap: '4px'
                 }}>
-                  {selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 CAMPECHANA BLANCA' : headerText}
+                  {selectedStickerType === 'juarense_oficial' ? '🌵 VIVE JUÁREZ' : selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 CAMPECHANA BLANCA' : headerText}
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: 'auto' }}>
@@ -393,8 +406,8 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                     boxSizing: 'border-box'
                   }}
                 >
-                  <div style={{ fontSize: '6.5px', fontWeight: '900', color: selectedStickerType === 'campechana_rosa' ? '#FF5C9D' : '#000', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {selectedStickerType === 'campechana_rosa' ? '🌸 ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 BLANCA' : headerText}
+                  <div style={{ fontSize: '6.5px', fontWeight: '900', color: selectedStickerType === 'juarense_oficial' ? '#991B1B' : selectedStickerType === 'campechana_rosa' ? '#FF5C9D' : '#000', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {selectedStickerType === 'juarense_oficial' ? '🌵 VIVE JUÁREZ' : selectedStickerType === 'campechana_rosa' ? '🌸 ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 BLANCA' : headerText}
                   </div>
                   <StickerQRCode value={stickerItem.url || qrUrl} level={selectedStickerType} size={42} />
                   <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', fontSize: '4.5px', fontWeight: '800', color: '#000' }}>
@@ -608,8 +621,8 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
               fontFamily: 'system-ui, -apple-system, sans-serif'
             }}
           >
-            <div style={{ fontSize: `${stickerSizeCm <= 3.2 ? 6.5 : 9}pt`, fontWeight: '900', letterSpacing: '0.01em', textAlign: 'center', lineHeight: '1', color: selectedStickerType === 'campechana_rosa' ? '#FF5C9D' : '#000000' }}>
-              {selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 CAMPECHANA BLANCA' : headerText}
+            <div style={{ fontSize: `${stickerSizeCm <= 3.2 ? 6.5 : 9}pt`, fontWeight: '900', letterSpacing: '0.01em', textAlign: 'center', lineHeight: '1', color: selectedStickerType === 'juarense_oficial' ? '#991B1B' : selectedStickerType === 'campechana_rosa' ? '#FF5C9D' : '#000000' }}>
+              {selectedStickerType === 'juarense_oficial' ? '🌵 VIVE JUÁREZ' : selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 CAMPECHANA BLANCA' : headerText}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>

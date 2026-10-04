@@ -15,6 +15,12 @@ const Admin: React.FC = () => {
   const [pin, setPin] = useState('');
   const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope' | 'status' | 'sorteos' | 'messenger' | 'loyalty' | 'prensa'>('codes');
 
+  // Master City Context Filter ('all' | 'campeche' | 'juarez')
+  const [adminCity, setAdminCity] = useState<'all' | 'campeche' | 'juarez'>('all');
+  const [codeCity, setCodeCity] = useState<'campeche' | 'juarez'>('campeche');
+  const [statusCityFilter, setStatusCityFilter] = useState<'all' | 'campeche' | 'juarez'>('all');
+  const [alliesCityFilter, setAlliesCityFilter] = useState<'all' | 'campeche' | 'juarez'>('all');
+
   // Print states
   const [printStickers, setPrintStickers] = useState<any[]>([]);
   const [printCount, setPrintCount] = useState(35);
@@ -74,6 +80,8 @@ const Admin: React.FC = () => {
 
   const formatStickerLabel = (lbl: string) => {
     switch (lbl?.toLowerCase()) {
+      case 'juarense_oficial': return '🌵 Vive Juárez Oficial';
+      case 'juarez_oficial': return '🌵 Vive Juárez Oficial';
       case 'campechano_negra': return 'Campechano Negra';
       case 'campechano_blanca': return 'Campechano Blanca';
       case 'campechana_blanca': return 'Campechana Blanca';
@@ -113,7 +121,7 @@ const Admin: React.FC = () => {
         from += step;
       }
 
-      const officialPrefixes = ['CB-', 'CN-', 'CRN-', 'CRB-', 'BLAN-', 'CAB-', 'ROSA-', 'NEGR-'];
+      const officialPrefixes = ['CB-', 'CN-', 'CRN-', 'CRB-', 'BLAN-', 'CAB-', 'ROSA-', 'NEGR-', 'VJ', 'VJ-', 'JUAR'];
       const officialGoldSilver = ['RED-001', 'RED-002', 'RED-GOLD3ESBY', 'RED-GOLD376MF', 'RED-TESORO2U5BU'];
 
       const officialStickers = allFetched.filter(s => {
@@ -123,6 +131,7 @@ const Admin: React.FC = () => {
         if (officialGoldSilver.includes(code)) return true;
         const lvl = (s.level || '').toLowerCase();
         if (lvl === 'white' || lvl === 'archivado') return false;
+        if (lvl.includes('juarez') || lvl.includes('juarense') || code.startsWith('VJ')) return true;
         return officialPrefixes.some(p => code.startsWith(p));
       });
       setAllStickers(officialStickers);
@@ -236,8 +245,11 @@ const Admin: React.FC = () => {
         throw new Error('Los Códigos del Tesoro deben ser Nivel Gold (VIP).');
       }
 
+      const isJuarez = codeCity === 'juarez' || level === 'juarense_oficial' || prefix.toUpperCase().startsWith('VJ');
+      const cityParam = isJuarez ? '&city=juarez' : '';
+
       const newStickers = [];
-      const csvRows = ['CÓDIGO,ENLACE_WEB,URL_IMAGEN_QR,NIVEL,TIPO,NUMERO_MIEMBRO'];
+      const csvRows = ['CÓDIGO,ENLACE_WEB,URL_IMAGEN_QR,NIVEL,TIPO,NUMERO_MIEMBRO,CIUDAD'];
 
       for (let i = 0; i < quantity; i++) {
         const num = startNumber + i;
@@ -250,11 +262,11 @@ const Admin: React.FC = () => {
         });
 
         const route = codeType === 'tesoro' ? 'tesoro' : 'registro';
-        const link = `https://redidentidad.vercel.app/${route}?c=${uniqueCode}`;
+        const link = `https://redidentidad.vercel.app/${route}?c=${uniqueCode}${cityParam}`;
         const isRosaLevel = level.toLowerCase().includes('rosa') || level.toLowerCase().includes('pink');
         const qrColorParam = isRosaLevel ? '&color=253-128-191' : '';
         const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400${qrColorParam}&data=${encodeURIComponent(link)}`;
-        csvRows.push(`${uniqueCode},${link},${qrImageUrl},${level},${codeType.toUpperCase()},${num}`);
+        csvRows.push(`${uniqueCode},${link},${qrImageUrl},${level},${codeType.toUpperCase()},${num},${isJuarez ? 'Ciudad Juárez' : 'Campeche'}`);
       }
 
       const firstCode = `${prefix.toUpperCase()}${String(startNumber).padStart(4, '0')}`;
@@ -273,12 +285,12 @@ const Admin: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const linkEl = document.createElement('a');
       linkEl.setAttribute('href', url);
-      linkEl.setAttribute('download', `codigos_red_${level}_${quantity}_${new Date().getTime()}.csv`);
+      linkEl.setAttribute('download', `codigos_${isJuarez ? 'juarez' : 'campeche'}_${level}_${quantity}_${new Date().getTime()}.csv`);
       document.body.appendChild(linkEl);
       linkEl.click();
       document.body.removeChild(linkEl);
 
-      setSuccessMsg(`¡${quantity} códigos secuenciales generados (${firstCode} a ${lastCode})!`);
+      setSuccessMsg(`¡${quantity} códigos secuenciales generados para ${isJuarez ? 'Ciudad Juárez' : 'Campeche'} (${firstCode} a ${lastCode})!`);
       setStartNumber(startNumber + quantity);
     } catch (err: any) {
       setErrorMsg(err.message || 'Error al generar los códigos.');
@@ -289,26 +301,53 @@ const Admin: React.FC = () => {
 
   const handleAutoCalcNextNumber = async () => {
     try {
-      // Excluir membresías digitales (DIG-%), pases de cortesía (TRIAL-%) y códigos de prueba/ruido para que solo calcule sobre calcomanías físicas reales
-      const { data } = await supabase
+      const isJuarez = codeCity === 'juarez' || level === 'juarense_oficial' || prefix.toUpperCase().startsWith('VJ');
+      let query = supabase
         .from('stickers')
         .select('member_number')
         .not('code', 'ilike', 'DIG-%')
         .not('code', 'ilike', 'TRIAL-%')
         .not('code', 'ilike', '%TEST%')
-        .neq('code', 'RED-')
+        .neq('code', 'RED-');
+
+      if (isJuarez) {
+        query = (query as any).or('code.ilike.VJ%,level.eq.juarense_oficial');
+      } else {
+        query = (query as any).not('code', 'ilike', 'VJ%').neq('level', 'juarense_oficial');
+      }
+
+      const { data } = await query
         .order('member_number', { ascending: false })
         .limit(1);
 
       if (data && data.length > 0 && data[0].member_number) {
         const nextNum = Number(data[0].member_number) + 1;
         setStartNumber(nextNum);
-        setSuccessMsg(`Número libre para calcomanías físicas: ${nextNum}`);
+        setSuccessMsg(`Siguiente número libre para ${isJuarez ? 'Ciudad Juárez' : 'Campeche'}: ${nextNum}`);
       } else {
         setStartNumber(1);
+        setSuccessMsg(`Iniciando numeración en #1 para ${isJuarez ? 'Ciudad Juárez' : 'Campeche'}`);
       }
     } catch (e) {
-      setStartNumber(100);
+      setStartNumber(1);
+    }
+  };
+
+  const handleClearJuarezCodes = async () => {
+    if (confirm('¿Estás seguro de borrar ÚNICAMENTE los códigos sin reclamar de Ciudad Juárez (VJ-)? Las calcomanías activadas por usuarios NO se borrarán.')) {
+      try {
+        const { error } = await supabase
+          .from('stickers')
+          .delete()
+          .is('phone', null)
+          .or('level.eq.juarense_oficial,code.ilike.VJ%');
+
+        if (error) throw error;
+        setSuccessMsg('Códigos sin reclamar de Ciudad Juárez eliminados correctamente.');
+        fetchStickersStatus();
+      } catch (err: any) {
+        setErrorMsg('Error al eliminar códigos de Juárez: ' + (err.message || ''));
+      }
     }
   };
 
@@ -458,7 +497,11 @@ const Admin: React.FC = () => {
         .limit(printCount);
       
       if (printLevel !== 'all') {
-        query = (query as any).ilike('level', `%${printLevel}%`);
+        if (printLevel === 'juarense_oficial') {
+          query = (query as any).or('level.eq.juarense_oficial,code.ilike.VJ%');
+        } else {
+          query = (query as any).ilike('level', `%${printLevel}%`);
+        }
       }
       
       let { data } = await query;
@@ -487,7 +530,8 @@ const Admin: React.FC = () => {
       // 4. FAIL-SAFE ABSOLUTO: Si la tabla no devuelve códigos suficientes, generar los 50 códigos en caliente
       if (!data || data.length === 0) {
         const generated = [];
-        const prefix = printLevel !== 'all' ? (printLevel.includes('rosa') ? 'ROSA' : printLevel.substring(0, 4).toUpperCase()) : 'ROSA';
+        const isJuar = printLevel === 'juarense_oficial';
+        const prefix = isJuar ? 'VJ' : (printLevel !== 'all' ? (printLevel.includes('rosa') ? 'ROSA' : printLevel.substring(0, 4).toUpperCase()) : 'ROSA');
         for (let i = 1; i <= printCount; i++) {
           const numStr = String(i).padStart(4, '0');
           const code = `${prefix}-${numStr}`;
@@ -663,6 +707,109 @@ const Admin: React.FC = () => {
       <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', marginTop: '1rem' }}>Panel Maestro</h1>
       <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Administra tu Red Identidad.</p>
 
+      {/* Master City Switcher Banner */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '0.8rem',
+        padding: '0.9rem 1.2rem',
+        background: adminCity === 'juarez' 
+          ? 'linear-gradient(135deg, rgba(153, 27, 27, 0.3) 0%, rgba(20, 20, 25, 0.9) 100%)'
+          : adminCity === 'campeche'
+          ? 'linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(20, 20, 25, 0.9) 100%)'
+          : 'linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(20, 20, 25, 0.9) 100%)',
+        border: adminCity === 'juarez' ? '1.5px solid #EF4444' : adminCity === 'campeche' ? '1.5px solid var(--accent-gold)' : '1px solid var(--glass-border)',
+        borderRadius: '18px',
+        marginBottom: '1.5rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <Globe size={22} color={adminCity === 'juarez' ? '#F87171' : adminCity === 'campeche' ? 'var(--accent-gold)' : '#FFF'} />
+          <div>
+            <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--text-dim)', letterSpacing: '0.1em', fontWeight: 700 }}>
+              Plaza / Ciudad de Administración
+            </div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: adminCity === 'juarez' ? '#F87171' : adminCity === 'campeche' ? 'var(--accent-gold)' : '#FFF' }}>
+              {adminCity === 'all' && '🌐 Vista Global (Todas las Plazas)'}
+              {adminCity === 'campeche' && '🏰 San Francisco de Campeche & Carmen'}
+              {adminCity === 'juarez' && '🌵 Ciudad Juárez (Vive Juárez)'}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={() => {
+              setAdminCity('all');
+              setStatusCityFilter('all');
+              setAlliesCityFilter('all');
+            }}
+            style={{
+              padding: '0.55rem 0.9rem',
+              borderRadius: '10px',
+              border: adminCity === 'all' ? '1.5px solid #FFF' : '1px solid rgba(255,255,255,0.1)',
+              backgroundColor: adminCity === 'all' ? '#FFF' : 'rgba(255,255,255,0.05)',
+              color: adminCity === 'all' ? '#000' : '#FFF',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: 'pointer'
+            }}
+          >
+            🌐 Todas
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAdminCity('campeche');
+              setCodeCity('campeche');
+              setPrefix('RED-');
+              setLevel('campechana_rosa');
+              setStatusCityFilter('campeche');
+              setAlliesCityFilter('campeche');
+              setPrintLevel('campechana_rosa');
+            }}
+            style={{
+              padding: '0.55rem 0.9rem',
+              borderRadius: '10px',
+              border: adminCity === 'campeche' ? '1.5px solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.1)',
+              backgroundColor: adminCity === 'campeche' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.05)',
+              color: adminCity === 'campeche' ? '#000' : '#FFF',
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: 'pointer'
+            }}
+          >
+            🏰 Campeche
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAdminCity('juarez');
+              setCodeCity('juarez');
+              setPrefix('VJ-');
+              setLevel('juarense_oficial');
+              setStatusCityFilter('juarez');
+              setAlliesCityFilter('juarez');
+              setPrintLevel('juarense_oficial');
+            }}
+            style={{
+              padding: '0.55rem 0.9rem',
+              borderRadius: '10px',
+              border: adminCity === 'juarez' ? '1.5px solid #EF4444' : '1px solid rgba(255,255,255,0.1)',
+              backgroundColor: adminCity === 'juarez' ? '#DC2626' : 'rgba(255,255,255,0.05)',
+              color: '#FFF',
+              fontWeight: 800,
+              fontSize: '0.8rem',
+              cursor: 'pointer'
+            }}
+          >
+            🌵 Ciudad Juárez
+          </button>
+        </div>
+      </div>
+
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
         <button 
@@ -737,6 +884,55 @@ const Admin: React.FC = () => {
       {activeTab === 'codes' && (
         <section className="glass" style={{ padding: '2rem', borderRadius: '24px' }}>
           <form onSubmit={handleGenerateCodes}>
+            {/* Selector de Plaza para el Lote */}
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--accent-gold)', marginBottom: '0.6rem', letterSpacing: '0.1em', fontWeight: 800 }}>
+                📍 Plaza / Ciudad para este Lote de Códigos
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCodeCity('campeche');
+                    setPrefix('RED-');
+                    setLevel('campechana_rosa');
+                  }}
+                  style={{
+                    padding: '0.8rem',
+                    borderRadius: '12px',
+                    border: codeCity === 'campeche' ? '2px solid var(--accent-gold)' : '1px solid var(--glass-border)',
+                    backgroundColor: codeCity === 'campeche' ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
+                    color: codeCity === 'campeche' ? 'var(--accent-gold)' : '#FFF',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🏰 Campeche (Red Identidad)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCodeCity('juarez');
+                    setPrefix('VJ-');
+                    setLevel('juarense_oficial');
+                  }}
+                  style={{
+                    padding: '0.8rem',
+                    borderRadius: '12px',
+                    border: codeCity === 'juarez' ? '2px solid #EF4444' : '1px solid var(--glass-border)',
+                    backgroundColor: codeCity === 'juarez' ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.04)',
+                    color: codeCity === 'juarez' ? '#FCA5A5' : '#FFF',
+                    fontWeight: 800,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🌵 Ciudad Juárez (Vive Juárez)
+                </button>
+              </div>
+            </div>
+
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Propósito del Código</label>
               <select 
@@ -747,27 +943,36 @@ const Admin: React.FC = () => {
                 }}
                 style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none' }}
               >
-                <option value="normal" style={{ color: '#000' }}>Para Sobres (Registro Normal)</option>
+                <option value="normal" style={{ color: '#000' }}>Para Sobres / Activación (Registro Normal)</option>
                 <option value="tesoro" style={{ color: '#000' }}>Para Esconder (Tesoro VIP)</option>
               </select>
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Tipo de Calcomanía</label>
+              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Tipo de Calcomanía / Distintivo</label>
               <select 
                 value={level} 
                 onChange={(e) => setLevel(e.target.value)}
                 disabled={codeType === 'tesoro'}
                 style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', outline: 'none', opacity: codeType === 'tesoro' ? 0.5 : 1 }}
               >
-                <option value="campechano_negra" style={{ color: '#000' }}>Campechano — Negra</option>
-                <option value="campechano_blanca" style={{ color: '#000' }}>Campechano — Blanca</option>
-                <option value="campechana_blanca" style={{ color: '#000' }}>Campechana — Blanca</option>
-                <option value="campechana_negra" style={{ color: '#000' }}>Campechana — Negra</option>
-                <option value="campechana_rosa" style={{ color: '#000' }}>Campechana — Rosa</option>
-                <option value="carmelita_negro" style={{ color: '#000' }}>Carmelita — Negro</option>
-                <option value="carmelita_blanca" style={{ color: '#000' }}>Carmelita — Blanca</option>
-                <option value="carmelita_rosa" style={{ color: '#000' }}>Carmelita — Rosa</option>
+                {codeCity === 'juarez' ? (
+                  <>
+                    <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Vive Juárez — Distintivo Oficial Único ($80 Pase QR)</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="campechana_rosa" style={{ color: '#000' }}>🌸 Campechana — Rosa (Oficial QR)</option>
+                    <option value="campechana_negra" style={{ color: '#000' }}>🖤 Campechana — Negra (Oficial QR)</option>
+                    <option value="campechana_blanca" style={{ color: '#000' }}>🤍 Campechana — Blanca (Oficial QR)</option>
+                    <option value="campechano_negra" style={{ color: '#000' }}>Campechano — Negra</option>
+                    <option value="campechano_blanca" style={{ color: '#000' }}>Campechano — Blanca</option>
+                    <option value="carmelita_negro" style={{ color: '#000' }}>Carmelita — Negro</option>
+                    <option value="carmelita_blanca" style={{ color: '#000' }}>Carmelita — Blanca</option>
+                    <option value="carmelita_rosa" style={{ color: '#000' }}>Carmelita — Rosa</option>
+                    <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Vive Juárez — Distintivo Oficial Único</option>
+                  </>
+                )}
               </select>
             </div>
 
@@ -799,21 +1004,39 @@ const Admin: React.FC = () => {
             </div>
 
             {/* Vista previa de los códigos a generar */}
-            <div style={{ padding: '0.8rem 1rem', backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.8rem', color: 'var(--text-dim)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>Vista previa de secuencia:</span>
-              <strong style={{ color: 'var(--accent-gold)' }}>
-                {prefix.toUpperCase()}{String(startNumber).padStart(4, '0')} ... {prefix.toUpperCase()}{String(startNumber + quantity - 1).padStart(4, '0')}
-              </strong>
+            <div style={{ padding: '0.8rem 1rem', backgroundColor: 'rgba(212,175,55,0.08)', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.8rem', color: 'var(--text-dim)', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Secuencia de códigos:</span>
+                <strong style={{ color: 'var(--accent-gold)' }}>
+                  {prefix.toUpperCase()}{String(startNumber).padStart(4, '0')} ... {prefix.toUpperCase()}{String(startNumber + quantity - 1).padStart(4, '0')}
+                </strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', flexWrap: 'wrap', gap: '4px' }}>
+                <span>Destino de escaneo:</span>
+                <span style={{ color: '#FFF', fontFamily: 'monospace' }}>
+                  https://redidentidad.vercel.app/registro?c={prefix.toUpperCase()}{String(startNumber).padStart(4, '0')}{codeCity === 'juarez' || level === 'juarense_oficial' ? '&city=juarez' : ''}
+                </span>
+              </div>
             </div>
 
             <button type="submit" disabled={isGenerating} style={{ width: '100%', padding: '1rem', borderRadius: '12px', backgroundColor: isGenerating ? 'rgba(255,255,255,0.1)' : 'var(--accent-gold)', color: isGenerating ? '#FFF' : '#121212', fontWeight: 700, border: 'none', display: 'flex', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '1.5rem' }}>
-              {isGenerating ? <Loader2 className="animate-spin" /> : <Download />} Generar Lote Secuencial y CSV
+              {isGenerating ? <Loader2 className="animate-spin" /> : <Download />} Generar Lote Secuencial y CSV ({codeCity === 'juarez' ? 'Juárez' : 'Campeche'})
             </button>
           </form>
 
           {/* Botón para limpiar pruebas y desvincular calcomanías */}
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.2rem', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.75rem', color: '#FCA5A5' }}>¿Limpiar códigos de Ciudad Juárez (VJ-) sin usar?</span>
+              <button
+                onClick={handleClearJuarezCodes}
+                style={{ padding: '0.5rem 0.9rem', borderRadius: '8px', backgroundColor: 'rgba(239,68,68,0.15)', border: '1px solid #EF4444', color: '#FCA5A5', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                <Trash2 size={14} /> Limpiar Juárez (VJ- sin usar)
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Liberar solo Calcomanía #1 (Volver virgen):</span>
               <button
                 onClick={handleResetStickerOne}
@@ -1115,6 +1338,36 @@ const Admin: React.FC = () => {
 
             {!isDigital ? (
               <>
+                {/* Selector rápido por Ciudad */}
+                <div style={{ marginBottom: '1.2rem', padding: '0.8rem 1rem', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                  <label style={{ display: 'block', fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.08em' }}>
+                    📍 Coordenadas Rápidas por Ciudad:
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setAllyLat('19.8301'); setAllyLng('-90.5349'); }}
+                      style={{ padding: '0.45rem 0.8rem', borderRadius: '8px', backgroundColor: 'rgba(212,175,55,0.12)', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      🏰 Campeche (19.8301, -90.5349)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setAllyLat('18.6481'); setAllyLng('-91.8219'); }}
+                      style={{ padding: '0.45rem 0.8rem', borderRadius: '8px', backgroundColor: 'rgba(212,175,55,0.12)', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      🌊 Carmen (18.6481, -91.8219)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setAllyLat('31.6904'); setAllyLng('-106.4245'); }}
+                      style={{ padding: '0.45rem 0.8rem', borderRadius: '8px', backgroundColor: 'rgba(239,68,68,0.2)', border: '1.5px solid #EF4444', color: '#FCA5A5', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      🌵 Ciudad Juárez (31.6904, -106.4245)
+                    </button>
+                  </div>
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.5rem', letterSpacing: '0.1em' }}>Latitud</label>
@@ -1127,7 +1380,7 @@ const Admin: React.FC = () => {
                 </div>
 
                 <div style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-                  <strong>Tip:</strong> Busca el lugar en Google Maps en tu computadora, haz clic derecho en el punto rojo y verás los números de latitud y longitud para copiarlos aquí.
+                  <strong>Tip:</strong> Puedes pulsar un botón de coordenadas rápidas arriba o buscar el lugar en Google Maps y copiar los números.
                 </div>
               </>
             ) : (
@@ -1142,12 +1395,47 @@ const Admin: React.FC = () => {
             </button>
           </form>
 
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>Tus Aliados Activos</h3>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.8rem' }}>
+            <h3 style={{ fontSize: '1.2rem', margin: 0 }}>Tus Aliados Activos</h3>
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => setAlliesCityFilter('all')}
+                style={{ padding: '0.4rem 0.8rem', borderRadius: '14px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: alliesCityFilter === 'all' ? '#FFF' : 'rgba(255,255,255,0.08)', color: alliesCityFilter === 'all' ? '#000' : '#FFF', border: 'none', cursor: 'pointer' }}
+              >
+                🌐 Todos ({savedAllies.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setAlliesCityFilter('campeche')}
+                style={{ padding: '0.4rem 0.8rem', borderRadius: '14px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: alliesCityFilter === 'campeche' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)', color: alliesCityFilter === 'campeche' ? '#000' : '#FFF', border: 'none', cursor: 'pointer' }}
+              >
+                🏰 Campeche ({savedAllies.filter(a => Number(a.lng) > -100 && !(a.name || '').toLowerCase().includes('juarez')).length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setAlliesCityFilter('juarez')}
+                style={{ padding: '0.4rem 0.8rem', borderRadius: '14px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: alliesCityFilter === 'juarez' ? '#DC2626' : 'rgba(255,255,255,0.08)', color: '#FFF', border: 'none', cursor: 'pointer' }}
+              >
+                🌵 Ciudad Juárez ({savedAllies.filter(a => Number(a.lng) <= -100 || (a.name || '').toLowerCase().includes('juarez')).length})
+              </button>
+            </div>
+          </div>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {savedAllies.length === 0 ? (
               <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', textAlign: 'center' }}>No hay aliados registrados aún.</p>
             ) : (
-              savedAllies.map(ally => (
+              savedAllies
+                .filter(ally => {
+                  const isJuarezAlly = Number(ally.lng) <= -100 || (ally.name || '').toLowerCase().includes('juarez');
+                  if (alliesCityFilter === 'juarez') return isJuarezAlly;
+                  if (alliesCityFilter === 'campeche') return !isJuarezAlly;
+                  return true;
+                })
+                .map(ally => {
+                  const isJuarezAlly = Number(ally.lng) <= -100 || (ally.name || '').toLowerCase().includes('juarez');
+                  return (
                 <div key={ally.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                     {ally.logo_url ? (
@@ -1158,7 +1446,14 @@ const Admin: React.FC = () => {
                       </div>
                     )}
                     <div>
-                      <strong style={{ display: 'block', fontSize: '1rem' }}>{ally.name}</strong>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <strong style={{ fontSize: '1rem' }}>{ally.name}</strong>
+                        {isJuarezAlly ? (
+                          <span style={{ fontSize: '0.68rem', backgroundColor: 'rgba(239,68,68,0.2)', color: '#FCA5A5', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, border: '1px solid rgba(239,68,68,0.3)' }}>🌵 Cd. Juárez</span>
+                        ) : (
+                          <span style={{ fontSize: '0.68rem', backgroundColor: 'rgba(212,175,55,0.15)', color: 'var(--accent-gold)', padding: '1px 6px', borderRadius: '4px', fontWeight: 700, border: '1px solid rgba(212,175,55,0.3)' }}>🏰 Campeche</span>
+                        )}
+                      </div>
                       {(() => {
                         const promos = parsePromotions(ally.discount);
                         if (promos.length <= 1) {
@@ -1204,7 +1499,8 @@ const Admin: React.FC = () => {
                     </button>
                   </div>
                 </div>
-              ))
+                  );
+                })
             )}
           </div>
         </section>
@@ -1407,16 +1703,29 @@ const Admin: React.FC = () => {
               </div>
 
               {!editIsDigital && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1.5rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Latitud</label>
-                    <input type="number" step="any" value={editLat} onChange={(e) => setEditLat(e.target.value)} required={!editIsDigital} style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }} />
+                <>
+                  <div style={{ marginBottom: '0.8rem', padding: '0.6rem 0.8rem', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid var(--glass-border)' }}>
+                    <label style={{ display: 'block', fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem', letterSpacing: '0.05em' }}>
+                      📍 Coordenadas Rápidas:
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                      <button type="button" onClick={() => { setEditLat('19.8301'); setEditLng('-90.5349'); }} style={{ padding: '3px 8px', borderRadius: '6px', backgroundColor: 'rgba(212,175,55,0.15)', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)', fontSize: '0.72rem', cursor: 'pointer' }}>🏰 Campeche</button>
+                      <button type="button" onClick={() => { setEditLat('18.6481'); setEditLng('-91.8219'); }} style={{ padding: '3px 8px', borderRadius: '6px', backgroundColor: 'rgba(212,175,55,0.15)', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)', fontSize: '0.72rem', cursor: 'pointer' }}>🌊 Carmen</button>
+                      <button type="button" onClick={() => { setEditLat('31.6904'); setEditLng('-106.4245'); }} style={{ padding: '3px 8px', borderRadius: '6px', backgroundColor: 'rgba(239,68,68,0.2)', border: '1px solid #EF4444', color: '#FCA5A5', fontSize: '0.72rem', cursor: 'pointer' }}>🌵 Cd. Juárez</button>
+                    </div>
                   </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Longitud</label>
-                    <input type="number" step="any" value={editLng} onChange={(e) => setEditLng(e.target.value)} required={!editIsDigital} style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }} />
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1.5rem' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Latitud</label>
+                      <input type="number" step="any" value={editLat} onChange={(e) => setEditLat(e.target.value)} required={!editIsDigital} style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }} />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-dim)', marginBottom: '0.4rem' }}>Longitud</label>
+                      <input type="number" step="any" value={editLng} onChange={(e) => setEditLng(e.target.value)} required={!editIsDigital} style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '0.95rem', outline: 'none' }} />
+                    </div>
                   </div>
-                </div>
+                </>
               )}
 
               <div style={{ display: 'flex', gap: '0.8rem' }}>
@@ -1551,6 +1860,7 @@ const Admin: React.FC = () => {
                   style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.08)', border: '1.5px solid var(--accent-gold)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', fontWeight: 800, outline: 'none' }}
                 >
                   <option value="all" style={{ color: '#000' }}>Todos los tipos (Cargar disponibles)</option>
+                  <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Vive Juárez — Distintivo Oficial Único ($80 Pase QR)</option>
                   <option value="campechana_blanca" style={{ color: '#000' }}>🤍 Campechana — Blanca (Oficial QR)</option>
                   <option value="campechana_rosa" style={{ color: '#000' }}>🌸 Campechana — Rosa (Oficial QR)</option>
                   <option value="campechana_negra" style={{ color: '#000' }}>🖤 Campechana — Negra (Oficial QR)</option>
@@ -1612,43 +1922,48 @@ const Admin: React.FC = () => {
                   boxShadow: '0 8px 30px rgba(0,0,0,0.5)'
                 }}
               >
-                {printStickers.map((sticker: any) => (
-                  <div
-                    key={sticker.code}
-                    className="qr-card-print-item"
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '8px',
-                      backgroundColor: '#FFFFFF',
-                      color: '#000000',
-                      border: '1px dashed #B0B0B0',
-                      borderRadius: '8px',
-                      boxSizing: 'border-box'
-                    }}
-                  >
-                    <StickerQRCode
-                      value={`https://redidentidad.vercel.app/registro?c=${sticker.code}`}
-                      level={printLevel !== 'all' ? printLevel : (sticker.level || 'campechana_rosa')}
-                      size={95}
-                      style={{ width: '100%', height: 'auto', display: 'block' }}
-                    />
-                    <div style={{
-                      fontSize: '5.5pt',
-                      fontFamily: 'monospace',
-                      color: '#000000',
-                      marginTop: '1.5mm',
-                      textAlign: 'center',
-                      letterSpacing: '0.01em',
-                      lineHeight: 1.2,
-                      wordBreak: 'break-all',
-                    }}>
-                      {sticker.code}
+                {printStickers.map((sticker: any) => {
+                  const isJuarezSticker = (sticker.level || printLevel) === 'juarense_oficial' || (sticker.code || '').toUpperCase().startsWith('VJ');
+                  const targetScanUrl = `https://redidentidad.vercel.app/registro?c=${sticker.code}${isJuarezSticker ? '&city=juarez' : ''}`;
+                  return (
+                    <div
+                      key={sticker.code}
+                      className="qr-card-print-item"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '8px',
+                        backgroundColor: '#FFFFFF',
+                        color: '#000000',
+                        border: '1px dashed #B0B0B0',
+                        borderRadius: '8px',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      <StickerQRCode
+                        value={targetScanUrl}
+                        level={printLevel !== 'all' ? printLevel : (sticker.level || (isJuarezSticker ? 'juarense_oficial' : 'campechana_rosa'))}
+                        size={95}
+                        style={{ width: '100%', height: 'auto', display: 'block' }}
+                      />
+                      <div style={{
+                        fontSize: '5.5pt',
+                        fontFamily: 'monospace',
+                        color: '#000000',
+                        marginTop: '1.5mm',
+                        textAlign: 'center',
+                        letterSpacing: '0.01em',
+                        lineHeight: 1.2,
+                        wordBreak: 'break-all',
+                        fontWeight: 700
+                      }}>
+                        {isJuarezSticker ? `🌵 ${sticker.code}` : sticker.code}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <button
@@ -1694,7 +2009,7 @@ const Admin: React.FC = () => {
                 Revisa en tiempo real qué calcomanías físicas han sido escaneadas/usadas y cuáles siguen disponibles.
               </p>
             </div>
-            <div style={{ display: 'flex', gap: '0.6rem' }}>
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
               <button
                 onClick={fetchStickersStatus}
                 disabled={isStatusLoading}
@@ -1703,30 +2018,50 @@ const Admin: React.FC = () => {
                 <RefreshCw size={14} className={isStatusLoading ? 'animate-spin' : ''} /> Actualizar
               </button>
               <button
+                onClick={handleClearJuarezCodes}
+                style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(239,68,68,0.18)', border: '1px solid #EF4444', color: '#FCA5A5', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Trash2 size={14} /> Limpiar VJ (Juárez sin usar)
+              </button>
+              <button
                 onClick={handleClearCampechanaRosaNegraCodes}
                 style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
               >
-                <Trash2 size={14} /> Limpiar Campechana (Rosa / Negra / Blanca)
+                <Trash2 size={14} /> Limpiar Campechana sin usar
               </button>
             </div>
           </div>
 
           {/* Tarjetas resumen de métricas */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
             <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Generados</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total QRs</div>
               <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FFF', marginTop: '4px' }}>{allStickers.length}</div>
             </div>
 
+            <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', color: '#FCA5A5', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🌵 CIUDAD JUÁREZ</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#EF4444', marginTop: '4px' }}>
+                {allStickers.filter(s => s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar')).length}
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: 'rgba(212, 175, 55, 0.08)', border: '1px solid rgba(212, 175, 55, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🏰 CAMPECHE</div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent-gold)', marginTop: '4px' }}>
+                {allStickers.filter(s => !s.code?.startsWith('VJ') && !(s.level || '').toLowerCase().includes('juar')).length}
+              </div>
+            </div>
+
             <div style={{ backgroundColor: 'rgba(255, 68, 68, 0.08)', border: '1px solid rgba(255, 68, 68, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.7rem', color: '#FF6B6B', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🔴 USADOS / ACTIVADOS</div>
+              <div style={{ fontSize: '0.7rem', color: '#FF6B6B', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🔴 ACTIVADOS</div>
               <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FF4444', marginTop: '4px' }}>
                 {allStickers.filter(s => !!s.phone).length}
               </div>
             </div>
 
             <div style={{ backgroundColor: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.7rem', color: '#4ADE80', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🟢 DISPONIBLES / VIRGEN</div>
+              <div style={{ fontSize: '0.7rem', color: '#4ADE80', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🟢 DISPONIBLES</div>
               <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#4ADE80', marginTop: '4px' }}>
                 {allStickers.filter(s => !s.phone).length}
               </div>
@@ -1734,12 +2069,46 @@ const Admin: React.FC = () => {
           </div>
 
           {/* Filtros y Buscador */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1.5rem' }}>
+            {/* Filtro de Plaza */}
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setStatusCityFilter('all')}
+                style={{
+                  padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
+                  backgroundColor: statusCityFilter === 'all' ? '#FFF' : 'rgba(255,255,255,0.08)',
+                  color: statusCityFilter === 'all' ? '#000' : '#FFF', border: 'none', cursor: 'pointer'
+                }}
+              >
+                🌐 Todas las Plazas ({allStickers.length})
+              </button>
+              <button
+                onClick={() => setStatusCityFilter('campeche')}
+                style={{
+                  padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
+                  backgroundColor: statusCityFilter === 'campeche' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)',
+                  color: statusCityFilter === 'campeche' ? '#000' : '#FFF', border: 'none', cursor: 'pointer'
+                }}
+              >
+                🏰 Campeche ({allStickers.filter(s => !s.code?.startsWith('VJ') && !(s.level || '').toLowerCase().includes('juar')).length})
+              </button>
+              <button
+                onClick={() => setStatusCityFilter('juarez')}
+                style={{
+                  padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
+                  backgroundColor: statusCityFilter === 'juarez' ? '#DC2626' : 'rgba(255,255,255,0.08)',
+                  color: '#FFF', border: 'none', cursor: 'pointer'
+                }}
+              >
+                🌵 Ciudad Juárez ({allStickers.filter(s => s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar')).length})
+              </button>
+            </div>
+
             <div style={{ position: 'relative' }}>
               <Search size={18} color="var(--text-dim)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="text"
-                placeholder="Buscar por código (ej. RED-0001) o WhatsApp..."
+                placeholder="Buscar por código (ej. VJ0001, RED-0001) o WhatsApp..."
                 value={statusSearch}
                 onChange={(e) => setStatusSearch(e.target.value)}
                 style={{
@@ -1760,7 +2129,7 @@ const Admin: React.FC = () => {
                   color: statusFilter === 'all' ? '#121212' : '#FFF', border: 'none', cursor: 'pointer'
                 }}
               >
-                Todos ({allStickers.length})
+                Todos los estados
               </button>
 
               <button
@@ -1772,7 +2141,7 @@ const Admin: React.FC = () => {
                   border: statusFilter === 'claimed' ? '1px solid #FF4444' : 'none', cursor: 'pointer'
                 }}
               >
-                🔴 Solo Usados ({allStickers.filter(s => !!s.phone).length})
+                🔴 Solo Usados
               </button>
 
               <button
@@ -1784,7 +2153,7 @@ const Admin: React.FC = () => {
                   border: statusFilter === 'unclaimed' ? '1px solid #4ADE80' : 'none', cursor: 'pointer'
                 }}
               >
-                🟢 Solo Disponibles ({allStickers.filter(s => !s.phone).length})
+                🟢 Solo Disponibles
               </button>
             </div>
           </div>
@@ -1799,6 +2168,14 @@ const Admin: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
               {allStickers
                 .filter(s => {
+                  if (statusCityFilter === 'juarez') {
+                    const isJ = s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar');
+                    if (!isJ) return false;
+                  }
+                  if (statusCityFilter === 'campeche') {
+                    const isJ = s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar');
+                    if (isJ) return false;
+                  }
                   const matchSearch =
                     s.code?.toLowerCase().includes(statusSearch.toLowerCase()) ||
                     (s.phone && s.phone.includes(statusSearch)) ||
@@ -1812,8 +2189,9 @@ const Admin: React.FC = () => {
                   const isClaimed = !!sticker.phone;
                   const isDig = sticker.code?.startsWith('DIG-') || sticker.level === 'digital';
                   const isTrial = sticker.code?.startsWith('TRIAL-') || sticker.level === 'trial';
-                  const effectiveLevel = isDig ? 'digital' : isTrial ? 'trial' : sticker.level;
-                  const levelColor = effectiveLevel === 'digital' ? '#38BDF8' : effectiveLevel === 'trial' ? '#4ADE80' : effectiveLevel === 'gold' ? 'var(--accent-gold)' : effectiveLevel === 'silver' ? 'var(--accent-silver)' : effectiveLevel === 'campechana_rosa' ? '#FF5C9D' : effectiveLevel === 'campechana_negra' ? '#D4AF37' : 'var(--accent-white)';
+                  const isJuarSticker = sticker.code?.startsWith('VJ') || (sticker.level || '').toLowerCase().includes('juar');
+                  const effectiveLevel = isDig ? 'digital' : isTrial ? 'trial' : isJuarSticker ? 'juarense_oficial' : sticker.level;
+                  const levelColor = isJuarSticker ? '#EF4444' : effectiveLevel === 'digital' ? '#38BDF8' : effectiveLevel === 'trial' ? '#4ADE80' : effectiveLevel === 'gold' ? 'var(--accent-gold)' : effectiveLevel === 'silver' ? 'var(--accent-silver)' : effectiveLevel === 'campechana_rosa' ? '#FF5C9D' : effectiveLevel === 'campechana_negra' ? '#D4AF37' : 'var(--accent-white)';
 
                   return (
                     <div
