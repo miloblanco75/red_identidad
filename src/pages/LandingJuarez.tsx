@@ -7,7 +7,7 @@ import {
   CreditCard, Smartphone, Car, Utensils, Wine, 
   Briefcase, ArrowRight, MessageCircle, Star, Users,
   Calculator, Check, ExternalLink, Menu, X, Compass, Award,
-  Globe, QrCode, Gift
+  Globe, QrCode
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { BuyStickerModal } from '../components/BuyStickerModal';
@@ -50,13 +50,6 @@ export const LandingJuarez: React.FC = () => {
   const [selectedStickerForModal, setSelectedStickerForModal] = useState<string>('juarense_oficial');
   const [showMerchantModal, setShowMerchantModal] = useState(false);
 
-  // Estados para el Pase QR Gratuito
-  const [showFreeQrModal, setShowFreeQrModal] = useState(false);
-  const [freeQrName, setFreeQrName] = useState('');
-  const [freeQrPhone, setFreeQrPhone] = useState('');
-  const [freeQrFolio, setFreeQrFolio] = useState('');
-  const [freeQrGenerated, setFreeQrGenerated] = useState(false);
-
   // Simulador de calcomanía
   const [simulatorMode, setSimulatorMode] = useState<'car' | 'phone'>('car');
 
@@ -91,20 +84,6 @@ export const LandingJuarez: React.FC = () => {
     { id: 'j-5', name: 'Lounge 656', category: 'Entretenimiento', discount: 'Bebida de bienvenida de cortesía', zone: 'Gómez Morín' },
     { id: 'j-6', name: 'Refacciones & Detallado Frontera', category: 'Auto', discount: '10% de Descuento en accesorios y refacciones', zone: 'Av. Tecnológico' }
   ];
-
-  // Handler para generación del Pase QR Gratuito
-  const handleGenerateFreeQr = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!freeQrPhone || freeQrPhone.replace(/\D/g, '').length < 10) {
-      alert('Por favor ingresa tu número de WhatsApp a 10 dígitos.');
-      return;
-    }
-    const cleanPhone = freeQrPhone.replace(/\D/g, '').slice(-10);
-    const folio = `VJ-FREE-${cleanPhone.slice(-4) || '2026'}`;
-    setFreeQrFolio(folio);
-    setFreeQrGenerated(true);
-    setShowFreeQrModal(true);
-  };
 
   const handleOpenBuy = (stickerId: string = 'juarense_oficial') => {
     setSelectedStickerForModal(stickerId);
@@ -283,22 +262,22 @@ export const LandingJuarez: React.FC = () => {
           <div style={{ display: 'none', gap: '1.8rem', alignItems: 'center' }} className="d-lg-flex">
             <a href="#como-funciona" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>¿Cómo Funciona?</a>
             <a href="#distintivo" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>El Distintivo</a>
-            <a href="#pase-gratuito" style={{ color: '#4ade80', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Pase QR Gratis</a>
+            <a href="#pase-digital" style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Pase con QR</a>
             <a href="#aliados" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Comercios Aliados</a>
             <a href="#calculadora" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Calculadora</a>
-            <a href="#planes" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Precios ($80)</a>
+            <a href="#planes" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Membresía ($80)</a>
             <a href="#negocios" style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Para Negocios</a>
           </div>
 
           {/* Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <button 
-              onClick={() => setShowFreeQrModal(true)}
+              onClick={() => goToApp('/app')}
               className="landing-btn-glass"
               style={{ padding: '0.65rem 1.15rem', fontSize: '0.86rem' }}
             >
-              <QrCode size={16} color="#4ade80" />
-              <span>Pase QR Gratis</span>
+              <Smartphone size={16} />
+              <span>Abrir App</span>
             </button>
 
             <button 
@@ -345,14 +324,14 @@ export const LandingJuarez: React.FC = () => {
             >
               <a href="#como-funciona" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>¿Cómo Funciona?</a>
               <a href="#distintivo" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>El Distintivo Oficial Único</a>
-              <a href="#pase-gratuito" onClick={() => setMobileMenuOpen(false)} style={{ color: '#4ade80', textDecoration: 'none', fontSize: '1rem', fontWeight: 600 }}>Pase QR Gratuito ($0 MXN)</a>
+              <a href="#pase-digital" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '1rem', fontWeight: 600 }}>Tu Pase con Código QR</a>
               <a href="#aliados" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Comercios en Cd. Juárez</a>
               <a href="#calculadora" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Calculadora de Ahorro</a>
               <a href="#puntos-venta" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Puntos de Entrega</a>
-              <a href="#planes" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Planes ($0 / $80 MXN)</a>
+              <a href="#planes" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Membresía ($80 MXN)</a>
               <a href="#negocios" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '1rem', fontWeight: 600 }}>Afiliar mi Negocio</a>
               <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem' }}>
-                <button onClick={() => { setMobileMenuOpen(false); setShowFreeQrModal(true); }} className="landing-btn-glass" style={{ flex: 1, padding: '0.75rem', fontSize: '0.85rem' }}>Pase QR Gratis</button>
+                <button onClick={() => { setMobileMenuOpen(false); goToApp('/app'); }} className="landing-btn-glass" style={{ flex: 1, padding: '0.75rem', fontSize: '0.85rem' }}>Abrir App</button>
                 <button onClick={() => { setMobileMenuOpen(false); handleOpenBuy('juarense_oficial'); }} className="landing-btn-gold" style={{ flex: 1, padding: '0.75rem', fontSize: '0.85rem' }}>Distintivo $80</button>
               </div>
             </motion.div>
@@ -403,7 +382,7 @@ export const LandingJuarez: React.FC = () => {
                 marginBottom: '2.2rem',
                 maxWidth: '560px'
               }}>
-                <strong>Vive Juárez</strong> es el distintivo digital oficial y tu <strong>pase QR gratuito</strong> para obtener <strong>hasta un 15% de descuento en comercios y restaurantes locales</strong> de Ciudad Juárez, impulsando la economía de nuestra gente.
+                <strong>Vive Juárez</strong> es el distintivo digital oficial por <strong>$80 MXN</strong> que se convierte en tu <strong>pase digital con código QR</strong> en tu smartphone, con el logotipo oficial incrustado para obtener <strong>hasta un 15% de descuento en comercios y restaurantes aliados</strong> de Ciudad Juárez.
               </p>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '2.5rem' }}>
@@ -417,12 +396,12 @@ export const LandingJuarez: React.FC = () => {
                 </button>
 
                 <button 
-                  onClick={() => setShowFreeQrModal(true)}
+                  onClick={() => goToApp('/app')}
                   className="landing-btn-glass"
-                  style={{ padding: '1rem 1.8rem', fontSize: '1.05rem', borderColor: 'rgba(74,222,128,0.4)', color: '#4ade80' }}
+                  style={{ padding: '1rem 1.8rem', fontSize: '1.05rem' }}
                 >
-                  <QrCode size={19} />
-                  <span>Pase QR Gratuito ($0)</span>
+                  <Smartphone size={19} />
+                  <span>Abrir App</span>
                 </button>
               </div>
 
@@ -432,16 +411,16 @@ export const LandingJuarez: React.FC = () => {
                   <span>Distintivo 100% digital e inmediato ($80 MXN)</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <CheckCircle2 size={16} color="#4ade80" />
-                  <span>Pase QR gratuito con escudo oficial inserto</span>
+                  <CheckCircle2 size={16} color="var(--accent-gold)" />
+                  <span>Tu distintivo se convierte en tu pase con código QR</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <CheckCircle2 size={16} color="var(--accent-gold)" />
-                  <span>Descuentos directos en Juárez de hasta 15%</span>
+                  <span>Código QR con el escudo oficial Vive Juárez insertado al centro</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <CheckCircle2 size={16} color="var(--accent-gold)" />
-                  <span>Calcomanías físicas: próximamente</span>
+                  <span>Calcomanías físicas: próximamente en puntos autorizados</span>
                 </div>
               </div>
             </div>
@@ -514,10 +493,13 @@ export const LandingJuarez: React.FC = () => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
                   <div 
-                    onClick={() => setShowFreeQrModal(true)}
+                    onClick={() => {
+                      const el = document.getElementById('pase-digital');
+                      if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }}
                     style={{
-                      background: 'rgba(74, 222, 128, 0.08)',
-                      border: '1px solid rgba(74, 222, 128, 0.25)',
+                      background: 'rgba(212, 175, 55, 0.08)',
+                      border: '1px solid rgba(212, 175, 55, 0.25)',
                       borderRadius: '12px',
                       padding: '0.8rem',
                       display: 'flex',
@@ -530,17 +512,17 @@ export const LandingJuarez: React.FC = () => {
                       width: '44px',
                       height: '44px',
                       borderRadius: '8px',
-                      background: 'rgba(74, 222, 128, 0.15)',
+                      background: 'rgba(212, 175, 55, 0.15)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: '#4ade80'
+                      color: 'var(--accent-gold)'
                     }}>
                       <QrCode size={22} />
                     </div>
                     <div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#4ade80' }}>Pase QR Gratis</div>
-                      <div style={{ fontSize: '0.72rem', color: '#D0D0D8' }}>$0 • Con logo inserto</div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-gold)' }}>Pase con QR Oficial</div>
+                      <div style={{ fontSize: '0.72rem', color: '#D0D0D8' }}>Con logo inserto</div>
                     </div>
                   </div>
 
@@ -809,14 +791,14 @@ export const LandingJuarez: React.FC = () => {
                     <span>Distintivo Digital ($80)</span>
                   </button>
 
-                  <button 
-                    onClick={() => setShowFreeQrModal(true)}
+                  <a 
+                    href="#pase-digital"
                     className="landing-btn-glass"
-                    style={{ padding: '0.85rem 1.2rem', fontSize: '0.92rem', color: '#4ade80', borderColor: 'rgba(74,222,128,0.35)' }}
+                    style={{ padding: '0.85rem 1.2rem', fontSize: '0.92rem', color: 'var(--accent-gold)', borderColor: 'rgba(212,175,55,0.35)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
                   >
                     <QrCode size={17} />
-                    <span>Pase QR Gratis ($0)</span>
-                  </button>
+                    <span>Ver Pase con QR</span>
+                  </a>
                 </div>
               </div>
             </div>
@@ -908,14 +890,22 @@ export const LandingJuarez: React.FC = () => {
                     <span>Obtener Distintivo Digital ($80 MXN)</span>
                   </button>
 
-                  <button 
-                    onClick={() => setShowFreeQrModal(true)}
-                    className="landing-btn-glass"
-                    style={{ width: '100%', padding: '0.8rem', fontSize: '0.9rem', color: '#4ade80' }}
+                  <a 
+                    href="#pase-digital"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      color: 'var(--accent-gold)',
+                      fontSize: '0.88rem',
+                      textDecoration: 'none',
+                      padding: '0.6rem'
+                    }}
                   >
                     <QrCode size={16} />
-                    <span>Generar Pase QR Gratis ($0 MXN)</span>
-                  </button>
+                    <span>Ver cómo se convierte en tu Pase con QR</span>
+                  </a>
                 </div>
               </div>
             </div>
@@ -924,142 +914,133 @@ export const LandingJuarez: React.FC = () => {
         </div>
       </section>
 
-      {/* ── SECCIÓN INTERACTIVA: PASE QR GRATUITO CON ESCUDO INSERTADO ── */}
-      <section id="pase-gratuito" style={{ padding: '6rem 0', backgroundColor: '#0B0B0E', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
+      {/* ── SECCIÓN INTERACTIVA: EL DISTINTIVO ES TU PASE CON CÓDIGO QR ── */}
+      <section id="pase-digital" style={{ padding: '6rem 0', backgroundColor: '#0B0B0E', borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
         <div className="landing-container">
-          <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 3.5rem' }}>
-            <div className="landing-badge" style={{ marginBottom: '1rem', backgroundColor: 'rgba(74, 222, 128, 0.12)', borderColor: 'rgba(74, 222, 128, 0.35)', color: '#4ade80' }}>
-              <Gift size={14} />
-              <span>100% Gratuito y Libre</span>
+          <div style={{ textAlign: 'center', maxWidth: '720px', margin: '0 auto 3.5rem' }}>
+            <div className="landing-badge" style={{ marginBottom: '1rem', backgroundColor: 'rgba(212, 175, 55, 0.12)', borderColor: 'rgba(212, 175, 55, 0.35)', color: 'var(--accent-gold)' }}>
+              <QrCode size={14} />
+              <span>Tu Membresía en tu Smartphone</span>
             </div>
             <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.7rem)', fontWeight: 800, marginBottom: '1rem' }}>
-              Tu Pase QR Gratuito Vive Juárez
+              Tu Distintivo se Convierte en tu Pase con QR
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
-              El código QR es <strong>completamente gratuito</strong> y cuenta con el <strong>escudo oficial de Vive Juárez inserto en su centro</strong>. Solo ingresa tu nombre y WhatsApp para generarlo en 30 segundos.
+              Por solo <strong>$80 pesos (pago único)</strong>, adquieres tu distintivo digital oficial que <strong>se convierte en tu pase personal con código QR</strong> en tu celular. El código QR lleva la <strong>imagen oficial de Vive Juárez inserta en el centro</strong> para validar tus descuentos al instante.
             </p>
           </div>
 
           <div 
             className="landing-card"
             style={{
-              maxWidth: '820px',
+              maxWidth: '860px',
               margin: '0 auto',
               padding: '2.5rem 2rem',
-              background: 'linear-gradient(145deg, rgba(20, 24, 22, 0.95) 0%, rgba(14, 16, 16, 0.98) 100%)',
-              border: '2px solid rgba(74, 222, 128, 0.35)',
-              boxShadow: '0 15px 40px rgba(0, 0, 0, 0.6)'
+              background: 'linear-gradient(145deg, rgba(28, 25, 20, 0.95) 0%, rgba(16, 16, 19, 0.98) 100%)',
+              border: '2px solid rgba(212, 175, 55, 0.4)',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7)'
             }}
           >
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem', alignItems: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '2.5rem', alignItems: 'center' }}>
               
-              {/* Formulario */}
+              {/* Explicación y Beneficios */}
               <div>
-                <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#FFF', marginBottom: '0.6rem' }}>
-                  Genera tu Código QR al Instante
+                <span style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  Todo Incluido por $80 MXN
+                </span>
+                <h3 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#FFF', margin: '0.4rem 0 1rem' }}>
+                  ¿Cómo funciona tu Pase Digital?
                 </h3>
-                <p style={{ color: '#9E9EA8', fontSize: '0.88rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
-                  Sin pagos, sin registrar tarjetas y sin letras chiquitas. Accede de inmediato a los comercios participantes en Ciudad Juárez.
-                </p>
-
-                <form onSubmit={handleGenerateFreeQr} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div>
-                    <label style={{ fontSize: '0.78rem', color: '#BBB', display: 'block', marginBottom: '0.35rem', fontWeight: 600 }}>
-                      Tu Nombre Completo
-                    </label>
-                    <input 
-                      type="text"
-                      placeholder="Ej. Carlos Hernández"
-                      value={freeQrName}
-                      onChange={(e) => setFreeQrName(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem 0.9rem',
-                        borderRadius: '10px',
-                        background: '#19191E',
-                        border: '1px solid rgba(255,255,255,0.15)',
-                        color: '#FFF',
-                        fontSize: '0.9rem'
-                      }}
-                    />
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.8rem' }}>
+                  <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', flexShrink: 0, fontWeight: 800, fontSize: '0.85rem' }}>1</div>
+                    <div style={{ fontSize: '0.9rem', color: '#D0D0D8', lineHeight: 1.5 }}>
+                      <strong>Un solo pago de $80 MXN:</strong> Adquieres tu distintivo oficial Vive Juárez sin mensualidades ni cobros posteriores.
+                    </div>
                   </div>
 
-                  <div>
-                    <label style={{ fontSize: '0.78rem', color: '#BBB', display: 'block', marginBottom: '0.35rem', fontWeight: 600 }}>
-                      WhatsApp (10 dígitos) *
-                    </label>
-                    <input 
-                      type="tel"
-                      required
-                      placeholder="Ej. 656 123 4567"
-                      value={freeQrPhone}
-                      onChange={(e) => setFreeQrPhone(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem 0.9rem',
-                        borderRadius: '10px',
-                        background: '#19191E',
-                        border: '1px solid rgba(255,255,255,0.15)',
-                        color: '#FFF',
-                        fontSize: '0.9rem'
-                      }}
-                    />
+                  <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', flexShrink: 0, fontWeight: 800, fontSize: '0.85rem' }}>2</div>
+                    <div style={{ fontSize: '0.9rem', color: '#D0D0D8', lineHeight: 1.5 }}>
+                      <strong>Se convierte en tu Pase con QR:</strong> Tu distintivo digital genera tu código QR con la insignia oficial de Vive Juárez insertada en el centro.
+                    </div>
                   </div>
 
-                  <button
-                    type="submit"
-                    style={{
-                      width: '100%',
-                      padding: '0.95rem',
-                      borderRadius: '12px',
-                      backgroundColor: '#22C55E',
-                      color: '#121212',
-                      fontWeight: 800,
-                      fontSize: '0.95rem',
-                      border: 'none',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem',
-                      boxShadow: '0 4px 16px rgba(34, 197, 94, 0.4)',
-                      marginTop: '0.5rem'
-                    }}
-                  >
-                    <QrCode size={18} />
-                    <span>Generar mi Pase QR Gratuito ($0)</span>
-                  </button>
-                </form>
+                  <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', flexShrink: 0, fontWeight: 800, fontSize: '0.85rem' }}>3</div>
+                    <div style={{ fontSize: '0.9rem', color: '#D0D0D8', lineHeight: 1.5 }}>
+                      <strong>Ahorro inmediato en Ciudad Juárez:</strong> Muestras tu pase al pagar en cualquier comercio aliado y recibes hasta 15% de descuento.
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', flexShrink: 0, fontWeight: 800, fontSize: '0.85rem' }}>4</div>
+                    <div style={{ fontSize: '0.9rem', color: '#D0D0D8', lineHeight: 1.5 }}>
+                      <strong>Calcomanía física:</strong> Próximamente disponible en puntos de entrega autorizados.
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleOpenBuy('juarense_oficial')}
+                  className="landing-btn-gold"
+                  style={{
+                    width: '100%',
+                    padding: '0.95rem 1.4rem',
+                    fontSize: '1rem'
+                  }}
+                >
+                  <ShoppingBag size={18} />
+                  <span>Obtener mi Distintivo por $80 MXN</span>
+                </button>
               </div>
 
-              {/* Vista previa del QR con logo incrustado */}
+              {/* Vista previa del Pase Digital con QR y Escudo insertado */}
               <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{
-                  backgroundColor: '#FFFFFF',
-                  padding: '1.2rem',
+                  background: 'linear-gradient(160deg, #1A1A20 0%, #0F0F12 100%)',
                   borderRadius: '24px',
-                  display: 'inline-block',
-                  boxShadow: '0 12px 35px rgba(0,0,0,0.6)',
-                  border: '3px solid rgba(74, 222, 128, 0.5)'
+                  padding: '1.8rem 1.4rem',
+                  border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                  boxShadow: '0 15px 40px rgba(0,0,0,0.7)',
+                  width: '100%',
+                  maxWidth: '300px'
                 }}>
-                  <QRCodeSVG 
-                    value={`https://redidentidad.vercel.app/registro?c=${freeQrFolio || 'VJ-GRATIS-2026'}&city=juarez`}
-                    size={190}
-                    level="H"
-                    imageSettings={{
-                      src: '/vive_juarez_qr_icon.png',
-                      height: 48,
-                      width: 48,
-                      excavate: true
-                    }}
-                  />
-                </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
+                    <img src="/vive_juarez_qr_icon.png" alt="Vive Juárez" style={{ width: '24px', height: '24px', borderRadius: '6px' }} />
+                    <span style={{ fontSize: '0.85rem', fontWeight: 900, letterSpacing: '0.06em', color: '#FFF' }}>PASE DIGITAL OFICIAL</span>
+                  </div>
 
-                <div style={{ marginTop: '0.8rem', fontSize: '0.82rem', fontWeight: 800, color: '#4ade80' }}>
-                  {freeQrFolio ? `Folio Oficial: ${freeQrFolio}` : 'Escudo Oficial Vive Juárez Insertado'}
-                </div>
-                <div style={{ fontSize: '0.72rem', color: '#9E9EA8', maxWidth: '240px', marginTop: '4px' }}>
-                  Muestra este QR en los negocios aliados de Ciudad Juárez para tus descuentos.
+                  <div style={{
+                    backgroundColor: '#FFFFFF',
+                    padding: '1.1rem',
+                    borderRadius: '18px',
+                    display: 'inline-block',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                    margin: '0.4rem 0'
+                  }}>
+                    <QRCodeSVG 
+                      value="https://redidentidad.vercel.app/app?city=juarez"
+                      size={175}
+                      level="H"
+                      bgColor="#FFFFFF"
+                      fgColor="#121212"
+                      imageSettings={{
+                        src: '/vive_juarez_qr_icon.png',
+                        height: 46,
+                        width: 46,
+                        excavate: true
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ marginTop: '0.8rem', fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
+                    VIVE JUÁREZ • $80 MXN
+                  </div>
+                  <div style={{ fontSize: '0.74rem', color: '#9E9EA8', marginTop: '4px', lineHeight: 1.4 }}>
+                    Código QR único con imagen oficial incrustada. Válido en toda la red de comercios aliados.
+                  </div>
                 </div>
               </div>
 
@@ -1355,64 +1336,19 @@ export const LandingJuarez: React.FC = () => {
           <div style={{ textAlign: 'center', maxWidth: '650px', margin: '0 auto 3.5rem' }}>
             <div className="landing-badge" style={{ marginBottom: '1rem' }}>
               <CreditCard size={14} />
-              <span>Opciones para Todos los Juarenses</span>
+              <span>Un Solo Pago • Sin Mensualidades</span>
             </div>
             <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.7rem)', fontWeight: 800, marginBottom: '1rem' }}>
-              Elige tu Modalidad
+              Membresía & Distintivo Digital
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
-              Iniciamos con distintivos 100% digitales y pase QR gratuito con el logo oficial de Vive Juárez incrustado.
+              Tu distintivo digital de $80 pesos se convierte en tu pase con código QR para identificarte y ahorrar en comercios de Ciudad Juárez.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '520px', margin: '0 auto' }}>
             
-            {/* PLAN 1: PASE QR GRATIS */}
-            <div className="landing-card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
-              <div>
-                <span style={{ fontSize: '0.82rem', color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 700 }}>
-                  Acceso Inmediato
-                </span>
-                <h3 style={{ fontSize: '1.6rem', fontWeight: 700, margin: '0.4rem 0 1rem' }}>
-                  Pase QR Gratuito
-                </h3>
-                
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '3rem', fontWeight: 800, color: '#4ade80' }}>$0</span>
-                  <span style={{ fontSize: '1rem', color: '#A0A0A8' }}>MXN / 100% Gratis</span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '2rem' }}>
-                  {[
-                    'Código QR dinámico con la insignia Vive Juárez incrustada',
-                    'Acceso a promociones y descuentos en comercios afiliados',
-                    'Guardado directo en tu smartphone',
-                    'Sin comisiones, sin pagos ni tarjetas de crédito',
-                    'Activación instantánea con tu WhatsApp'
-                  ].map((feat, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', fontSize: '0.9rem', color: '#D0D0D8' }}>
-                      <Check size={16} color="#4ade80" style={{ flexShrink: 0, marginTop: '3px' }} />
-                      <span>{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <button 
-                onClick={() => {
-                  const el = document.getElementById('pase-gratuito');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  else setShowFreeQrModal(true);
-                }}
-                className="landing-btn-glass"
-                style={{ width: '100%', padding: '0.95rem' }}
-              >
-                <QrCode size={18} />
-                <span>Generar Pase QR Gratis ($0)</span>
-              </button>
-            </div>
-
-            {/* PLAN 2: DISTINTIVO DIGITAL OFICIAL */}
+            {/* PLAN ÚNICO: DISTINTIVO DIGITAL OFICIAL */}
             <div 
               className="landing-card" 
               style={{
@@ -1421,9 +1357,9 @@ export const LandingJuarez: React.FC = () => {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 border: '2px solid var(--accent-gold)',
-                background: 'linear-gradient(160deg, rgba(32, 28, 20, 0.8) 0%, rgba(18, 18, 22, 0.95) 100%)',
+                background: 'linear-gradient(160deg, rgba(32, 28, 20, 0.9) 0%, rgba(18, 18, 22, 0.98) 100%)',
                 position: 'relative',
-                boxShadow: '0 15px 40px rgba(212, 175, 55, 0.15)'
+                boxShadow: '0 20px 50px rgba(212, 175, 55, 0.2)'
               }}
             >
               <div style={{
@@ -1439,33 +1375,35 @@ export const LandingJuarez: React.FC = () => {
                 letterSpacing: '0.04em',
                 textTransform: 'uppercase'
               }}>
-                ⭐ Lanzamiento Oficial
+                ⭐ Lanzamiento Oficial Ciudad Juárez
               </div>
 
               <div>
                 <span style={{ fontSize: '0.82rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
-                  Distintivo Digital Oficial
+                  Membresía Digital Completa
                 </span>
-                <h3 style={{ fontSize: '1.6rem', fontWeight: 700, margin: '0.4rem 0 1rem' }}>
-                  Distintivo Vive Juárez
+                <h3 style={{ fontSize: '1.7rem', fontWeight: 800, margin: '0.4rem 0 1rem' }}>
+                  Distintivo & Pase Vive Juárez
                 </h3>
                 
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--accent-gold)' }}>$80</span>
-                  <span style={{ fontSize: '1rem', color: '#A0A0A8' }}>MXN / pago único</span>
+                  <span style={{ fontSize: '3.4rem', fontWeight: 900, color: 'var(--accent-gold)' }}>$80</span>
+                  <span style={{ fontSize: '1rem', color: '#A0A0A8' }}>MXN / pago único permanente</span>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', marginBottom: '2.2rem' }}>
                   {[
-                    'Distintivo Digital Oficial en alta resolución con la X de Juárez',
-                    'Diseño único oficial sin variaciones de color',
-                    'Acceso completo a todos los beneficios y descuentos de la Red',
-                    'Folio de socio oficial y perfil digital en la App',
-                    'Próximamente opción de calcomanía física en puntos de entrega'
+                    'Distintivo Digital Oficial en alta resolución con la X de Juárez (Rojo y Negro)',
+                    'Se convierte en tu Pase Digital con código QR en tu smartphone',
+                    'Código QR oficial con la insignia Vive Juárez incrustada en el centro',
+                    'Hasta 15% de descuento en restaurantes, talleres y comercios aliados en Cd. Juárez',
+                    'Folio único de socio fronterizo registrado en el sistema',
+                    'Sin plazos forzosos ni mensualidades (un solo pago de $80 MXN)',
+                    'Próximamente calcomanía física en sobre sellado en puntos de entrega oficiales'
                   ].map((feat, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', fontSize: '0.9rem', color: '#FFF' }}>
+                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.7rem', fontSize: '0.92rem', color: '#FFF' }}>
                       <Check size={16} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '3px' }} />
-                      <span><strong>{feat}</strong></span>
+                      <span>{feat}</span>
                     </div>
                   ))}
                 </div>
@@ -1474,10 +1412,10 @@ export const LandingJuarez: React.FC = () => {
               <button 
                 onClick={() => handleOpenBuy('juarense_oficial')}
                 className="landing-btn-gold"
-                style={{ width: '100%', padding: '0.95rem' }}
+                style={{ width: '100%', padding: '1rem', fontSize: '1.05rem' }}
               >
-                <ShoppingBag size={18} />
-                <span>Obtener Distintivo Digital ($80)</span>
+                <ShoppingBag size={19} />
+                <span>Obtener mi Distintivo Digital ($80 MXN)</span>
               </button>
             </div>
 
@@ -1876,145 +1814,6 @@ export const LandingJuarez: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Modal Pase QR Gratuito */}
-      <AnimatePresence>
-        {showFreeQrModal && (
-          <div style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            backgroundColor: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(12px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem'
-          }}>
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="landing-card"
-              style={{
-                width: '100%',
-                maxWidth: '460px',
-                padding: '2rem',
-                border: '1px solid rgba(212, 175, 55, 0.4)',
-                textAlign: 'center',
-                maxHeight: '90vh',
-                overflowY: 'auto'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <QrCode size={22} color="var(--accent-gold)" />
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Pase QR Vive Juárez</h3>
-                </div>
-                <button onClick={() => setShowFreeQrModal(false)} style={{ color: '#AAA' }}>
-                  <X size={20} />
-                </button>
-              </div>
-
-              {!freeQrGenerated ? (
-                <form onSubmit={handleGenerateFreeQr} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'left' }}>
-                  <p style={{ color: '#A0A0AA', fontSize: '0.9rem' }}>
-                    Genera tu Pase Digital gratuito en 10 segundos para acceder a los beneficios en Ciudad Juárez.
-                  </p>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', color: '#BBB', display: 'block', marginBottom: '0.3rem' }}>Tu Nombre</label>
-                    <input 
-                      type="text" 
-                      placeholder="Ej. Roberto Martínez"
-                      value={freeQrName}
-                      onChange={(e) => setFreeQrName(e.target.value)}
-                      style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: '#19191E', border: '1px solid rgba(255,255,255,0.15)', color: '#FFF' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: '0.8rem', color: '#BBB', display: 'block', marginBottom: '0.3rem' }}>WhatsApp (10 dígitos) *</label>
-                    <input 
-                      type="tel" 
-                      required
-                      placeholder="656 123 4567"
-                      value={freeQrPhone}
-                      onChange={(e) => setFreeQrPhone(e.target.value)}
-                      style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', background: '#19191E', border: '1px solid rgba(255,255,255,0.15)', color: '#FFF' }}
-                    />
-                  </div>
-                  <button 
-                    type="submit"
-                    className="landing-btn-gold"
-                    style={{ width: '100%', padding: '0.9rem', marginTop: '0.5rem' }}
-                  >
-                    <QrCode size={18} />
-                    <span>Generar Pase Gratis ($0)</span>
-                  </button>
-                </form>
-              ) : (
-                <div>
-                  <div style={{
-                    background: '#FFFFFF',
-                    padding: '1.2rem',
-                    borderRadius: '16px',
-                    display: 'inline-block',
-                    margin: '0.5rem auto 1.2rem',
-                    boxShadow: '0 8px 30px rgba(0,0,0,0.5)'
-                  }}>
-                    <QRCodeSVG
-                      value={`https://redidentidad.vercel.app/app?city=juarez&member=${freeQrFolio}&name=${encodeURIComponent(freeQrName || 'Socio Juarense')}`}
-                      size={200}
-                      level="H"
-                      bgColor="#FFFFFF"
-                      fgColor="#121212"
-                      imageSettings={{
-                        src: '/vive_juarez_qr_icon.png',
-                        x: undefined,
-                        y: undefined,
-                        height: 48,
-                        width: 48,
-                        excavate: true
-                      }}
-                    />
-                  </div>
-
-                  <h4 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.2rem' }}>
-                    {freeQrName || 'Socio Juarense'}
-                  </h4>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--accent-gold)', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '0.8rem' }}>
-                    FOLIO: {freeQrFolio}
-                  </div>
-                  <p style={{ fontSize: '0.82rem', color: '#90909A', lineHeight: 1.4, marginBottom: '1.5rem' }}>
-                    Muestra este código QR con el distintivo oficial en comercios aliados de Ciudad Juárez para identificarte.
-                  </p>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                    <button 
-                      onClick={() => goToApp('/app')}
-                      className="landing-btn-gold"
-                      style={{ width: '100%', padding: '0.85rem' }}
-                    >
-                      <Smartphone size={17} />
-                      <span>Abrir en Plataforma Web</span>
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setShowFreeQrModal(false);
-                        handleOpenBuy('juarense_oficial');
-                      }}
-                      className="landing-btn-glass"
-                      style={{ width: '100%', padding: '0.8rem' }}
-                    >
-                      <ShoppingBag size={16} />
-                      <span>Mejorar a Distintivo Digital ($80)</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
       {/* Barra móvil inferior */}
       <div 
         className="d-lg-none"
@@ -2033,16 +1832,12 @@ export const LandingJuarez: React.FC = () => {
         }}
       >
         <button 
-          onClick={() => {
-            const el = document.getElementById('pase-gratuito');
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-            else setShowFreeQrModal(true);
-          }} 
+          onClick={() => goToApp('/app')} 
           className="landing-btn-glass" 
-          style={{ flex: 1, padding: '0.7rem', fontSize: '0.82rem' }}
+          style={{ flex: 1, padding: '0.7rem', fontSize: '0.85rem' }}
         >
-          <QrCode size={15} />
-          <span>Pase QR $0</span>
+          <Smartphone size={16} />
+          <span>Abrir App</span>
         </button>
 
         <button 

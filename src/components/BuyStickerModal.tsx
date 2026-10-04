@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, ShoppingBag, CheckCircle2, MessageCircle, User, Phone, 
-  Store, Navigation, CreditCard, Smartphone, Car 
+  Store, Navigation, CreditCard, Smartphone, Car, QrCode
 } from 'lucide-react';
 import { getStripeCheckoutUrl, PRODUCTS } from '../lib/paymentsService';
 import { useCity } from '../contexts/CityContext';
@@ -380,24 +380,16 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                         marginTop: '0.6rem', 
                         padding: '0.65rem 0.9rem', 
                         borderRadius: '12px', 
-                        backgroundColor: 'rgba(74,222,128,0.1)', 
-                        border: '1px solid rgba(74,222,128,0.25)',
+                        backgroundColor: 'rgba(212,175,55,0.08)', 
+                        border: '1px solid rgba(212,175,55,0.25)',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap',
-                        gap: '6px'
+                        gap: '8px'
                       }}>
-                        <span style={{ fontSize: '0.76rem', color: '#4ade80', fontWeight: 700 }}>
-                          🎁 ¿Prefieres empezar gratis?
+                        <QrCode size={18} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
+                        <span style={{ fontSize: '0.76rem', color: '#E0E0E5', lineHeight: 1.35 }}>
+                          Tu distintivo de $80 se convierte en tu <strong>Pase Oficial con Código QR</strong> y el escudo de Vive Juárez inserto al centro.
                         </span>
-                        <a 
-                          href="/juarez#pase-gratuito" 
-                          onClick={onClose}
-                          style={{ fontSize: '0.76rem', color: '#FFF', textDecoration: 'underline', fontWeight: 700 }}
-                        >
-                          Generar Pase QR Gratuito ($0)
-                        </a>
                       </div>
                     </div>
                   ) : (

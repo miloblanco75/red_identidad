@@ -815,13 +815,13 @@ const Home: React.FC = () => {
                     </div>
                     <div style={{ textAlign: 'left', flex: 1 }}>
                       <div style={{ fontSize: '0.95rem', fontWeight: 900, color: '#FFF' }}>VIVE JUÁREZ</div>
-                      <div style={{ fontSize: '0.74rem', color: 'var(--text-dim)', marginBottom: '6px' }}>Distintivo Oficial Único (100% Digital)</div>
+                      <div style={{ fontSize: '0.74rem', color: 'var(--text-dim)', marginBottom: '6px' }}>Distintivo Digital Oficial (se convierte en tu Pase QR)</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '0.74rem', color: 'var(--accent-gold)', fontWeight: 800, backgroundColor: 'rgba(212,175,55,0.15)', padding: '2px 8px', borderRadius: '6px' }}>
-                          $80 MXN
+                          $80 MXN • Pago Único
                         </span>
-                        <span style={{ fontSize: '0.7rem', color: '#4ade80', fontWeight: 700, backgroundColor: 'rgba(74,222,128,0.12)', padding: '2px 8px', borderRadius: '6px' }}>
-                          Pase QR Gratis
+                        <span style={{ fontSize: '0.7rem', color: '#FFF', fontWeight: 600, backgroundColor: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '6px' }}>
+                          Pase con QR Oficial
                         </span>
                       </div>
                     </div>
