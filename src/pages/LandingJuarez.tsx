@@ -635,12 +635,12 @@ export const LandingJuarez: React.FC = () => {
           <div className="landing-grid-3">
             <div className="landing-card" style={{ padding: '2rem', position: 'relative' }}>
               <div style={{ position: 'absolute', top: '-15px', left: '24px', background: 'linear-gradient(135deg, #F3E5AB 0%, #D4AF37 100%)', color: '#121212', fontWeight: 800, width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem' }}>1</div>
-              <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(74, 222, 128, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4ade80', marginBottom: '1.5rem' }}>
-                <QrCode size={28} />
+              <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: 'rgba(212, 175, 55, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', marginBottom: '1.5rem' }}>
+                <ShoppingBag size={28} />
               </div>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.8rem' }}>Elige tu Acceso</h3>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.8rem' }}>Adquiere tu Distintivo</h3>
               <p style={{ color: '#9E9EA8', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                Genera tu <strong>Pase QR Gratuito ($0 MXN)</strong> o adquiere tu <strong>Distintivo Digital Oficial ($80 MXN)</strong> para beneficios certificados. (Calcomanías físicas próximamente).
+                Obtén tu <strong>Distintivo Digital Oficial ($80 MXN)</strong> que se convierte automáticamente en tu pase con código QR en tu smartphone. (Calcomanías físicas próximamente).
               </p>
             </div>
 
@@ -920,7 +920,7 @@ export const LandingJuarez: React.FC = () => {
                 </h3>
 
                 <p style={{ color: '#A0A0AA', fontSize: '0.92rem', lineHeight: 1.6, marginBottom: '1.4rem' }}>
-                  Muestra tu distintivo digital o tu código QR gratuito directamente desde tu smartphone en cualquier restaurante o comercio aliado para hacer válidos tus descuentos.
+                  Muestra tu distintivo digital con tu código QR oficial directamente desde tu smartphone en cualquier restaurante o comercio aliado para hacer válidos tus descuentos.
                 </p>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
@@ -1317,7 +1317,7 @@ export const LandingJuarez: React.FC = () => {
               Puntos de Entrega en Juárez
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
-              <strong>Lanzamiento Fase 1:</strong> Distintivo 100% Digital ($80 MXN) y Pase QR Gratuito disponibles hoy mismo en tu smartphone. Próximamente distribución de calcomanías físicas oficiales en sobre sellado en estos puntos autorizados.
+              <strong>Lanzamiento Fase 1:</strong> Distintivo 100% Digital ($80 MXN) que se convierte en tu Pase Oficial con Código QR disponible hoy mismo en tu smartphone. Próximamente distribución de calcomanías físicas oficiales en sobre sellado en estos puntos autorizados.
             </p>
           </div>
 
