@@ -703,28 +703,60 @@ export const LandingJuarez: React.FC = () => {
               }}
             >
               <div style={{
-                background: 'radial-gradient(circle, rgba(40, 30, 25, 0.9) 0%, rgba(18, 18, 22, 1) 100%)',
+                position: 'relative',
                 borderRadius: '20px',
-                padding: '2.5rem 1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                minHeight: '260px'
+                overflow: 'hidden',
+                border: '1.5px solid rgba(212, 175, 55, 0.35)',
+                boxShadow: '0 12px 35px rgba(0,0,0,0.6)',
+                minHeight: '260px',
+                background: '#121216'
               }}>
                 <img 
-                  src={JUAREZ_OFFICIAL_STICKER.imagePath} 
-                  alt={JUAREZ_OFFICIAL_STICKER.name}
+                  src="/vive_juarez_auto.jpg" 
+                  alt="Distintivo Vive Juárez colocado en vehículo"
                   style={{
-                    maxWidth: '100%',
-                    maxHeight: '200px',
-                    objectFit: 'contain',
-                    filter: 'drop-shadow(0 6px 20px rgba(220,38,38,0.5))'
+                    width: '100%',
+                    height: '260px',
+                    objectFit: 'cover',
+                    display: 'block'
                   }}
                 />
-                <div style={{ marginTop: '1rem', fontSize: '0.82rem', fontWeight: 800, color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                  ⭐ Edición Oficial Única 2026
+                <div style={{
+                  position: 'absolute',
+                  top: '12px',
+                  left: '12px',
+                  background: 'rgba(15, 15, 18, 0.85)',
+                  backdropFilter: 'blur(8px)',
+                  padding: '4px 10px',
+                  borderRadius: '100px',
+                  border: '1px solid rgba(212, 175, 55, 0.4)',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  color: 'var(--accent-gold)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}>
+                  <Car size={13} />
+                  <span>En Vehículo</span>
+                </div>
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  padding: '10px 14px',
+                  background: 'linear-gradient(to top, rgba(10,10,12,0.92) 0%, rgba(10,10,12,0.4) 70%, transparent 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#FFF' }}>
+                    Colocación en Cajuela
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', fontWeight: 700 }}>
+                    Edición Oficial 2026
+                  </span>
                 </div>
               </div>
 
@@ -840,15 +872,26 @@ export const LandingJuarez: React.FC = () => {
                   border: '1px solid rgba(255,255,255,0.1)'
                 }}>
                   {simulatorMode === 'car' ? (
-                    <div style={{ position: 'relative', width: '85%', height: '75%', backgroundColor: '#141e24', border: '3px solid #64748B', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
                       <img 
-                        src={JUAREZ_OFFICIAL_STICKER.imagePath} 
-                        alt="Sticker Preview"
-                        style={{ width: '130px', height: '100px', objectFit: 'contain', filter: 'drop-shadow(0 4px 14px rgba(220,38,38,0.5))' }}
+                        src="/vive_juarez_auto.jpg" 
+                        alt="Distintivo Vive Juárez en Vehículo"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                       />
-                      <span style={{ position: 'absolute', bottom: '6px', fontSize: '0.65rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-                        Vista en cristal o medallón de vehículo
-                      </span>
+                      <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        padding: '6px 12px',
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 100%)',
+                        fontSize: '0.72rem',
+                        color: '#FFF',
+                        fontWeight: 600,
+                        textAlign: 'center'
+                      }}>
+                        Distintivo oficial colocado en cajuela
+                      </div>
                     </div>
                   ) : (
                     <div style={{ width: '130px', height: '190px', backgroundColor: '#1E1E22', borderRadius: '20px', border: '3px solid #444', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '8px' }}>
