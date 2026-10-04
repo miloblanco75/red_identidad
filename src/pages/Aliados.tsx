@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { AllyPromoCarousel } from '../components/AllyPromoCarousel';
 import { parsePromotions } from '../lib/promotionsHelper';
 import { useCity } from '../contexts/CityContext';
+import { juarezAlliesList, JUAREZ_ZONES } from '../data/juarezAllies';
 
 const FacebookIcon = ({ size = 14, color = '#1877F2' }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -34,7 +35,7 @@ L.Icon.Default.mergeOptions({
     shadowUrl: markerShadow,
 });
 
-interface Ally {
+export interface Ally {
   id: string;
   name: string;
   category: string;
@@ -46,13 +47,15 @@ interface Ally {
   website_url?: string;
   logo_url?: string;
   address?: string;
+  subzone?: string;
   created_at?: string;
+  isMock?: boolean;
 }
 
-export type Zone = 'todas' | 'campeche' | 'carmen' | 'juarez' | 'digitales';
+export type Zone = string;
 
 export interface ZoneOption {
-  id: Zone;
+  id: string;
   label: string;
   shortLabel: string;
   icon: string;
@@ -60,7 +63,7 @@ export interface ZoneOption {
   zoom?: number;
 }
 
-export const ZONES: ZoneOption[] = [
+export const CAMPECHE_ZONES: ZoneOption[] = [
   {
     id: 'todas',
     label: 'Todas las Zonas',
@@ -86,20 +89,14 @@ export const ZONES: ZoneOption[] = [
     zoom: 13
   },
   {
-    id: 'juarez',
-    label: 'Ciudad Juárez, Chihuahua',
-    shortLabel: 'Cd. Juárez',
-    icon: '🌵',
-    center: [31.6904, -106.4245],
-    zoom: 13
-  },
-  {
     id: 'digitales',
     label: 'Digitales / A Domicilio',
     shortLabel: 'Solo Digitales',
     icon: '🌐'
   }
 ];
+
+export const ZONES = CAMPECHE_ZONES;
 
 // Cálculo de distancia con fórmula de Haversine
 export function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -136,6 +133,19 @@ export function getAllyZone(ally: Ally): 'campeche' | 'carmen' | 'juarez' | 'dig
   return 'campeche';
 }
 
+export function getJuarezSubzone(ally: Ally): string {
+  if (ally.subzone) return ally.subzone;
+  const isDigital = !ally.lat || !ally.lng || isNaN(Number(ally.lat)) || isNaN(Number(ally.lng)) || (Number(ally.lat) === 0 && Number(ally.lng) === 0);
+  if (isDigital) return 'digitales';
+
+  const lat = Number(ally.lat);
+  const lng = Number(ally.lng);
+  if (lat > 31.725) return 'pronaf';
+  if (lat < 31.690) return 'valle_sol';
+  if (lng > -106.410 && lng < -106.395) return 'misiones';
+  return 'gomez_morin';
+}
+
 function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
   useEffect(() => {
@@ -148,85 +158,16 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
   return null;
 }
 
-const juarezAlliesList: Ally[] = [
-  {
-    id: 'j-ally-1',
-    name: 'Burritos & Tradición Fronteriza',
-    category: 'Comida',
-    discount: '15% de Descuento en tu consumo',
-    lat: 31.7058,
-    lng: -106.4150,
-    promotions_given: 120,
-    facebook_url: 'https://facebook.com',
-    website_url: ''
-  },
-  {
-    id: 'j-ally-2',
-    name: 'Royal Shine Auto Spa Juárez',
-    category: 'Auto',
-    discount: 'Lavado Express Gratis en tu 3ra visita',
-    lat: 31.6980,
-    lng: -106.4020,
-    promotions_given: 85,
-    facebook_url: 'https://facebook.com',
-    website_url: ''
-  },
-  {
-    id: 'j-ally-3',
-    name: 'Barbería & Grooming El Paso del Norte',
-    category: 'Servicios',
-    discount: '10% OFF en corte y barba',
-    lat: 31.7290,
-    lng: -106.4510,
-    promotions_given: 90,
-    facebook_url: 'https://facebook.com',
-    website_url: ''
-  },
-  {
-    id: 'j-ally-4',
-    name: 'Café de la X Terraza',
-    category: 'Comida',
-    discount: 'Bebida de cortesía al ordenar alimento',
-    lat: 31.7370,
-    lng: -106.4480,
-    promotions_given: 160,
-    facebook_url: 'https://facebook.com',
-    website_url: ''
-  },
-  {
-    id: 'j-ally-5',
-    name: 'Lounge 656',
-    category: 'Entretenimiento',
-    discount: 'Bebida de bienvenida de cortesía',
-    lat: 31.7010,
-    lng: -106.4180,
-    promotions_given: 195,
-    facebook_url: 'https://facebook.com',
-    website_url: ''
-  },
-  {
-    id: 'j-ally-6',
-    name: 'Refacciones & Detallado Frontera',
-    category: 'Auto',
-    discount: '10% de Descuento en accesorios',
-    lat: 31.6850,
-    lng: -106.4290,
-    promotions_given: 65,
-    facebook_url: 'https://facebook.com',
-    website_url: ''
-  }
-];
-
 const Aliados: React.FC = () => {
   const navigate = useNavigate();
   const { isJuarez } = useCity();
 
-  const [allies, setAllies] = useState<Ally[]>([]);
+  const [dbAllies, setDbAllies] = useState<Ally[]>([]);
   const [loading, setLoading] = useState(true);
   const [mapCenter, setMapCenter] = useState<[number, number]>(() => isJuarez ? [31.6904, -106.4245] : [19.8301, -90.5349]);
   const [mapZoom, setMapZoom] = useState<number>(() => isJuarez ? 13 : 12);
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
-  const [selectedZone, setSelectedZone] = useState<Zone>(() => isJuarez ? 'juarez' : 'todas');
+  const [selectedZone, setSelectedZone] = useState<string>('todas');
 
   // Estados de Geolocalización "Cerca de Mí"
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -249,9 +190,13 @@ const Aliados: React.FC = () => {
 
   useEffect(() => {
     if (isJuarez) {
-      setSelectedZone('juarez');
+      setSelectedZone('todas');
       setMapCenter([31.6904, -106.4245]);
       setMapZoom(13);
+    } else {
+      setSelectedZone('todas');
+      setMapCenter([19.25, -91.1]);
+      setMapZoom(9);
     }
   }, [isJuarez]);
 
@@ -263,19 +208,31 @@ const Aliados: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('allies')
-        .select('id, name, category, discount, lat, lng, promotions_given, facebook_url, website_url, logo_url, created_at')
+        .select('id, name, category, discount, lat, lng, promotions_given, facebook_url, website_url, logo_url, address, created_at')
         .order('promotions_given', { ascending: false });
       
       if (error) throw error;
-      const combined = [...(data || []), ...juarezAlliesList];
-      setAllies(combined);
+      setDbAllies(data || []);
     } catch (error) {
       console.error('Error fetching allies:', error);
-      setAllies(juarezAlliesList);
+      setDbAllies([]);
     } finally {
       setLoading(false);
     }
   };
+
+  const activeZones = isJuarez ? JUAREZ_ZONES : CAMPECHE_ZONES;
+
+  const displayAllies = useMemo<Ally[]>(() => {
+    if (isJuarez) {
+      const dbJuarez = dbAllies.filter(a => getAllyZone(a) === 'juarez');
+      const dbIds = new Set(dbJuarez.map(a => a.id));
+      const simulated = (juarezAlliesList as Ally[]).filter(a => !dbIds.has(a.id));
+      return [...dbJuarez, ...simulated];
+    } else {
+      return dbAllies.filter(a => getAllyZone(a) !== 'juarez');
+    }
+  }, [dbAllies, isJuarez]);
 
   const isNewAlly = (createdAt?: string) => {
     if (!createdAt) return false;
@@ -305,12 +262,12 @@ const Aliados: React.FC = () => {
     }
   };
 
-  const handleSelectZone = (zoneId: Zone) => {
+  const handleSelectZone = (zoneId: string) => {
     setSelectedZone(zoneId);
     setSortByProximity(false);
     setGeoError(null);
 
-    const zoneData = ZONES.find(z => z.id === zoneId);
+    const zoneData = activeZones.find(z => z.id === zoneId);
     if (zoneData && zoneData.center && zoneData.zoom) {
       setMapCenter(zoneData.center);
       setMapZoom(zoneData.zoom);
@@ -339,7 +296,9 @@ const Aliados: React.FC = () => {
         setGeoError(null);
 
         // Si está en Campeche o Carmen, sincronizar visualmente la zona
-        if (lng < -91.2) {
+        if (isJuarez) {
+          setSelectedZone('todas');
+        } else if (lng < -91.2) {
           setSelectedZone('carmen');
         } else {
           setSelectedZone('campeche');
@@ -392,10 +351,10 @@ const Aliados: React.FC = () => {
   });
 
   // Procesamiento y cálculo de distancias
-  const displayAllies = allies;
   const enrichedAllies = displayAllies.map(item => {
     const isDigital = !item.lat || !item.lng || isNaN(Number(item.lat)) || isNaN(Number(item.lng)) || (Number(item.lat) === 0 && Number(item.lng) === 0);
     const zone = getAllyZone(item);
+    const subzone = isJuarez ? getJuarezSubzone(item) : zone;
     let distanceKm: number | null = null;
     if (userLocation && !isDigital) {
       distanceKm = calculateDistanceKm(userLocation.lat, userLocation.lng, Number(item.lat), Number(item.lng));
@@ -403,6 +362,7 @@ const Aliados: React.FC = () => {
     return {
       ...item,
       _zone: zone,
+      _subzone: subzone,
       _distanceKm: distanceKm,
       _isDigital: isDigital
     };
@@ -436,7 +396,15 @@ const Aliados: React.FC = () => {
 
   // Filtrar por Zona
   if (selectedZone !== 'todas') {
-    filteredAllies = filteredAllies.filter(item => item._zone === selectedZone);
+    if (isJuarez) {
+      if (selectedZone === 'digitales') {
+        filteredAllies = filteredAllies.filter(item => item._isDigital);
+      } else {
+        filteredAllies = filteredAllies.filter(item => item._subzone === selectedZone);
+      }
+    } else {
+      filteredAllies = filteredAllies.filter(item => item._zone === selectedZone);
+    }
   }
 
   // Ordenar por proximidad si el usuario activó "Cerca de mí"
@@ -483,7 +451,7 @@ const Aliados: React.FC = () => {
       <div style={{ marginBottom: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
           <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--accent-gold)', fontWeight: 800, letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <Compass size={14} /> Seleccionar Zona de Campeche
+            <Compass size={14} /> {isJuarez ? 'Seleccionar Zona de Ciudad Juárez' : 'Seleccionar Zona de Campeche'}
           </span>
           {selectedZone !== 'todas' && (
             <button
@@ -499,13 +467,13 @@ const Aliados: React.FC = () => {
                 gap: '4px'
               }}
             >
-              <RotateCcw size={12} /> Ver todo el estado
+              <RotateCcw size={12} /> {isJuarez ? 'Ver toda la ciudad' : 'Ver todo el estado'}
             </button>
           )}
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.3rem' }}>
-          {ZONES.map((zone) => {
+          {activeZones.map((zone) => {
             const isSelected = selectedZone === zone.id;
             return (
               <button
@@ -591,7 +559,7 @@ const Aliados: React.FC = () => {
           </button>
         </div>
 
-        {loading && allies.length === 0 && (
+        {loading && displayAllies.length === 0 && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 1000, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Loader2 className="animate-spin" color="var(--accent-gold)" />
           </div>
@@ -620,7 +588,7 @@ const Aliados: React.FC = () => {
             </Marker>
           )}
 
-          {displayAllies
+          {filteredAllies
             .filter(partner => partner.lat != null && partner.lng != null && !isNaN(Number(partner.lat)) && !isNaN(Number(partner.lng)) && Number(partner.lat) !== 0 && Number(partner.lng) !== 0)
             .map(partner => {
               const goldIcon = L.divIcon({
@@ -649,6 +617,9 @@ const Aliados: React.FC = () => {
                         <div>
                           <strong style={{ display: 'block', fontSize: '0.95rem' }}>{partner.name}</strong>
                           <span style={{ fontSize: '0.75rem', color: '#666' }}>{partner.category}</span>
+                          {partner.address && (
+                            <div style={{ fontSize: '0.7rem', color: '#777', marginTop: '2px' }}>{partner.address}</div>
+                          )}
                         </div>
                       </div>
                       {(() => {
@@ -921,6 +892,12 @@ const Aliados: React.FC = () => {
                       <div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.category}</div>
                         <h4 style={{ fontSize: '1rem', fontWeight: 700, margin: '2px 0 0' }}>{item.name}</h4>
+                        {item.address && (
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+                            <MapPin size={11} color="var(--accent-gold)" />
+                            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '190px' }}>{item.address}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -951,6 +928,10 @@ const Aliados: React.FC = () => {
                       ) : item._zone === 'campeche' ? (
                         <span style={{ backgroundColor: 'rgba(212,175,55,0.15)', color: 'var(--accent-gold)', padding: '2px 7px', borderRadius: '6px', fontSize: '0.62rem', fontWeight: 700 }}>
                           🏛️ Campeche
+                        </span>
+                      ) : item._zone === 'juarez' ? (
+                        <span style={{ backgroundColor: 'rgba(239,68,68,0.15)', color: '#FCA5A5', padding: '2px 7px', borderRadius: '6px', fontSize: '0.62rem', fontWeight: 700 }}>
+                          🌵 Cd. Juárez
                         </span>
                       ) : (
                         <span style={{ backgroundColor: 'rgba(168,85,247,0.2)', color: '#C084FC', padding: '2px 7px', borderRadius: '6px', fontSize: '0.62rem', fontWeight: 800 }}>
@@ -1118,7 +1099,7 @@ const Aliados: React.FC = () => {
       <section>
         
         <div className="glass" style={{ borderRadius: '20px', padding: '1rem' }}>
-          {loading && allies.length === 0 ? (
+          {loading && displayAllies.length === 0 ? (
             <div style={{ padding: '2rem', textAlign: 'center' }}>
                <Loader2 className="animate-spin" style={{ margin: '0 auto' }} color="var(--text-dim)" />
             </div>

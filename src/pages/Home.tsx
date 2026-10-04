@@ -19,6 +19,7 @@ import { TrialPassModal } from '../components/TrialPassModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useCity } from '../contexts/CityContext';
 import { getUserGamificationProfile } from '../lib/challengesService';
+import { juarezAlliesList } from '../data/juarezAllies';
 
 const FacebookIcon = ({ size = 14, color = '#1877F2' }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -69,58 +70,6 @@ const mockPromotions = [
   }
 ];
 
-const juarezMockPromotions = [
-  {
-    id: 'mock-j-1',
-    name: 'Burritos & Tradición Fronteriza',
-    category: 'Comida',
-    discount: '15% de Descuento en Consumo Total',
-    visits: 145,
-    isMock: true,
-    facebook_url: 'https://facebook.com',
-    website_url: ''
-  },
-  {
-    id: 'mock-j-2',
-    name: 'Royal Shine Auto Spa Juárez',
-    category: 'Auto',
-    discount: 'Lavado Express Gratis en tu 3ra Visita',
-    visits: 110,
-    isMock: true,
-    facebook_url: 'https://facebook.com',
-    website_url: 'https://autospajuarez.com'
-  },
-  {
-    id: 'mock-j-3',
-    name: 'Barbería El Paso del Norte',
-    category: 'Servicios',
-    discount: '10% OFF en Corte y Arreglo de Barba',
-    visits: 95,
-    isMock: true,
-    facebook_url: 'https://facebook.com',
-    website_url: ''
-  },
-  {
-    id: 'mock-j-4',
-    name: 'Café de la X Terraza',
-    category: 'Comida',
-    discount: 'Bebida de Cortesía al Ordenar Alimento',
-    visits: 180,
-    isMock: true,
-    facebook_url: 'https://facebook.com',
-    website_url: ''
-  },
-  {
-    id: 'mock-j-5',
-    name: 'Lounge 656 Gómez Morín',
-    category: 'Entretenimiento',
-    discount: 'Bebida de Bienvenida de Cortesía',
-    visits: 230,
-    isMock: true,
-    facebook_url: 'https://facebook.com',
-    website_url: ''
-  }
-];
 
 const communityShowcase = [
   {
@@ -355,12 +304,29 @@ const Home: React.FC = () => {
     }
   };
 
+  const isJuarezAlly = (a: any) => {
+    const lng = Number(a.lng);
+    const name = (a.name || '').toLowerCase();
+    const addr = (a.address || '').toLowerCase();
+    return lng < -100 || name.includes('juarez') || name.includes('juárez') || addr.includes('juarez') || addr.includes('juárez');
+  };
+
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+
   const displayPromotions = isJuarez 
-    ? juarezMockPromotions 
-    : (allies.length > 0 ? allies : mockPromotions);
+    ? juarezAlliesList 
+    : (allies.length > 0 ? allies.filter(a => !isJuarezAlly(a)) : mockPromotions);
   const displayCommunity = isJuarez ? juarezCommunityShowcase : communityShowcase;
   const displayStores = isJuarez ? juarezOfficialStores : officialStores;
-  const totalAlliesCount = allies.length > 0 ? allies.length : (isJuarez ? 6 : 12);
+  
+  const displayNewAllies = isJuarez
+    ? juarezAlliesList.filter(a => a.created_at && new Date(a.created_at) > weekAgo)
+    : (newAllies.length > 0 ? newAllies.filter(a => !isJuarezAlly(a)) : mockPromotions.slice(0, 2));
+
+  const totalAlliesCount = isJuarez 
+    ? juarezAlliesList.length 
+    : (allies.length > 0 ? allies.filter(a => !isJuarezAlly(a)).length : 12);
   const totalMembersCount = claimedCount > 0 ? claimedCount : 350;
 
   return (
@@ -970,7 +936,7 @@ const Home: React.FC = () => {
                 onClick={() => {
                   const el = document.getElementById('beneficios');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  else navigate('/aliados');
+                  else navigate(isJuarez ? '/aliados?city=juarez' : '/aliados');
                 }}
                 style={{
                   width: '100%',
@@ -1307,7 +1273,7 @@ const Home: React.FC = () => {
                         🎁 {promo.promotions_given || 0} promociones dadas
                       </span>
                       <button 
-                        onClick={() => navigate('/aliados')}
+                        onClick={() => navigate(isJuarez ? '/aliados?city=juarez' : '/aliados')}
                         style={{ 
                           backgroundColor: 'rgba(212,175,55,0.15)', 
                           color: 'var(--accent-gold)', 
@@ -1333,7 +1299,7 @@ const Home: React.FC = () => {
         )}
 
         <button
-          onClick={() => navigate('/aliados')}
+          onClick={() => navigate(isJuarez ? '/aliados?city=juarez' : '/aliados')}
           style={{ 
             width: '100%', 
             marginTop: '1.2rem', 
@@ -1356,19 +1322,20 @@ const Home: React.FC = () => {
       </section>
 
       {/* ── Nuevos Aliados Destacados ── */}
-      {newAllies.length > 0 && (
+      {displayNewAllies.length > 0 && (
         <section style={{ marginBottom: '3.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#4ADE80', boxShadow: '0 0 10px #4ADE80', flexShrink: 0 }} />
             <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Nuevos Aliados esta semana</h3>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-            {newAllies.map((ally: any) => {
+            {displayNewAllies.map((ally: any) => {
               const IconComponent = getCategoryIcon(ally.category);
               return (
                 <motion.div
                   key={ally.id}
                   className="glass"
+                  onClick={() => navigate(isJuarez ? '/aliados?city=juarez' : '/aliados')}
                   style={{
                     padding: '1rem 1.2rem',
                     borderRadius: '16px',
@@ -1377,6 +1344,7 @@ const Home: React.FC = () => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     gap: '0.8rem',
+                    cursor: 'pointer'
                   }}
                 >
                   <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', minWidth: 0 }}>
