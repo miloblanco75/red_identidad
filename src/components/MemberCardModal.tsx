@@ -75,6 +75,12 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
     if (user.code?.startsWith('TRIAL-') || level?.toLowerCase() === 'trial') {
       return { name: 'PASE DE PRUEBA 24H', color: '#4ADE80', icon: Sparkles, bg: 'rgba(74,222,128,0.2)' };
     }
+    if (user.code?.startsWith('VJ-7D-') || level?.toLowerCase() === 'trial_7d') {
+      return { name: 'MEMBRESÍA CORTESÍA (7 DÍAS JUÁREZ)', color: '#FF6B6B', icon: Sparkles, bg: 'rgba(239,68,68,0.2)' };
+    }
+    if (user.code?.startsWith('VJ-') || level?.toLowerCase().includes('juarense') || level?.toLowerCase().includes('juarez')) {
+      return { name: '🌵 JUARENSE OFICIAL VIP', color: '#EF4444', icon: Crown, bg: 'rgba(239,68,68,0.25)' };
+    }
     switch (level?.toLowerCase()) {
       case 'campechana_blanca':
       case 'blanca':

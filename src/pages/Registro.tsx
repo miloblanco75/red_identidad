@@ -87,7 +87,9 @@ const Registro: React.FC = () => {
     : `https://redidentidad.vercel.app/?trial=true&ref=${user?.member_number || user?.code || 'socio'}`;
 
   const handleShareWhatsApp = () => {
-    const text = `¡Hola! Te regalo un Pase de Cortesía de 24 horas en Red Identidad 🎁. Úsalo hoy para tener descuentos en más de 30 restaurantes, cafeterías y negocios en Campeche y Carmen. Pruébalo gratis aquí: ${inviteLink}`;
+    const text = isJuarezUser
+      ? `¡Hola! Te invito a formar parte de Red Identidad Juárez 🌵. Disfruta de promociones y descuentos exclusivos en comercios locales de Ciudad Juárez. Activa tu membresía aquí: ${inviteLink}`
+      : `¡Hola! Te regalo un Pase de Cortesía de 24 horas en Red Identidad 🎁. Úsalo hoy para tener descuentos en más de 30 restaurantes, cafeterías y negocios en Campeche y Carmen. Pruébalo gratis aquí: ${inviteLink}`;
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };
@@ -203,7 +205,8 @@ const Registro: React.FC = () => {
         if (isNaN(derivedNum) || derivedNum === 0) derivedNum = Math.floor(Math.random() * 9000) + 1000;
         
         let derivedLevel = 'gold';
-        if (cleanCode.startsWith('DIG-')) derivedLevel = 'digital';
+        if (cleanCode.startsWith('VJ-') || cleanCode.startsWith('JUA')) derivedLevel = 'juarense_oficial';
+        else if (cleanCode.startsWith('DIG-')) derivedLevel = 'digital';
         else if (cleanCode.startsWith('TRIAL-')) derivedLevel = 'trial';
         else if (cleanCode.includes('PL') || cleanCode.includes('SILV')) derivedLevel = 'silver';
         else if (cleanCode.includes('ES') || cleanCode.includes('WHITE')) derivedLevel = 'white';
@@ -296,7 +299,8 @@ const Registro: React.FC = () => {
       if (isNaN(mockNum) || mockNum === 0) mockNum = Math.floor(Math.random() * 9000) + 1000;
 
       let mockLevel = 'campechana_rosa';
-      if (upperSerial.startsWith('DIG-')) mockLevel = 'digital';
+      if (upperSerial.startsWith('VJ-') || upperSerial.startsWith('JUA')) mockLevel = 'juarense_oficial';
+      else if (upperSerial.startsWith('DIG-')) mockLevel = 'digital';
       else if (upperSerial.startsWith('TRIAL-')) mockLevel = 'trial';
       else if (upperSerial.includes('PL') || upperSerial.includes('SILV')) mockLevel = 'silver';
       else if (upperSerial.includes('ES') || upperSerial.includes('WHITE')) mockLevel = 'white';
@@ -332,6 +336,9 @@ const Registro: React.FC = () => {
       return { name: 'Pase de Cortesía (24h)', color: '#4ADE80', glow: 'premium-glow-white', progress: 50 };
     }
     switch (levelStr?.toLowerCase()) {
+      case 'juarense_oficial':
+      case 'juarez_oficial':
+      case 'juarez': return { name: '🌵 Juarense Oficial VIP', color: '#EF4444', glow: 'premium-glow-gold', progress: 100 };
       case 'white': return { name: 'Esencial', color: 'var(--accent-white)', glow: 'premium-glow-white', progress: 30 };
       case 'silver': return { name: 'Colección', color: 'var(--accent-silver)', glow: 'premium-glow-silver', progress: 70 };
       case 'campechana_blanca':
