@@ -506,11 +506,13 @@ const Admin: React.FC = () => {
       
       let { data } = await query;
       
-      // 2. Si la consulta devuelve 0 registros, intentar sin filtro estricto de nivel
-      if (!data || data.length === 0) {
+      // 2. Si la consulta devuelve 0 registros y NO es Juárez, intentar sin filtro estricto de nivel (solo Campeche)
+      if ((!data || data.length === 0) && printLevel !== 'juarense_oficial') {
         const fallback = await supabase
           .from('stickers')
           .select('code, level, member_number')
+          .not('code', 'ilike', 'VJ%')
+          .neq('level', 'juarense_oficial')
           .order('code', { ascending: true })
           .limit(printCount);
         
@@ -519,19 +521,25 @@ const Admin: React.FC = () => {
         }
       }
 
-      // 3. Si se seleccionó un tipo específico, asegurar que los stickers cargados hereden ese nivel
-      if (printLevel !== 'all' && data && data.length > 0) {
+      // 3. Si se seleccionó un tipo específico de Campeche, asegurar que los stickers cargados hereden ese nivel
+      if (printLevel !== 'all' && printLevel !== 'juarense_oficial' && data && data.length > 0) {
         data = data.map(item => ({
           ...item,
           level: printLevel
         }));
       }
 
-      // 4. FAIL-SAFE ABSOLUTO: Si la tabla no devuelve códigos suficientes, generar los 50 códigos en caliente
+      // 4. Si es Juárez y no hay calcomanías generadas, no inventar ni mezclar con Campeche
+      if ((!data || data.length === 0) && printLevel === 'juarense_oficial') {
+        setPrintStickers([]);
+        setErrorMsg('Ciudad Juárez tiene 0 calcomanías generadas en la base de datos. Ve a la pestaña "Generador de QRs" para crear tu primer lote VJ.');
+        return;
+      }
+
+      // 5. FAIL-SAFE para Campeche si no hay códigos suficientes
       if (!data || data.length === 0) {
         const generated = [];
-        const isJuar = printLevel === 'juarense_oficial';
-        const prefix = isJuar ? 'VJ' : (printLevel !== 'all' ? (printLevel.includes('rosa') ? 'ROSA' : printLevel.substring(0, 4).toUpperCase()) : 'ROSA');
+        const prefix = printLevel !== 'all' ? (printLevel.includes('rosa') ? 'ROSA' : printLevel.substring(0, 4).toUpperCase()) : 'ROSA';
         for (let i = 1; i <= printCount; i++) {
           const numStr = String(i).padStart(4, '0');
           const code = `${prefix}-${numStr}`;
@@ -542,7 +550,6 @@ const Admin: React.FC = () => {
           });
         }
         
-        // Intentar registrar en Supabase
         try {
           await supabase.from('stickers').insert(generated);
         } catch (e) {
@@ -2077,40 +2084,100 @@ const Admin: React.FC = () => {
           </div>
 
           {/* Tarjetas resumen de métricas */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total QRs</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FFF', marginTop: '4px' }}>{allStickers.length}</div>
-            </div>
+          {(() => {
+            const isJuarezSticker = (s: any) => {
+              const code = (s.code || '').toUpperCase();
+              const lvl = (s.level || '').toLowerCase();
+              return code.startsWith('VJ') || lvl.includes('juar') || lvl.includes('juarez');
+            };
 
-            <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.7rem', color: '#FCA5A5', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🌵 CIUDAD JUÁREZ</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#EF4444', marginTop: '4px' }}>
-                {allStickers.filter(s => s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar')).length}
-              </div>
-            </div>
+            const juarezStickers = allStickers.filter(isJuarezSticker);
+            const campecheStickers = allStickers.filter(s => !isJuarezSticker(s));
+            const currentScopeStickers = statusCityFilter === 'juarez'
+              ? juarezStickers
+              : statusCityFilter === 'campeche'
+                ? campecheStickers
+                : allStickers;
 
-            <div style={{ backgroundColor: 'rgba(212, 175, 55, 0.08)', border: '1px solid rgba(212, 175, 55, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🏰 CAMPECHE</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent-gold)', marginTop: '4px' }}>
-                {allStickers.filter(s => !s.code?.startsWith('VJ') && !(s.level || '').toLowerCase().includes('juar')).length}
-              </div>
-            </div>
+            const totalScopeCount = currentScopeStickers.length;
+            const activatedScopeCount = currentScopeStickers.filter(s => !!s.phone).length;
+            const availableScopeCount = currentScopeStickers.filter(s => !s.phone).length;
 
-            <div style={{ backgroundColor: 'rgba(255, 68, 68, 0.08)', border: '1px solid rgba(255, 68, 68, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.7rem', color: '#FF6B6B', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🔴 ACTIVADOS</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FF4444', marginTop: '4px' }}>
-                {allStickers.filter(s => !!s.phone).length}
-              </div>
-            </div>
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                {statusCityFilter === 'all' ? (
+                  <>
+                    <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total QRs Sistema</div>
+                      <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FFF', marginTop: '4px' }}>{allStickers.length}</div>
+                    </div>
 
-            <div style={{ backgroundColor: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.7rem', color: '#4ADE80', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🟢 DISPONIBLES</div>
-              <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#4ADE80', marginTop: '4px' }}>
-                {allStickers.filter(s => !s.phone).length}
+                    <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#FCA5A5', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🌵 CIUDAD JUÁREZ</div>
+                      <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#EF4444', marginTop: '4px' }}>
+                        {juarezStickers.length}
+                      </div>
+                    </div>
+
+                    <div style={{ backgroundColor: 'rgba(212, 175, 55, 0.08)', border: '1px solid rgba(212, 175, 55, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🏰 CAMPECHE</div>
+                      <div style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent-gold)', marginTop: '4px' }}>
+                        {campecheStickers.length}
+                      </div>
+                    </div>
+
+                    <div style={{ backgroundColor: 'rgba(255, 68, 68, 0.08)', border: '1px solid rgba(255, 68, 68, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#FF6B6B', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🔴 ACTIVADOS</div>
+                      <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#FF4444', marginTop: '4px' }}>
+                        {allStickers.filter(s => !!s.phone).length}
+                      </div>
+                    </div>
+
+                    <div style={{ backgroundColor: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#4ADE80', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🟢 DISPONIBLES</div>
+                      <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#4ADE80', marginTop: '4px' }}>
+                        {allStickers.filter(s => !s.phone).length}
+                      </div>
+                    </div>
+                  </>
+                ) : statusCityFilter === 'juarez' ? (
+                  <>
+                    <div style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1.5px solid #EF4444', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#FCA5A5', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 }}>🌵 TOTAL QRs JUÁREZ</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#EF4444', marginTop: '4px' }}>{totalScopeCount}</div>
+                    </div>
+
+                    <div style={{ backgroundColor: 'rgba(255, 68, 68, 0.08)', border: '1px solid rgba(255, 68, 68, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#FF6B6B', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🔴 ACTIVADOS (JUÁREZ)</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FF4444', marginTop: '4px' }}>{activatedScopeCount}</div>
+                    </div>
+
+                    <div style={{ backgroundColor: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#4ADE80', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🟢 DISPONIBLES (JUÁREZ)</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#4ADE80', marginTop: '4px' }}>{availableScopeCount}</div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ backgroundColor: 'rgba(212, 175, 55, 0.1)', border: '1.5px solid var(--accent-gold)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 }}>🏰 TOTAL QRs CAMPECHE</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 900, color: 'var(--accent-gold)', marginTop: '4px' }}>{totalScopeCount}</div>
+                    </div>
+
+                    <div style={{ backgroundColor: 'rgba(255, 68, 68, 0.08)', border: '1px solid rgba(255, 68, 68, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#FF6B6B', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🔴 ACTIVADOS (CAMPECHE)</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#FF4444', marginTop: '4px' }}>{activatedScopeCount}</div>
+                    </div>
+
+                    <div style={{ backgroundColor: 'rgba(74, 222, 128, 0.08)', border: '1px solid rgba(74, 222, 128, 0.25)', padding: '1rem', borderRadius: '16px', textAlign: 'center' }}>
+                      <div style={{ fontSize: '0.7rem', color: '#4ADE80', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>🟢 DISPONIBLES (CAMPECHE)</div>
+                      <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#4ADE80', marginTop: '4px' }}>{availableScopeCount}</div>
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
-          </div>
+            );
+          })()}
 
           {/* Filtros y Buscador */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1.5rem' }}>
@@ -2210,15 +2277,19 @@ const Admin: React.FC = () => {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-              {allStickers
-                .filter(s => {
+              {(() => {
+                const isJuarezSticker = (s: any) => {
+                  const code = (s.code || '').toUpperCase();
+                  const lvl = (s.level || '').toLowerCase();
+                  return code.startsWith('VJ') || lvl.includes('juar') || lvl.includes('juarez');
+                };
+
+                const currentList = allStickers.filter(s => {
                   if (statusCityFilter === 'juarez') {
-                    const isJ = s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar');
-                    if (!isJ) return false;
+                    if (!isJuarezSticker(s)) return false;
                   }
                   if (statusCityFilter === 'campeche') {
-                    const isJ = s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar');
-                    if (isJ) return false;
+                    if (isJuarezSticker(s)) return false;
                   }
                   const matchSearch =
                     s.code?.toLowerCase().includes(statusSearch.toLowerCase()) ||
@@ -2228,8 +2299,50 @@ const Admin: React.FC = () => {
                   if (statusFilter === 'claimed') return !!s.phone;
                   if (statusFilter === 'unclaimed') return !s.phone;
                   return true;
-                })
-                .map((sticker) => {
+                });
+
+                if (currentList.length === 0) {
+                  return (
+                    <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', color: 'var(--text-dim)', fontSize: '0.9rem' }}>
+                      {statusCityFilter === 'juarez' ? (
+                        <div>
+                          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#EF4444', marginBottom: '0.5rem' }}>
+                            🌵 Ciudad Juárez: 0 calcomanías generadas
+                          </div>
+                          <p style={{ margin: '0 0 1.2rem 0', fontSize: '0.88rem', color: '#A0A0A8', maxWidth: '520px', marginLeft: 'auto', marginRight: 'auto' }}>
+                            Actualmente hay 0 calcomanías físicas o códigos QR para Ciudad Juárez (los {allStickers.length} códigos del sistema corresponden a Campeche).
+                          </p>
+                          <button
+                            onClick={() => {
+                              setActiveTab('codes');
+                              setAdminCity('juarez');
+                              setCodeCity('juarez');
+                              setPrefix('VJ-');
+                              setLevel('juarense_oficial');
+                            }}
+                            style={{
+                              padding: '0.75rem 1.4rem',
+                              borderRadius: '12px',
+                              backgroundColor: '#DC2626',
+                              color: '#FFF',
+                              border: 'none',
+                              fontWeight: 800,
+                              fontSize: '0.85rem',
+                              cursor: 'pointer',
+                              boxShadow: '0 4px 15px rgba(220, 38, 38, 0.4)'
+                            }}
+                          >
+                            Ir a Generador de QRs para Juárez →
+                          </button>
+                        </div>
+                      ) : (
+                        'No se encontraron códigos que coincidan con los filtros aplicados.'
+                      )}
+                    </div>
+                  );
+                }
+
+                return currentList.map((sticker) => {
                   const isClaimed = !!sticker.phone;
                   const isDig = sticker.code?.startsWith('DIG-') || sticker.level === 'digital';
                   const isTrial = sticker.code?.startsWith('TRIAL-') || sticker.level === 'trial';
@@ -2325,13 +2438,8 @@ const Admin: React.FC = () => {
                       )}
                     </div>
                   );
-                })}
-
-              {allStickers.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-dim)', fontSize: '0.9rem' }}>
-                  No se encontraron códigos o la base de datos está vacía.
-                </div>
-              )}
+                });
+              })()}
             </div>
           )}
         </section>
