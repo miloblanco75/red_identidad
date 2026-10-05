@@ -1545,7 +1545,7 @@ export const LandingJuarez: React.FC = () => {
                   Recibe tu distintivo de mostrador y presencia destacada en la app de Vive Juárez.
                 </p>
                 <button 
-                  onClick={() => navigate('/aliado-panel')}
+                  onClick={() => goToApp('/aliado-panel')}
                   className="landing-btn-glass"
                   style={{ width: '100%', fontSize: '0.88rem', padding: '0.75rem' }}
                 >

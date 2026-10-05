@@ -42,6 +42,8 @@ import {
   type PromotionRecord
 } from '../lib/promotionsReportService';
 import { parsePromotions } from '../lib/promotionsHelper';
+import { useCity } from '../contexts/CityContext';
+import { juarezAlliesList } from '../data/juarezAllies';
 
 interface AllyData {
   id: string;
@@ -120,6 +122,7 @@ const playFeedback = (type: 'success' | 'error') => {
 };
 
 const AliadoPanel: React.FC = () => {
+  const { isJuarez } = useCity();
   const [step, setStep] = useState<'login' | 'select_branch' | 'panel'>('login');
   const [pinInput, setPinInput] = useState('');
   const [branchesList, setBranchesList] = useState<AllyData[]>([]);
@@ -178,8 +181,8 @@ const AliadoPanel: React.FC = () => {
   const activePromoDiscount = allyPromos[selectedPromoIndex] || ally?.discount || '';
 
   const trialInviteUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/?trial=true&ally=${encodeURIComponent(ally?.name || '')}`
-    : `https://redidentidad.vercel.app/?trial=true&ally=${encodeURIComponent(ally?.name || '')}`;
+    ? `${window.location.origin}/?trial=true&ally=${encodeURIComponent(ally?.name || '')}${isJuarez ? '&city=juarez' : ''}`
+    : `https://redidentidad.vercel.app/?trial=true&ally=${encodeURIComponent(ally?.name || '')}${isJuarez ? '&city=juarez' : ''}`;
 
   const handleCopyTrialInvite = () => {
     if (navigator.clipboard) {
@@ -229,6 +232,20 @@ const AliadoPanel: React.FC = () => {
       const cleanPin = pinInput.trim();
       if (!cleanPin) {
         throw new Error('Ingresa tu PIN de acceso.');
+      }
+
+      // Acceso de prueba / demostración para comercios de Ciudad Juárez (PIN: 656)
+      if (cleanPin === '656' || (isJuarez && cleanPin === '1234')) {
+        const simulated: AllyData[] = juarezAlliesList.map(j => ({
+          id: j.id,
+          name: j.name,
+          category: j.category,
+          discount: j.discount,
+          promotions_given: j.promotions_given,
+        }));
+        setBranchesList(simulated);
+        setStep('select_branch');
+        return;
       }
 
       const { data, error } = await supabase
@@ -542,8 +559,8 @@ const AliadoPanel: React.FC = () => {
         return;
       }
 
-      // E. Fallback: Prefijos oficiales reconocidos de la Red Identidad
-      const officialPrefixes = ['BLAN', 'ROSA', 'NEGR', 'CB-', 'CN-', 'CRN-', 'CRB-', 'RED-', 'TUL', 'DIG-', 'TRIAL-'];
+      // E. Fallback: Prefijos oficiales reconocidos de la Red Identidad y Vive Juárez
+      const officialPrefixes = ['BLAN', 'ROSA', 'NEGR', 'CB-', 'CN-', 'CRN-', 'CRB-', 'RED-', 'TUL', 'DIG-', 'TRIAL-', 'VJ-', 'JUA-', 'VIVE-'];
       const isOfficialPattern = officialPrefixes.some(p => clean.startsWith(p) || clean.includes(p));
 
       if (isOfficialPattern) {
@@ -554,7 +571,7 @@ const AliadoPanel: React.FC = () => {
             status: 'invalid',
             code: clean,
             discountToApply: '',
-            message: `⚠️ CALCOMANÍA NO ACTIVADA: Pide al cliente que escanee el código con su celular para dar de alta su número en redidentidad.vercel.app antes de aplicar el descuento.`,
+            message: `⚠️ CALCOMANÍA NO ACTIVADA: Pide al cliente que escanee el código con su celular para dar de alta su número en ${isJuarez ? 'vivejuarez' : 'redidentidad.vercel.app'} antes de aplicar el descuento.`,
             isPhysicalSticker: true,
           });
           return;
@@ -564,8 +581,9 @@ const AliadoPanel: React.FC = () => {
         await incrementPromotionCount();
 
         const memberNum = parseInt(clean.replace(/\D/g, '') || '100', 10);
-        let derivedLevel = clean.startsWith('DIG-') ? 'digital' : clean.startsWith('TRIAL-') ? 'trial' : 'campechana_blanca';
-        if (clean.includes('ROSA') || clean.startsWith('CRN-') || clean.startsWith('CB-')) derivedLevel = 'campechana_rosa';
+        let derivedLevel = clean.startsWith('DIG-') ? 'digital' : clean.startsWith('TRIAL-') ? 'trial' : (isJuarez ? 'juarense_oficial' : 'campechana_blanca');
+        if (clean.startsWith('VJ-') || clean.includes('JUA') || clean.includes('JUAREZ') || clean.includes('VIVE')) derivedLevel = 'juarense_oficial';
+        else if (clean.includes('ROSA') || clean.startsWith('CRN-') || clean.startsWith('CB-')) derivedLevel = 'campechana_rosa';
         else if (clean.includes('NEGR') || clean.startsWith('CN-')) derivedLevel = 'campechana_negra';
         else if (clean.includes('GOLD') || clean.includes('TESORO')) derivedLevel = 'gold';
 
@@ -598,7 +616,7 @@ const AliadoPanel: React.FC = () => {
           member_number: memberNum,
           level: derivedLevel,
           discountToApply: activePromoDiscount,
-          message: '¡Pase Digital Oficial Verificado!',
+          message: isJuarez ? '¡Pase Digital Vive Juárez Verificado! ✓' : '¡Pase Digital Oficial Verificado!',
           isDynamic: true,
           ageSeconds: parsedQr.ageSeconds,
           isUnclaimedOfficial: true,
@@ -618,7 +636,9 @@ const AliadoPanel: React.FC = () => {
         status: 'invalid',
         code: clean,
         discountToApply: '',
-        message: `El código "${clean}" no pertenece a la Red Identidad o no está activado.`
+        message: isJuarez 
+          ? `El código "${clean}" no pertenece a Vive Juárez o no está activado.`
+          : `El código "${clean}" no pertenece a la Red Identidad o no está activado.`
       });
 
     } catch (err: any) {
@@ -723,6 +743,9 @@ const AliadoPanel: React.FC = () => {
     if (s.includes('prensa')) {
       return { name: '🎙️ PRENSA OFICIAL / INVITADO DE HONOR', color: '#F59E0B', icon: Crown };
     }
+    if (s.includes('juarense') || s.includes('juarez') || s.includes('vj-') || s.includes('vive')) {
+      return { name: 'VIVE JUÁREZ OFICIAL', color: '#EF4444', icon: Crown };
+    }
     if (s.includes('digital') || s.startsWith('dig')) {
       return { name: 'MEMBRESÍA DIGITAL OFICIAL', color: '#38BDF8', icon: Crown };
     }
@@ -750,7 +773,7 @@ const AliadoPanel: React.FC = () => {
     if (s.includes('silver')) {
       return { name: 'COLECCIÓN PLATA', color: '#C0C0C0', icon: Sparkles };
     }
-    return { name: 'DISTINTIVO OFICIAL', color: '#4ADE80', icon: ShieldCheck };
+    return { name: isJuarez ? 'VIVE JUÁREZ OFICIAL' : 'DISTINTIVO OFICIAL', color: isJuarez ? '#EF4444' : '#4ADE80', icon: ShieldCheck };
   };
 
   /* ─── LOGIN ─── */
@@ -762,18 +785,22 @@ const AliadoPanel: React.FC = () => {
             width: 72,
             height: 72,
             borderRadius: '22px',
-            backgroundColor: 'rgba(212,175,55,0.12)',
-            border: '1px solid rgba(212,175,55,0.3)',
+            backgroundColor: isJuarez ? 'rgba(239, 68, 68, 0.15)' : 'rgba(212,175,55,0.12)',
+            border: isJuarez ? '1px solid rgba(239, 68, 68, 0.35)' : '1px solid rgba(212,175,55,0.3)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             margin: '0 auto 1.2rem',
           }}>
-            <Store size={34} color="var(--accent-gold)" />
+            <Store size={34} color={isJuarez ? '#EF4444' : 'var(--accent-gold)'} />
           </div>
-          <h1 style={{ fontSize: '1.7rem', marginBottom: '0.4rem' }}>Portal de Aliados</h1>
+          <h1 style={{ fontSize: '1.7rem', marginBottom: '0.4rem' }}>
+            {isJuarez ? 'Portal de Negocios Vive Juárez' : 'Portal de Aliados'}
+          </h1>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', lineHeight: 1.5 }}>
-            Valida los distintivos oficiales y registra las promociones que otorgas a los miembros.
+            {isJuarez 
+              ? 'Valida los distintivos oficiales y pases digitales de Vive Juárez y registra promociones otorgadas a socios juarenses.'
+              : 'Valida los distintivos oficiales y registra las promociones que otorgas a los miembros.'}
           </p>
         </div>
 
@@ -804,8 +831,8 @@ const AliadoPanel: React.FC = () => {
               width: '100%',
               padding: '1.1rem',
               borderRadius: '16px',
-              backgroundColor: 'var(--accent-gold)',
-              color: '#121212',
+              backgroundColor: isJuarez ? '#EF4444' : 'var(--accent-gold)',
+              color: '#FFF',
               fontWeight: 800,
               fontSize: '1rem',
               border: 'none',
@@ -815,11 +842,44 @@ const AliadoPanel: React.FC = () => {
               alignItems: 'center',
               gap: '0.5rem',
               transition: 'all 0.2s ease',
+              boxShadow: isJuarez ? '0 0 25px rgba(239,68,68,0.35)' : 'none'
             }}
           >
             {isLoading ? <Loader2 className="animate-spin" size={20} /> : <Lock size={18} />}
             {isLoading ? 'Verificando...' : 'Entrar a mi Panel'}
           </button>
+
+          <div style={{ marginTop: '1.5rem', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.2rem' }}>
+            <button
+              type="button"
+              onClick={() => {
+                const simulated: AllyData[] = juarezAlliesList.map(j => ({
+                  id: j.id,
+                  name: j.name,
+                  category: j.category,
+                  discount: j.discount,
+                  promotions_given: j.promotions_given
+                }));
+                setBranchesList(simulated);
+                setStep('select_branch');
+              }}
+              style={{
+                background: isJuarez ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.06)',
+                border: isJuarez ? '1px solid rgba(239, 68, 68, 0.35)' : '1px solid rgba(255, 255, 255, 0.12)',
+                color: isJuarez ? '#FCA5A5' : 'var(--accent-gold)',
+                padding: '0.65rem 1rem',
+                borderRadius: '12px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              🌵 {isJuarez ? 'Probar Modo Demo con Negocios de Cd. Juárez (PIN: 656)' : 'Modo Demo: Comercios de Cd. Juárez (PIN: 656)'}
+            </button>
+          </div>
 
           <p style={{ color: 'var(--text-dim)', fontSize: '0.75rem', textAlign: 'center', marginTop: '1.2rem', lineHeight: 1.5 }}>
             ¿No tienes acceso? Contacta al administrador de la Red para obtener tu PIN.
