@@ -321,7 +321,7 @@ const AliadoPanel: React.FC = () => {
     const parsedQr = verifyQrPayload(rawInput);
 
     // Si es un QR Dinámico inválido o expirado (captura de pantalla)
-    if (parsedQr.isDynamic && !parsedQr.isValid) {
+    if (!parsedQr.isValid) {
       playFeedback('error');
       setValidationResult({
         status: 'invalid',

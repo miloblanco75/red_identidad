@@ -325,6 +325,12 @@ export const JuarezManualModal: React.FC<JuarezManualModalProps> = ({ isOpen, on
                 </p>
               </div>
               <div>
+                <strong style={{ color: '#EF4444' }}>🛡️ ¿Qué pasa si alguien muestra un QR ajeno o una página maliciosa?</strong>
+                <p style={{ margin: '2px 0 0 0', color: 'var(--text-dim)' }}>
+                  El escáner de Red Identidad está blindado con <strong>Lista Blanca de Dominios Oficiales</strong>. Nuestro sistema <strong>NO abre navegadores ni ejecuta enlaces</strong>; solo lee el código y lo valida internamente. Si detecta un enlace ajeno, sospechoso o de otra página web, lo bloquea de inmediato mostrando <strong>PANTALLA ROJA (Código Externo Bloqueado)</strong>. <em>Regla para cajeros:</em> Validar siempre dentro de la terminal oficial de Red Identidad y nunca con la cámara libre del celular.
+                </p>
+              </div>
+              <div>
                 <strong style={{ color: 'var(--accent-gold)' }}>¿Cómo imprimir el cartel de mostrador para los negocios?</strong>
                 <p style={{ margin: '2px 0 0 0', color: 'var(--text-dim)' }}>
                   Ingresa a <code style={{ color: '#FCA5A5' }}>/juarez/poster-mostrador</code> desde cualquier computadora conectada a una impresora y presiona Imprimir. Está calibrado exactamente para caber en una hoja tamaño carta portrait.

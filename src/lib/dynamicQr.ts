@@ -56,12 +56,65 @@ export interface QrValidationResult {
 }
 
 /**
+ * Lista blanca de dominios oficiales autorizados de Red Identidad / Vive Juárez
+ */
+const ALLOWED_DOMAINS = [
+  'redidentidad.vercel.app',
+  'redidentidad.app',
+  'juarez.redidentidad.app',
+  'vivejuarez.mx',
+  'localhost',
+  '127.0.0.1'
+];
+
+function isOfficialDomain(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return ALLOWED_DOMAINS.some(d => host === d || host.endsWith('.' + d) || host.endsWith('.vercel.app'));
+}
+
+/**
  * Valida cualquier texto o URL escaneado por el aliado.
- * Detecta automáticamente si es un QR Dinámico en vivo o una Calcomanía Física.
+ * Protege contra URLs maliciosas, sitios externos y capturas de pantalla caducadas.
  */
 export function verifyQrPayload(rawInput: string): QrValidationResult {
   const clean = rawInput.trim();
   
+  // 0. FILTRO DE SEGURIDAD ESTRICTO: Protección contra URLs maliciosas externas
+  const isUrl = /^https?:\/\//i.test(clean);
+  if (isUrl) {
+    try {
+      const urlObj = new URL(clean);
+      if (!isOfficialDomain(urlObj.hostname)) {
+        return {
+          code: 'QR_EXTERNO_NO_AUTORIZADO',
+          isDynamic: false,
+          isValid: false,
+          isExpired: false,
+          errorMessage: `🚨 CÓDIGO EXTERNO BLOQUEADO: Este código QR intenta dirigir a un sitio web ajeno (${urlObj.hostname}). Solo se aceptan membresías oficiales de Red Identidad y Vive Juárez.`
+        };
+      }
+    } catch {
+      return {
+        code: 'URL_MALFORMADA',
+        isDynamic: false,
+        isValid: false,
+        isExpired: false,
+        errorMessage: '🚨 FORMATO DE QR INVÁLIDO: Enlace corrupto o alterado detectado.'
+      };
+    }
+  }
+
+  // Protección contra scripts o inyecciones no seguras
+  if (/^(javascript:|data:|file:|vbscript:)/i.test(clean)) {
+    return {
+      code: 'PAYLOAD_MALICIOSO',
+      isDynamic: false,
+      isValid: false,
+      isExpired: false,
+      errorMessage: '🚨 ALERTA DE SEGURIDAD: Código con contenido ejecutable o no permitido bloqueado.'
+    };
+  }
+
   // 1. Verificar si contiene parámetros dinámicos
   let codeParam: string | null = null;
   let timestampParam: string | null = null;
@@ -135,6 +188,17 @@ export function verifyQrPayload(rawInput: string): QrValidationResult {
   }
 
   fallbackCode = fallbackCode.replace(/#/g, '').trim().toUpperCase();
+
+  // Si después del filtrado sigue pareciendo una URL, no es un código de membresía
+  if (/^https?:\/\//i.test(clean) || fallbackCode.includes('HTTP:') || fallbackCode.includes('HTTPS:')) {
+    return {
+      code: 'ENLACE_NO_RECONOCIDO',
+      isDynamic: false,
+      isValid: false,
+      isExpired: false,
+      errorMessage: '🚨 CÓDIGO NO VÁLIDO: El QR escaneado contiene un enlace web sin formato de membresía oficial.',
+    };
+  }
 
   return {
     code: fallbackCode,
