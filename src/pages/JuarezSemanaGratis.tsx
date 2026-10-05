@@ -402,7 +402,7 @@ export const JuarezSemanaGratis: React.FC = () => {
               lineHeight: 1.45, 
               margin: '0 0 1.5rem' 
             }}>
-              Los comercios aliados te invitan a vivir el orgullo juarense con descuentos directos durante <strong>7 días completos</strong>.
+              Cortesía exclusiva en mostrador de comercios aliados. Disfruta de beneficios y descuentos directos durante <strong>7 días completos</strong>.
             </p>
 
             {/* Ventajas destacadas */}
