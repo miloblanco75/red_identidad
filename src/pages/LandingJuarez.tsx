@@ -707,7 +707,7 @@ export const LandingJuarez: React.FC = () => {
               <span>Identidad Oficial Fronteriza</span>
             </div>
             <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.7rem)', fontWeight: 800, marginBottom: '1rem' }}>
-              El Distintivo Oficial de Juárez
+              El Distintivo Oficial Juárez Conecta
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
               Inspirado en la fuerza y monumentalidad de nuestra emblemática "X", las vías del ferrocarril y el corazón juarense. <strong>Un solo diseño oficial, sin variantes de color: una sola identidad para todo Juárez.</strong>

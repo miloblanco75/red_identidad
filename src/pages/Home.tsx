@@ -667,7 +667,7 @@ const Home: React.FC = () => {
             }}>
               {isJuarez ? (
                 <>
-                  <span className="gold-text">VIVE</span> JUÁREZ
+                  <span className="gold-text">JUÁREZ</span> CONECTA
                 </>
               ) : (
                 <>
