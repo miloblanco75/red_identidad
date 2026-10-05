@@ -16,10 +16,10 @@ const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope' | 'status' | 'sorteos' | 'messenger' | 'loyalty' | 'prensa'>('codes');
 
   // Master City Context Filter ('all' | 'campeche' | 'juarez')
-  const [adminCity, setAdminCity] = useState<'all' | 'campeche' | 'juarez'>('all');
+  const [adminCity, setAdminCity] = useState<'all' | 'campeche' | 'juarez'>('campeche');
   const [codeCity, setCodeCity] = useState<'campeche' | 'juarez'>('campeche');
-  const [statusCityFilter, setStatusCityFilter] = useState<'all' | 'campeche' | 'juarez'>('all');
-  const [alliesCityFilter, setAlliesCityFilter] = useState<'all' | 'campeche' | 'juarez'>('all');
+  const [statusCityFilter, setStatusCityFilter] = useState<'all' | 'campeche' | 'juarez'>('campeche');
+  const [alliesCityFilter, setAlliesCityFilter] = useState<'all' | 'campeche' | 'juarez'>('campeche');
 
   // Digital Sticker Viewer / Delivery
   const [selectedDigitalSticker, setSelectedDigitalSticker] = useState<any | null>(null);
@@ -506,6 +506,12 @@ const Admin: React.FC = () => {
         } else {
           query = (query as any).ilike('level', `%${printLevel}%`);
         }
+      } else {
+        if (adminCity === 'campeche') {
+          query = (query as any).not('code', 'ilike', 'VJ%').neq('level', 'juarense_oficial');
+        } else if (adminCity === 'juarez') {
+          query = (query as any).or('level.eq.juarense_oficial,code.ilike.VJ%');
+        }
       }
       
       let { data } = await query;
@@ -848,7 +854,14 @@ const Admin: React.FC = () => {
           <Printer size={16} /> Sobres (7x7)
         </button>
         <button 
-          onClick={() => { setActiveTab('status'); setSuccessMsg(''); setErrorMsg(''); }}
+          onClick={() => { 
+            setActiveTab('status'); 
+            setSuccessMsg(''); 
+            setErrorMsg(''); 
+            if (adminCity !== 'all') {
+              setStatusCityFilter(adminCity);
+            }
+          }}
           style={{ flex: 1, minWidth: '100px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'status' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'status' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
         >
           <Activity size={16} /> Estatus QR
