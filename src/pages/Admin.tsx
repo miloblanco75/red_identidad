@@ -115,7 +115,7 @@ const Admin: React.FC = () => {
         const { data, error } = await supabase
           .from('stickers')
           .select('*')
-          .order('member_number', { ascending: true })
+          .order('code', { ascending: true })
           .range(from, from + step - 1);
 
         if (error) throw error;
