@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award, Plus, Crown, Sparkles, Copy, Check, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award, Plus, Crown, Sparkles, Copy, Check, ExternalLink, LogOut, ShieldCheck, History } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import StickerQRCode from '../components/StickerQRCode';
 
@@ -10,8 +10,30 @@ import LoyaltyAdminManager from '../components/LoyaltyAdminManager';
 import PressPassesManager from '../components/PressPassesManager';
 import { parsePromotions, formatPromotions } from '../lib/promotionsHelper';
 
+export type AdminRole = 'superadmin' | 'juarez_operator';
+
+const MASTER_PIN = 'RED2024';
+const JUAREZ_PIN = 'JUAREZ2024';
+
+interface BatchAuditItem {
+  id: string;
+  date: string;
+  type: 'GENERATION' | 'DELETION';
+  city: string;
+  prefix: string;
+  range: string;
+  count: number;
+  level: string;
+  user: string;
+}
+
 const Admin: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return !!localStorage.getItem('red_admin_role');
+  });
+  const [userRole, setUserRole] = useState<AdminRole | null>(() => {
+    return (localStorage.getItem('red_admin_role') as AdminRole) || null;
+  });
   const [pin, setPin] = useState('');
   const [activeTab, setActiveTab] = useState<'codes' | 'allies' | 'print' | 'envelope' | 'status' | 'sorteos' | 'messenger' | 'loyalty' | 'prensa'>('codes');
 
@@ -23,6 +45,52 @@ const Admin: React.FC = () => {
 
   // Digital Sticker Viewer / Delivery
   const [selectedDigitalSticker, setSelectedDigitalSticker] = useState<any | null>(null);
+
+  // Batch Audit Log
+  const [batchAudits, setBatchAudits] = useState<BatchAuditItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('red_identidad_batch_audits');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+    return [
+      {
+        id: 'init_juarez_1',
+        date: '04/10/2026, 21:00:00',
+        type: 'GENERATION',
+        city: 'Ciudad Juárez',
+        prefix: 'VJ-',
+        range: 'VJ-0001 a VJ-1000',
+        count: 1000,
+        level: 'juarense_oficial',
+        user: '👑 SuperAdmin (Lote Inicial Autorizado)'
+      },
+      {
+        id: 'init_campeche_1',
+        date: '01/08/2026, 12:00:00',
+        type: 'GENERATION',
+        city: 'Campeche',
+        prefix: 'ROSA / NEGR / RED',
+        range: 'Lotes Oficiales Base',
+        count: 429,
+        level: 'campechano_oficial',
+        user: '👑 SuperAdmin (Fundación)'
+      }
+    ];
+  });
+
+  const saveBatchAudit = (item: BatchAuditItem) => {
+    setBatchAudits(prev => {
+      const updated = [item, ...prev];
+      try {
+        localStorage.setItem('red_identidad_batch_audits', JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+  };
   const [copiedStickerCode, setCopiedStickerCode] = useState<string | null>(null);
 
   // Print states
@@ -80,7 +148,6 @@ const Admin: React.FC = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const ADMIN_PIN = 'RED2024';
 
   const formatStickerLabel = (lbl: string) => {
     switch (lbl?.toLowerCase()) {
@@ -225,18 +292,42 @@ const Admin: React.FC = () => {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === ADMIN_PIN) {
+    const cleanPin = pin.trim().toUpperCase();
+    if (cleanPin === MASTER_PIN) {
+      setUserRole('superadmin');
       setIsAuthenticated(true);
+      localStorage.setItem('red_admin_role', 'superadmin');
       setErrorMsg('');
+      setAdminCity('campeche');
+      setStatusCityFilter('campeche');
+    } else if (cleanPin === JUAREZ_PIN) {
+      setUserRole('juarez_operator');
+      setIsAuthenticated(true);
+      localStorage.setItem('red_admin_role', 'juarez_operator');
+      setErrorMsg('');
+      setAdminCity('juarez');
+      setCodeCity('juarez');
+      setStatusCityFilter('juarez');
+      setAlliesCityFilter('juarez');
+      setActiveTab('status');
     } else {
-      setErrorMsg('PIN incorrecto');
+      setErrorMsg('PIN incorrecto. Ingresa tu PIN de SuperAdmin o el PIN de Operador de Plaza.');
     }
   };
 
-
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUserRole(null);
+    setPin('');
+    localStorage.removeItem('red_admin_role');
+  };
 
   const handleGenerateCodes = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (userRole !== 'superadmin') {
+      setErrorMsg('Acceso Denegado: Solo el Administrador Maestro (SuperAdmin) tiene autorización para generar códigos.');
+      return;
+    }
     setIsGenerating(true);
     setSuccessMsg('');
     setErrorMsg('');
@@ -294,6 +385,19 @@ const Admin: React.FC = () => {
       linkEl.click();
       document.body.removeChild(linkEl);
 
+      const auditEntry: BatchAuditItem = {
+        id: 'batch_' + Date.now(),
+        date: new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }),
+        type: 'GENERATION',
+        city: isJuarez ? 'Ciudad Juárez' : 'Campeche',
+        prefix: prefix.toUpperCase(),
+        range: `${firstCode} a ${lastCode}`,
+        count: quantity,
+        level: level,
+        user: '👑 SuperAdmin (Control Maestro)'
+      };
+      saveBatchAudit(auditEntry);
+
       setSuccessMsg(`¡${quantity} códigos secuenciales generados para ${isJuarez ? 'Ciudad Juárez' : 'Campeche'} (${firstCode} a ${lastCode})!`);
       setStartNumber(startNumber + quantity);
     } catch (err: any) {
@@ -338,6 +442,10 @@ const Admin: React.FC = () => {
   };
 
   const handleClearJuarezCodes = async () => {
+    if (userRole !== 'superadmin') {
+      setErrorMsg('Acceso Denegado: Solo el Administrador Maestro (SuperAdmin) puede eliminar códigos.');
+      return;
+    }
     if (confirm('¿Estás seguro de borrar ÚNICAMENTE los códigos sin reclamar de Ciudad Juárez (VJ-)? Las calcomanías activadas por usuarios NO se borrarán.')) {
       try {
         const { error } = await supabase
@@ -348,6 +456,17 @@ const Admin: React.FC = () => {
 
         if (error) throw error;
         setSuccessMsg('Códigos sin reclamar de Ciudad Juárez eliminados correctamente.');
+        saveBatchAudit({
+          id: 'del_' + Date.now(),
+          date: new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }),
+          type: 'DELETION',
+          city: 'Ciudad Juárez',
+          prefix: 'VJ-',
+          range: 'Códigos VJ sin reclamar',
+          count: 0,
+          level: 'juarense_oficial',
+          user: '👑 SuperAdmin (Limpieza Autorizada)'
+        });
         fetchStickersStatus();
       } catch (err: any) {
         setErrorMsg('Error al eliminar códigos de Juárez: ' + (err.message || ''));
@@ -356,6 +475,10 @@ const Admin: React.FC = () => {
   };
 
   const handleClearCampechanaRosaNegraCodes = async () => {
+    if (userRole !== 'superadmin') {
+      setErrorMsg('Acceso Denegado: Solo el Administrador Maestro (SuperAdmin) puede eliminar códigos.');
+      return;
+    }
     if (confirm('¿Estás seguro de borrar ÚNICAMENTE los códigos sin reclamar de Campechana (Rosa, Negra y Blanca)? Las demás calcomanías y las activadas por usuarios NO se borrarán.')) {
       try {
         const { error } = await supabase
@@ -366,6 +489,17 @@ const Admin: React.FC = () => {
 
         if (error) throw error;
         setSuccessMsg('Códigos sin reclamar de Campechana Rosa, Negra y Blanca eliminados correctamente.');
+        saveBatchAudit({
+          id: 'del_' + Date.now(),
+          date: new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' }),
+          type: 'DELETION',
+          city: 'Campeche',
+          prefix: 'ROSA/NEGR/BLAN',
+          range: 'Códigos Campechana sin reclamar',
+          count: 0,
+          level: 'campechano_oficial',
+          user: '👑 SuperAdmin (Limpieza Autorizada)'
+        });
         fetchStickersStatus();
       } catch (err: any) {
         setErrorMsg('Error al eliminar códigos: ' + (err.message || ''));
@@ -374,6 +508,10 @@ const Admin: React.FC = () => {
   };
 
   const handleClearUnclaimedCodes = async () => {
+    if (userRole !== 'superadmin') {
+      setErrorMsg('Acceso Denegado: Solo el Administrador Maestro (SuperAdmin) puede eliminar códigos.');
+      return;
+    }
     if (confirm('¿Estás seguro de borrar TODOS los códigos sin reclamar (de prueba)? Las calcomanías activadas por usuarios NO se borrarán.')) {
       const { error } = await supabase.from('stickers').delete().is('phone', null);
       if (error) {
@@ -387,6 +525,10 @@ const Admin: React.FC = () => {
   };
 
   const handleResetStickerOne = async () => {
+    if (userRole !== 'superadmin') {
+      setErrorMsg('Acceso Denegado: Solo el Administrador Maestro (SuperAdmin) puede liberar calcomanías.');
+      return;
+    }
     if (confirm('¿Estás seguro de liberar la Calcomanía #1? Se borrará el teléfono vinculado en la base de datos para que quede como nueva/sin activar.')) {
       const { error } = await supabase.from('stickers').update({ phone: null, claimed_at: null }).eq('member_number', 1);
       if (error) {
@@ -398,6 +540,10 @@ const Admin: React.FC = () => {
   };
 
   const handleResetAllClaimedStickers = async () => {
+    if (userRole !== 'superadmin') {
+      setErrorMsg('Acceso Denegado: Solo el Administrador Maestro (SuperAdmin) puede reiniciar calcomanías.');
+      return;
+    }
     if (confirm('¿Estás seguro de desvincular TODAS las calcomanías activadas? Todas volverán a estado virgen/nuevo.')) {
       const { error } = await supabase.from('stickers').update({ phone: null, claimed_at: null }).not('phone', 'is', null);
       if (error) {
@@ -685,7 +831,7 @@ const Admin: React.FC = () => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isAuthenticated) {
       if (activeTab === 'allies') {
         fetchSavedAllies();
@@ -695,25 +841,45 @@ const Admin: React.FC = () => {
     }
   }, [isAuthenticated, activeTab]);
 
+  useEffect(() => {
+    if (userRole === 'juarez_operator') {
+      setAdminCity('juarez');
+      setCodeCity('juarez');
+      setStatusCityFilter('juarez');
+      setAlliesCityFilter('juarez');
+      if (activeTab === 'codes' || activeTab === 'envelope' || activeTab === 'print' || activeTab === 'prensa') {
+        setActiveTab('status');
+      }
+    }
+  }, [userRole, activeTab]);
+
   if (!isAuthenticated) {
     return (
-      <div className="animate-fade-in" style={{ padding: '2rem', textAlign: 'center', paddingTop: '4rem' }}>
+      <div className="animate-fade-in" style={{ padding: '2rem', textAlign: 'center', paddingTop: '4rem', maxWidth: '480px', margin: '0 auto' }}>
         <ShieldAlert size={48} color="var(--accent-gold)" style={{ margin: '0 auto 1.5rem' }} />
-        <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Acceso Restringido</h1>
-        <p style={{ color: 'var(--text-dim)', marginBottom: '2rem' }}>Panel Maestro</p>
+        <h1 style={{ fontSize: '1.6rem', marginBottom: '0.4rem', fontWeight: 800 }}>Acceso Restringido</h1>
+        <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem', marginBottom: '2rem' }}>
+          Ingresa tu PIN de <strong>SuperAdmin</strong> o de <strong>Operador de Plaza</strong>
+        </p>
         
         <form onSubmit={handleLogin} className="glass" style={{ padding: '2rem', borderRadius: '24px' }}>
           <input 
             type="password" 
-            placeholder="PIN de Administrador"
+            placeholder="PIN de Acceso"
             value={pin}
             onChange={(e) => setPin(e.target.value)}
             style={{ width: '100%', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', borderRadius: '12px', color: '#FFF', fontSize: '1.2rem', outline: 'none', textAlign: 'center', letterSpacing: '0.2em', marginBottom: '1rem' }}
           />
-          {errorMsg && <p style={{ color: '#ff4444', marginBottom: '1rem' }}>{errorMsg}</p>}
-          <button type="submit" style={{ width: '100%', padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--accent-gold)', color: '#121212', fontWeight: 700, border: 'none', cursor: 'pointer' }}>
+          {errorMsg && <p style={{ color: '#ff4444', marginBottom: '1rem', fontSize: '0.85rem' }}>{errorMsg}</p>}
+          <button type="submit" style={{ width: '100%', padding: '1rem', borderRadius: '12px', backgroundColor: 'var(--accent-gold)', color: '#121212', fontWeight: 700, border: 'none', cursor: 'pointer', fontSize: '0.95rem' }}>
             Desbloquear Panel
           </button>
+
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.2rem', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'center', gap: '1rem', fontSize: '0.75rem', color: 'var(--text-dim)' }}>
+            <span>👑 Control Maestro</span>
+            <span>•</span>
+            <span>🌵 Operador Cd. Juárez</span>
+          </div>
         </form>
       </div>
     );
@@ -721,8 +887,48 @@ const Admin: React.FC = () => {
 
   return (
     <div className="animate-fade-in" style={{ padding: '1.5rem', paddingBottom: '100px' }}>
-      <h1 style={{ fontSize: '1.8rem', marginBottom: '0.5rem', marginTop: '1rem' }}>Panel Maestro</h1>
-      <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Administra tu Red Identidad.</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', marginTop: '1rem', flexWrap: 'wrap', gap: '0.8rem' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <h1 style={{ fontSize: '1.8rem', margin: 0 }}>
+              {userRole === 'superadmin' ? 'Panel Maestro' : 'Panel de Operación Local'}
+            </h1>
+            {userRole === 'superadmin' ? (
+              <span style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '8px', backgroundColor: 'rgba(212,175,55,0.2)', color: 'var(--accent-gold)', fontWeight: 800, border: '1px solid var(--accent-gold)' }}>
+                👑 SuperAdmin
+              </span>
+            ) : (
+              <span style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '8px', backgroundColor: 'rgba(239,68,68,0.2)', color: '#FCA5A5', fontWeight: 800, border: '1px solid #EF4444' }}>
+                🌵 Operador Juárez
+              </span>
+            )}
+          </div>
+          <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', margin: '4px 0 0 0' }}>
+            {userRole === 'superadmin' 
+              ? 'Control central y emisión de membresías para todas las plazas.' 
+              : 'Gestión local, entrega de membresías y comercios aliados en Ciudad Juárez.'}
+          </p>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: '0.5rem 0.9rem',
+            borderRadius: '10px',
+            backgroundColor: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            color: '#FFF',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <LogOut size={14} /> Cerrar Sesión
+        </button>
+      </div>
 
       {/* Master City Switcher Banner */}
       <div style={{
@@ -745,7 +951,7 @@ const Admin: React.FC = () => {
           <Globe size={22} color={adminCity === 'juarez' ? '#F87171' : adminCity === 'campeche' ? 'var(--accent-gold)' : '#FFF'} />
           <div>
             <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--text-dim)', letterSpacing: '0.1em', fontWeight: 700 }}>
-              Plaza / Ciudad de Administración
+              {userRole === 'superadmin' ? 'Plaza / Ciudad en Administración' : 'Plaza Asignada'}
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 900, color: adminCity === 'juarez' ? '#F87171' : adminCity === 'campeche' ? 'var(--accent-gold)' : '#FFF' }}>
               {adminCity === 'all' && '🌐 Vista Global (Todas las Plazas)'}
@@ -755,104 +961,96 @@ const Admin: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => {
-              setAdminCity('all');
-              setStatusCityFilter('all');
-              setAlliesCityFilter('all');
-            }}
-            style={{
-              padding: '0.55rem 0.9rem',
-              borderRadius: '10px',
-              border: adminCity === 'all' ? '1.5px solid #FFF' : '1px solid rgba(255,255,255,0.1)',
-              backgroundColor: adminCity === 'all' ? '#FFF' : 'rgba(255,255,255,0.05)',
-              color: adminCity === 'all' ? '#000' : '#FFF',
-              fontWeight: 700,
-              fontSize: '0.8rem',
-              cursor: 'pointer'
-            }}
-          >
-            🌐 Todas
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setAdminCity('campeche');
-              setCodeCity('campeche');
-              setPrefix('RED-');
-              setLevel('campechana_rosa');
-              setStatusCityFilter('campeche');
-              setAlliesCityFilter('campeche');
-              setPrintLevel('campechana_rosa');
-            }}
-            style={{
-              padding: '0.55rem 0.9rem',
-              borderRadius: '10px',
-              border: adminCity === 'campeche' ? '1.5px solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.1)',
-              backgroundColor: adminCity === 'campeche' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.05)',
-              color: adminCity === 'campeche' ? '#000' : '#FFF',
-              fontWeight: 700,
-              fontSize: '0.8rem',
-              cursor: 'pointer'
-            }}
-          >
-            🏰 Campeche
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setAdminCity('juarez');
-              setCodeCity('juarez');
-              setPrefix('VJ-');
-              setLevel('juarense_oficial');
-              setStatusCityFilter('juarez');
-              setAlliesCityFilter('juarez');
-              setPrintLevel('juarense_oficial');
-            }}
-            style={{
-              padding: '0.55rem 0.9rem',
-              borderRadius: '10px',
-              border: adminCity === 'juarez' ? '1.5px solid #EF4444' : '1px solid rgba(255,255,255,0.1)',
-              backgroundColor: adminCity === 'juarez' ? '#DC2626' : 'rgba(255,255,255,0.05)',
-              color: '#FFF',
-              fontWeight: 800,
-              fontSize: '0.8rem',
-              cursor: 'pointer'
-            }}
-          >
-            🌵 Ciudad Juárez
-          </button>
-        </div>
+        {userRole === 'superadmin' ? (
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setAdminCity('all');
+                setStatusCityFilter('all');
+                setAlliesCityFilter('all');
+              }}
+              style={{
+                padding: '0.55rem 0.9rem',
+                borderRadius: '10px',
+                border: adminCity === 'all' ? '1.5px solid #FFF' : '1px solid rgba(255,255,255,0.1)',
+                backgroundColor: adminCity === 'all' ? '#FFF' : 'rgba(255,255,255,0.05)',
+                color: adminCity === 'all' ? '#000' : '#FFF',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                cursor: 'pointer'
+              }}
+            >
+              🌐 Todas
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAdminCity('campeche');
+                setCodeCity('campeche');
+                setPrefix('RED-');
+                setLevel('campechana_rosa');
+                setStatusCityFilter('campeche');
+                setAlliesCityFilter('campeche');
+                setPrintLevel('campechana_rosa');
+              }}
+              style={{
+                padding: '0.55rem 0.9rem',
+                borderRadius: '10px',
+                border: adminCity === 'campeche' ? '1.5px solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.1)',
+                backgroundColor: adminCity === 'campeche' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.05)',
+                color: adminCity === 'campeche' ? '#000' : '#FFF',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                cursor: 'pointer'
+              }}
+            >
+              🏰 Campeche
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAdminCity('juarez');
+                setCodeCity('juarez');
+                setPrefix('VJ-');
+                setLevel('juarense_oficial');
+                setStatusCityFilter('juarez');
+                setAlliesCityFilter('juarez');
+                setPrintLevel('juarense_oficial');
+              }}
+              style={{
+                padding: '0.55rem 0.9rem',
+                borderRadius: '10px',
+                border: adminCity === 'juarez' ? '1.5px solid #EF4444' : '1px solid rgba(255,255,255,0.1)',
+                backgroundColor: adminCity === 'juarez' ? '#DC2626' : 'rgba(255,255,255,0.05)',
+                color: '#FFF',
+                fontWeight: 800,
+                fontSize: '0.8rem',
+                cursor: 'pointer'
+              }}
+            >
+              🌵 Ciudad Juárez
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.8rem', padding: '0.45rem 0.9rem', borderRadius: '10px', backgroundColor: 'rgba(239,68,68,0.2)', color: '#FCA5A5', border: '1px solid #EF4444', fontWeight: 700 }}>
+              🔒 Operación Local Juárez
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-        <button 
-          onClick={() => { setActiveTab('codes'); setSuccessMsg(''); setErrorMsg(''); }}
-          style={{ flex: 1, minWidth: '90px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'codes' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'codes' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
-        >
-          <QrCode size={16} /> Códigos
-        </button>
-        <button 
-          onClick={() => { setActiveTab('allies'); setSuccessMsg(''); setErrorMsg(''); }}
-          style={{ flex: 1, minWidth: '90px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'allies' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'allies' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
-        >
-          <Store size={16} /> Aliados
-        </button>
-        <button 
-          onClick={() => { setActiveTab('print'); setSuccessMsg(''); setErrorMsg(''); setPrintStickers([]); }}
-          style={{ flex: 1, minWidth: '90px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'print' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'print' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
-        >
-          <Printer size={16} /> Tarjetas
-        </button>
-        <button 
-          onClick={() => { setActiveTab('envelope'); setSuccessMsg(''); setErrorMsg(''); }}
-          style={{ flex: 1, minWidth: '110px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'envelope' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'envelope' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
-        >
-          <Printer size={16} /> Sobres (7x7)
-        </button>
+        {userRole === 'superadmin' && (
+          <button 
+            onClick={() => { setActiveTab('codes'); setSuccessMsg(''); setErrorMsg(''); }}
+            style={{ flex: 1, minWidth: '90px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'codes' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'codes' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+          >
+            <QrCode size={16} /> Códigos
+          </button>
+        )}
         <button 
           onClick={() => { 
             setActiveTab('status'); 
@@ -864,8 +1062,30 @@ const Admin: React.FC = () => {
           }}
           style={{ flex: 1, minWidth: '100px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'status' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'status' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
         >
-          <Activity size={16} /> Estatus QR
+          <Activity size={16} /> Estatus QR {userRole === 'juarez_operator' ? 'Juárez' : ''}
         </button>
+        <button 
+          onClick={() => { setActiveTab('allies'); setSuccessMsg(''); setErrorMsg(''); }}
+          style={{ flex: 1, minWidth: '90px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'allies' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'allies' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+        >
+          <Store size={16} /> Aliados {userRole === 'juarez_operator' ? 'Juárez' : ''}
+        </button>
+        {userRole === 'superadmin' && (
+          <>
+            <button 
+              onClick={() => { setActiveTab('print'); setSuccessMsg(''); setErrorMsg(''); setPrintStickers([]); }}
+              style={{ flex: 1, minWidth: '90px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'print' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'print' ? '#121212' : '#FFF', border: 'none', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+            >
+              <Printer size={16} /> Tarjetas
+            </button>
+            <button 
+              onClick={() => { setActiveTab('envelope'); setSuccessMsg(''); setErrorMsg(''); }}
+              style={{ flex: 1, minWidth: '110px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'envelope' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'envelope' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+            >
+              <Printer size={16} /> Sobres (7x7)
+            </button>
+          </>
+        )}
         <button 
           onClick={() => { setActiveTab('sorteos'); setSuccessMsg(''); setErrorMsg(''); }}
           style={{ flex: 1, minWidth: '120px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'sorteos' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'sorteos' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
@@ -878,18 +1098,22 @@ const Admin: React.FC = () => {
         >
           <MessageSquare size={16} /> Contactar Aliados
         </button>
-        <button 
-          onClick={() => { setActiveTab('loyalty'); setSuccessMsg(''); setErrorMsg(''); }}
-          style={{ flex: 1, minWidth: '130px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'loyalty' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'loyalty' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
-        >
-          <Award size={16} /> Premios Lealtad
-        </button>
-        <button 
-          onClick={() => { setActiveTab('prensa'); setSuccessMsg(''); setErrorMsg(''); }}
-          style={{ flex: 1, minWidth: '130px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'prensa' ? '#F59E0B' : 'rgba(255,255,255,0.1)', color: activeTab === 'prensa' ? '#121212' : '#FFF', border: 'none', fontWeight: 800, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
-        >
-          <Crown size={16} /> 🎙️ Prensa (25)
-        </button>
+        {userRole === 'superadmin' && (
+          <>
+            <button 
+              onClick={() => { setActiveTab('loyalty'); setSuccessMsg(''); setErrorMsg(''); }}
+              style={{ flex: 1, minWidth: '130px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'loyalty' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.1)', color: activeTab === 'loyalty' ? '#121212' : '#FFF', border: 'none', fontWeight: 700, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+            >
+              <Award size={16} /> Premios Lealtad
+            </button>
+            <button 
+              onClick={() => { setActiveTab('prensa'); setSuccessMsg(''); setErrorMsg(''); }}
+              style={{ flex: 1, minWidth: '130px', padding: '0.8rem 0.5rem', borderRadius: '12px', backgroundColor: activeTab === 'prensa' ? '#F59E0B' : 'rgba(255,255,255,0.1)', color: activeTab === 'prensa' ? '#121212' : '#FFF', border: 'none', fontWeight: 800, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}
+            >
+              <Crown size={16} /> 🎙️ Prensa (25)
+            </button>
+          </>
+        )}
       </div>
 
       {errorMsg && (
@@ -904,9 +1128,125 @@ const Admin: React.FC = () => {
         </div>
       )}
 
-      {/* Tab: Codes */}
-      {activeTab === 'codes' && (
+      {/* Tab: Codes (Exclusivo SuperAdmin) */}
+      {activeTab === 'codes' && userRole === 'superadmin' && (
         <section className="glass" style={{ padding: '2rem', borderRadius: '24px' }}>
+          
+          {/* 🛡️ CENTRO DE CONTROL MAESTRO DE FRANQUICIAS Y AUDITORÍA DE LOTES */}
+          <div style={{
+            backgroundColor: 'rgba(20, 20, 26, 0.95)',
+            border: '1.5px solid var(--accent-gold)',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            marginBottom: '2rem',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.5)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.2rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '1rem' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <ShieldCheck size={24} color="var(--accent-gold)" />
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: '#FFF' }}>
+                    Control Maestro de Franquicia & Emisión Juárez
+                  </h3>
+                  <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '6px', backgroundColor: 'rgba(212,175,55,0.2)', color: 'var(--accent-gold)', fontWeight: 800, border: '1px solid var(--accent-gold)' }}>
+                    Exclusivo SuperAdmin
+                  </span>
+                </div>
+                <p style={{ color: 'var(--text-dim)', fontSize: '0.82rem', margin: '4px 0 0 0' }}>
+                  Tú eres la única autoridad que puede emitir o revocar códigos. Tu socio en Juárez tiene acceso restringido solo para operar.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <div style={{ padding: '0.5rem 0.8rem', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', fontSize: '0.75rem' }}>
+                  <div style={{ color: 'var(--text-dim)', fontSize: '0.68rem' }}>PIN SUPERADMIN (TÚ)</div>
+                  <strong style={{ color: 'var(--accent-gold)', letterSpacing: '0.1em' }}>RED2024</strong>
+                </div>
+                <div style={{ padding: '0.5rem 0.8rem', borderRadius: '10px', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid #EF4444', fontSize: '0.75rem' }}>
+                  <div style={{ color: '#FCA5A5', fontSize: '0.68rem' }}>PIN SOCIO JUÁREZ</div>
+                  <strong style={{ color: '#FFF', letterSpacing: '0.1em' }}>JUAREZ2024</strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Métricas de Gobernanza Juárez */}
+            {(() => {
+              const juarezCodes = allStickers.filter(s => (s.code || '').startsWith('VJ') || (s.level || '').toLowerCase().includes('juar'));
+              const juarezActivated = juarezCodes.filter(s => !!s.phone).length;
+              const juarezAvailable = juarezCodes.filter(s => !s.phone).length;
+
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                  <div style={{ padding: '1rem', borderRadius: '14px', backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#FCA5A5', fontWeight: 700, textTransform: 'uppercase' }}>Lotes Emitidos a Juárez</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#EF4444', marginTop: '4px' }}>
+                      {juarezCodes.length} QRs
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '2px' }}>Rango: VJ-0001 a VJ-1000</div>
+                  </div>
+
+                  <div style={{ padding: '1rem', borderRadius: '14px', backgroundColor: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.25)' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#4ADE80', fontWeight: 700, textTransform: 'uppercase' }}>Inventario por Entregar</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#4ADE80', marginTop: '4px' }}>
+                      {juarezAvailable} Libres
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '2px' }}>Disponibles para clientes</div>
+                  </div>
+
+                  <div style={{ padding: '1rem', borderRadius: '14px', backgroundColor: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.25)' }}>
+                    <div style={{ fontSize: '0.7rem', color: '#38BDF8', fontWeight: 700, textTransform: 'uppercase' }}>Activadas por Clientes</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#38BDF8', marginTop: '4px' }}>
+                      {juarezActivated} Registradas
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '2px' }}>Clientes ya vinculados</div>
+                  </div>
+
+                  <div style={{ padding: '1rem', borderRadius: '14px', backgroundColor: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.25)' }}>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--accent-gold)', fontWeight: 700, textTransform: 'uppercase' }}>Estatus de Franquicia</div>
+                    <div style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--accent-gold)', marginTop: '8px' }}>
+                      🟢 Lote 1 Operativo
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '2px' }}>Juárez no puede crear lotes</div>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Historial / Bitácora de Auditoría */}
+            <div style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: '14px', padding: '1rem', border: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
+                <History size={16} color="var(--accent-gold)" />
+                <strong style={{ fontSize: '0.85rem', color: '#FFF' }}>Bitácora de Lotes y Movimientos de Códigos</strong>
+              </div>
+
+              <div style={{ maxHeight: '180px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {batchAudits.map((item) => (
+                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0.8rem', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '8px', fontSize: '0.78rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                      <span style={{
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontWeight: 800,
+                        fontSize: '0.68rem',
+                        backgroundColor: item.type === 'GENERATION' ? 'rgba(74,222,128,0.2)' : 'rgba(239,68,68,0.2)',
+                        color: item.type === 'GENERATION' ? '#4ADE80' : '#FCA5A5'
+                      }}>
+                        {item.type === 'GENERATION' ? 'EMISIÓN' : 'ELIMINACIÓN'}
+                      </span>
+                      <strong>{item.city}</strong>
+                      <span style={{ color: 'var(--text-dim)' }}>{item.range} ({item.count > 0 ? `${item.count} códigos` : 'Limpieza'})</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--text-dim)', fontSize: '0.72rem' }}>
+                      <span>{item.user}</span>
+                      <span>•</span>
+                      <span>{item.date}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           <form onSubmit={handleGenerateCodes}>
             {/* Selector de Plaza para el Lote */}
             <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid var(--glass-border)' }}>
@@ -1421,29 +1761,37 @@ const Admin: React.FC = () => {
 
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.8rem' }}>
             <h3 style={{ fontSize: '1.2rem', margin: 0 }}>Tus Aliados Activos</h3>
-            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => setAlliesCityFilter('all')}
-                style={{ padding: '0.4rem 0.8rem', borderRadius: '14px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: alliesCityFilter === 'all' ? '#FFF' : 'rgba(255,255,255,0.08)', color: alliesCityFilter === 'all' ? '#000' : '#FFF', border: 'none', cursor: 'pointer' }}
-              >
-                🌐 Todos ({savedAllies.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setAlliesCityFilter('campeche')}
-                style={{ padding: '0.4rem 0.8rem', borderRadius: '14px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: alliesCityFilter === 'campeche' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)', color: alliesCityFilter === 'campeche' ? '#000' : '#FFF', border: 'none', cursor: 'pointer' }}
-              >
-                🏰 Campeche ({savedAllies.filter(a => Number(a.lng) > -100 && !(a.name || '').toLowerCase().includes('juarez')).length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setAlliesCityFilter('juarez')}
-                style={{ padding: '0.4rem 0.8rem', borderRadius: '14px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: alliesCityFilter === 'juarez' ? '#DC2626' : 'rgba(255,255,255,0.08)', color: '#FFF', border: 'none', cursor: 'pointer' }}
-              >
-                🌵 Ciudad Juárez ({savedAllies.filter(a => Number(a.lng) <= -100 || (a.name || '').toLowerCase().includes('juarez')).length})
-              </button>
-            </div>
+            {userRole === 'superadmin' ? (
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => setAlliesCityFilter('all')}
+                  style={{ padding: '0.4rem 0.8rem', borderRadius: '14px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: alliesCityFilter === 'all' ? '#FFF' : 'rgba(255,255,255,0.08)', color: alliesCityFilter === 'all' ? '#000' : '#FFF', border: 'none', cursor: 'pointer' }}
+                >
+                  🌐 Todos ({savedAllies.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAlliesCityFilter('campeche')}
+                  style={{ padding: '0.4rem 0.8rem', borderRadius: '14px', fontSize: '0.75rem', fontWeight: 600, backgroundColor: alliesCityFilter === 'campeche' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)', color: alliesCityFilter === 'campeche' ? '#000' : '#FFF', border: 'none', cursor: 'pointer' }}
+                >
+                  🏰 Campeche ({savedAllies.filter(a => Number(a.lng) > -100 && !(a.name || '').toLowerCase().includes('juarez')).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAlliesCityFilter('juarez')}
+                  style={{ padding: '0.4rem 0.8rem', borderRadius: '14px', fontSize: '0.75rem', fontWeight: 700, backgroundColor: alliesCityFilter === 'juarez' ? '#DC2626' : 'rgba(255,255,255,0.08)', color: '#FFF', border: 'none', cursor: 'pointer' }}
+                >
+                  🌵 Ciudad Juárez ({savedAllies.filter(a => Number(a.lng) <= -100 || (a.name || '').toLowerCase().includes('juarez')).length})
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', borderRadius: '10px', backgroundColor: 'rgba(239,68,68,0.2)', color: '#FCA5A5', border: '1px solid #EF4444', fontWeight: 800 }}>
+                  🌵 Aliados Ciudad Juárez ({savedAllies.filter(a => Number(a.lng) <= -100 || (a.name || '').toLowerCase().includes('juarez')).length})
+                </span>
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -2085,18 +2433,28 @@ const Admin: React.FC = () => {
               >
                 <RefreshCw size={14} className={isStatusLoading ? 'animate-spin' : ''} /> Actualizar
               </button>
-              <button
-                onClick={handleClearJuarezCodes}
-                style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(239,68,68,0.18)', border: '1px solid #EF4444', color: '#FCA5A5', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Trash2 size={14} /> Limpiar VJ (Juárez sin usar)
-              </button>
-              <button
-                onClick={handleClearCampechanaRosaNegraCodes}
-                style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Trash2 size={14} /> Limpiar Campechana sin usar
-              </button>
+              {userRole === 'superadmin' ? (
+                <>
+                  <button
+                    onClick={handleClearJuarezCodes}
+                    style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(239,68,68,0.18)', border: '1px solid #EF4444', color: '#FCA5A5', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Trash2 size={14} /> Limpiar VJ (Juárez sin usar)
+                  </button>
+                  <button
+                    onClick={handleClearCampechanaRosaNegraCodes}
+                    style={{ padding: '0.6rem 1rem', borderRadius: '10px', backgroundColor: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Trash2 size={14} /> Limpiar Campechana sin usar
+                  </button>
+                </>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ padding: '0.5rem 0.8rem', borderRadius: '10px', backgroundColor: 'rgba(239,68,68,0.15)', border: '1px solid #EF4444', color: '#FCA5A5', fontSize: '0.75rem', fontWeight: 700 }}>
+                    🔒 Operación Autorizada: Ciudad Juárez
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -2199,38 +2557,46 @@ const Admin: React.FC = () => {
           {/* Filtros y Buscador */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1.5rem' }}>
             {/* Filtro de Plaza */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => setStatusCityFilter('all')}
-                style={{
-                  padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
-                  backgroundColor: statusCityFilter === 'all' ? '#FFF' : 'rgba(255,255,255,0.08)',
-                  color: statusCityFilter === 'all' ? '#000' : '#FFF', border: 'none', cursor: 'pointer'
-                }}
-              >
-                🌐 Todas las Plazas ({allStickers.length})
-              </button>
-              <button
-                onClick={() => setStatusCityFilter('campeche')}
-                style={{
-                  padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
-                  backgroundColor: statusCityFilter === 'campeche' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)',
-                  color: statusCityFilter === 'campeche' ? '#000' : '#FFF', border: 'none', cursor: 'pointer'
-                }}
-              >
-                🏰 Campeche ({allStickers.filter(s => !s.code?.startsWith('VJ') && !(s.level || '').toLowerCase().includes('juar')).length})
-              </button>
-              <button
-                onClick={() => setStatusCityFilter('juarez')}
-                style={{
-                  padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
-                  backgroundColor: statusCityFilter === 'juarez' ? '#DC2626' : 'rgba(255,255,255,0.08)',
-                  color: '#FFF', border: 'none', cursor: 'pointer'
-                }}
-              >
-                🌵 Ciudad Juárez ({allStickers.filter(s => s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar')).length})
-              </button>
-            </div>
+            {userRole === 'superadmin' ? (
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => setStatusCityFilter('all')}
+                  style={{
+                    padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
+                    backgroundColor: statusCityFilter === 'all' ? '#FFF' : 'rgba(255,255,255,0.08)',
+                    color: statusCityFilter === 'all' ? '#000' : '#FFF', border: 'none', cursor: 'pointer'
+                  }}
+                >
+                  🌐 Todas las Plazas ({allStickers.length})
+                </button>
+                <button
+                  onClick={() => setStatusCityFilter('campeche')}
+                  style={{
+                    padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
+                    backgroundColor: statusCityFilter === 'campeche' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)',
+                    color: statusCityFilter === 'campeche' ? '#000' : '#FFF', border: 'none', cursor: 'pointer'
+                  }}
+                >
+                  🏰 Campeche ({allStickers.filter(s => !s.code?.startsWith('VJ') && !(s.level || '').toLowerCase().includes('juar')).length})
+                </button>
+                <button
+                  onClick={() => setStatusCityFilter('juarez')}
+                  style={{
+                    padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
+                    backgroundColor: statusCityFilter === 'juarez' ? '#DC2626' : 'rgba(255,255,255,0.08)',
+                    color: '#FFF', border: 'none', cursor: 'pointer'
+                  }}
+                >
+                  🌵 Ciudad Juárez ({allStickers.filter(s => s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar')).length})
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.8rem', padding: '0.45rem 0.9rem', borderRadius: '10px', backgroundColor: 'rgba(239,68,68,0.2)', color: '#FCA5A5', border: '1px solid #EF4444', fontWeight: 800 }}>
+                  🌵 Membresías Asignadas a Ciudad Juárez ({allStickers.filter(s => s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar')).length})
+                </span>
+              </div>
+            )}
 
             <div style={{ position: 'relative' }}>
               <Search size={18} color="var(--text-dim)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
