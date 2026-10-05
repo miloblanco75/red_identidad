@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Crown, QrCode, Star, Phone, Sparkles, Smartphone, Clock, Gift, Copy, Check } from 'lucide-react';
+import { ShieldCheck, Crown, QrCode, Star, Phone, Sparkles, Smartphone, Clock, Gift, Copy, Check, AlertCircle, ShoppingBag } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -8,7 +8,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import BrandLogo from '../components/BrandLogo';
 import { generateDynamicQrPayload } from '../lib/dynamicQr';
 import { TrialPassModal } from '../components/TrialPassModal';
+import { BuyStickerModal } from '../components/BuyStickerModal';
 import { useCity } from '../contexts/CityContext';
+import { getStoredJuarezTrialPass, checkJuarezTrialValidity } from '../lib/juarezTrialService';
 
 const Registro: React.FC = () => {
   const { user, loginLocal, signOut, isLoading } = useAuth();
@@ -27,6 +29,27 @@ const Registro: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [showTrialModal, setShowTrialModal] = useState(() => searchParams.get('trial') === 'true' || searchParams.get('prueba') === 'true');
   const [copiedInvite, setCopiedInvite] = useState(false);
+  const [showBuyModal, setShowBuyModal] = useState(() => searchParams.get('comprar') === 'true');
+  const [isJuarezTrialExpired, setIsJuarezTrialExpired] = useState(false);
+  const [juarezTrialDaysLeft, setJuarezTrialDaysLeft] = useState<number | null>(null);
+
+  // Comprobar vigencia de prueba de 7 días de Juárez
+  useEffect(() => {
+    if (!user) return;
+    const is7d = user.level === 'trial_7d' || user.code?.startsWith('VJ-7D-');
+    if (is7d) {
+      const stored = getStoredJuarezTrialPass();
+      if (stored) {
+        const val = checkJuarezTrialValidity(stored);
+        if (val.isExpired) {
+          setIsJuarezTrialExpired(true);
+          setShowBuyModal(true); // Redirige inmediatamente a la compra de membresía digital
+        } else {
+          setJuarezTrialDaysLeft(val.remainingDays);
+        }
+      }
+    }
+  }, [user]);
 
   // Estado del QR dinámico anti-captura para el pase post-registro
   const [dynamicPayload, setDynamicPayload] = useState(() => 
@@ -298,6 +321,12 @@ const Registro: React.FC = () => {
     }
     if (user?.code?.startsWith('DIG-') || levelStr?.toLowerCase() === 'digital') {
       return { name: 'Membresía Digital Oficial', color: '#38BDF8', glow: 'premium-glow-gold', progress: 100 };
+    }
+    if (user?.code?.startsWith('VJ-7D-') || levelStr?.toLowerCase() === 'trial_7d') {
+      return { name: 'Membresía Cortesía (7 Días Juárez)', color: '#FF6B6B', glow: 'premium-glow-white', progress: 50 };
+    }
+    if (levelStr?.toLowerCase() === 'trial_expired') {
+      return { name: 'Membresía 7 Días Expirada', color: '#EF4444', glow: 'premium-glow-white', progress: 100 };
     }
     if (user?.code?.startsWith('TRIAL-') || levelStr?.toLowerCase() === 'trial') {
       return { name: 'Pase de Cortesía (24h)', color: '#4ADE80', glow: 'premium-glow-white', progress: 50 };
@@ -593,6 +622,90 @@ const Registro: React.FC = () => {
         {user.code?.includes('DEMO') && (
           <div style={{ backgroundColor: 'rgba(212, 175, 55, 0.15)', border: '1px solid var(--accent-gold)', padding: '0.6rem 1rem', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.8rem', color: 'var(--accent-gold)', textAlign: 'center', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
             <Sparkles size={16} /> Pase de Demostración Activo (Vista Previa POS)
+          </div>
+        )}
+
+        {/* Banner de Membresía 7 Días Vive Juárez Activa */}
+        {(user.level === 'trial_7d' || user.code?.startsWith('VJ-7D-')) && !isJuarezTrialExpired && (
+          <div style={{
+            backgroundColor: 'rgba(220, 38, 38, 0.12)',
+            border: '1.5px solid #DC2626',
+            padding: '1rem 1.2rem',
+            borderRadius: '16px',
+            marginBottom: '1.5rem',
+            textAlign: 'center',
+            boxShadow: '0 0 25px rgba(220, 38, 38, 0.25)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: '#FF6B6B', fontWeight: 800, fontSize: '0.88rem', marginBottom: '4px' }}>
+              <Clock size={18} /> Membresía Gratis por 7 Días • Vive Juárez
+            </div>
+            <p style={{ color: '#E2E8F0', fontSize: '0.78rem', margin: '0 0 10px 0', lineHeight: 1.35 }}>
+              {juarezTrialDaysLeft !== null 
+                ? `Vigente por tiempo limitado: Te quedan aprox. ${juarezTrialDaysLeft} días de prueba gratuita.` 
+                : 'Muestra este código QR al pagar en cualquier comercio aliado de Ciudad Juárez.'}
+            </p>
+            <button
+              onClick={() => setShowBuyModal(true)}
+              style={{
+                width: '100%',
+                padding: '0.7rem',
+                borderRadius: '10px',
+                backgroundColor: 'var(--accent-gold)',
+                color: '#121212',
+                fontWeight: 900,
+                fontSize: '0.82rem',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              ⭐ Asegurar mi Membresía Digital Oficial Anual ($80 MXN)
+            </button>
+          </div>
+        )}
+
+        {/* Banner si expiró la prueba de 7 días */}
+        {isJuarezTrialExpired && (
+          <div style={{
+            backgroundColor: 'rgba(239, 68, 68, 0.15)',
+            border: '2px solid #EF4444',
+            padding: '1.4rem',
+            borderRadius: '18px',
+            marginBottom: '1.5rem',
+            textAlign: 'center',
+            boxShadow: '0 0 35px rgba(239, 68, 68, 0.3)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: '#EF4444', fontWeight: 900, fontSize: '1rem', marginBottom: '6px' }}>
+              <AlertCircle size={20} /> Tu Membresía Gratuita de 7 Días ha Concluido
+            </div>
+            <p style={{ color: '#FCA5A5', fontSize: '0.82rem', margin: '0 0 14px 0', lineHeight: 1.4 }}>
+              Tu periodo de cortesía ha finalizado. Para seguir disfrutando de descuentos en los comercios aliados de Ciudad Juárez, adquiere hoy tu <strong>Membresía Digital Oficial por solo $80 MXN</strong>.
+            </p>
+            <button
+              onClick={() => setShowBuyModal(true)}
+              style={{
+                width: '100%',
+                padding: '0.9rem',
+                borderRadius: '12px',
+                backgroundColor: 'var(--accent-gold)',
+                color: '#121212',
+                fontWeight: 900,
+                fontSize: '0.92rem',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 20px rgba(212, 175, 55, 0.4)'
+              }}
+            >
+              <ShoppingBag size={18} />
+              <span>Adquirir Membresía Digital Oficial ($80 MXN)</span>
+            </button>
           </div>
         )}
 
@@ -907,6 +1020,13 @@ const Registro: React.FC = () => {
         </button>
 
       </section>
+
+      {/* Modal para compra de membresía oficial */}
+      <BuyStickerModal 
+        isOpen={showBuyModal}
+        onClose={() => setShowBuyModal(false)}
+        initialSticker={isJuarezUser ? 'juarense_oficial' : 'campechano_negra'}
+      />
     </div>
   );
 };

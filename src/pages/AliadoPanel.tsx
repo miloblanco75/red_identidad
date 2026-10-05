@@ -25,7 +25,9 @@ import {
   FileSpreadsheet,
   Download,
   Calendar,
-  Filter
+  Filter,
+  Printer,
+  QrCode
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QrScannerModal } from '../components/QrScannerModal';
@@ -34,6 +36,7 @@ import { verifyQrPayload } from '../lib/dynamicQr';
 import { getUserGamificationProfile } from '../lib/challengesService';
 import { QRCodeSVG } from 'qrcode.react';
 import { requestTrialPass } from '../lib/trialService';
+import { requestJuarez7DayTrial } from '../lib/juarezTrialService';
 import {
   recordPromotionDelivery,
   getAllyPromotions,
@@ -180,9 +183,13 @@ const AliadoPanel: React.FC = () => {
   const allyPromos = parsePromotions(ally?.discount);
   const activePromoDiscount = allyPromos[selectedPromoIndex] || ally?.discount || '';
 
-  const trialInviteUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/?trial=true&ally=${encodeURIComponent(ally?.name || '')}${isJuarez ? '&city=juarez' : ''}`
-    : `https://redidentidad.vercel.app/?trial=true&ally=${encodeURIComponent(ally?.name || '')}${isJuarez ? '&city=juarez' : ''}`;
+  const trialInviteUrl = isJuarez
+    ? (typeof window !== 'undefined'
+        ? `${window.location.origin}/juarez/semana-gratis${ally?.id ? `?ally=${encodeURIComponent(ally.id)}` : ''}`
+        : `https://redidentidad.vercel.app/juarez/semana-gratis${ally?.id ? `?ally=${encodeURIComponent(ally.id)}` : ''}`)
+    : (typeof window !== 'undefined'
+        ? `${window.location.origin}/?trial=true&ally=${encodeURIComponent(ally?.name || '')}`
+        : `https://redidentidad.vercel.app/?trial=true&ally=${encodeURIComponent(ally?.name || '')}`);
 
   const handleCopyTrialInvite = () => {
     if (navigator.clipboard) {
@@ -205,14 +212,19 @@ const AliadoPanel: React.FC = () => {
 
     setTrialGiftLoading(true);
     try {
-      const res = await requestTrialPass(trialGiftName || 'Cliente en Caja', cleanDigits);
+      const res = isJuarez
+        ? await requestJuarez7DayTrial(trialGiftName || 'Cliente en Caja', cleanDigits, ally?.name)
+        : await requestTrialPass(trialGiftName || 'Cliente en Caja', cleanDigits);
+
       if (res.success && res.pass) {
-        setTrialGiftSuccess(`✓ ¡Pase de 24h obsequiado con éxito (#${res.pass.code})! Tu cliente ya tiene 24 horas de descuentos para sus próximas visitas.`);
+        setTrialGiftSuccess(isJuarez
+          ? `✓ ¡Membresía de 7 Días obsequiada con éxito (#${res.pass.code})! Tu cliente ya tiene 7 días de descuentos activos para sus próximas visitas.`
+          : `✓ ¡Pase de 24h obsequiado con éxito (#${res.pass.code})! Tu cliente ya tiene 24 horas de descuentos para sus próximas visitas.`);
         setTrialGiftPhone('');
         setTrialGiftName('');
         setTimeout(() => {
           setShowTrialGiftModal(false);
-        }, 2500);
+        }, 2800);
       } else {
         setTrialGiftError(res.error || 'No se pudo activar el pase de prueba.');
       }
@@ -324,6 +336,86 @@ const AliadoPanel: React.FC = () => {
     }
 
     const clean = parsedQr.code;
+
+    // ── VERIFICACIÓN ESPECIAL DE MEMBRESÍA DE CORTESÍA 7 DÍAS JUÁREZ (VJ-7D-XXXX) ──
+    if (clean.startsWith('VJ-7D-') || clean.includes('7D')) {
+      try {
+        const { data: trialSticker } = await supabase
+          .from('stickers')
+          .select('*')
+          .eq('code', clean)
+          .maybeSingle();
+
+        const now = new Date();
+        const createdAt = trialSticker ? new Date(trialSticker.claimed_at || trialSticker.created_at) : now;
+        const diffMs = now.getTime() - createdAt.getTime();
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+        // Si ya pasaron los 7 días
+        if (diffDays >= 7 || trialSticker?.level === 'trial_expired') {
+          playFeedback('error');
+          if (trialSticker && trialSticker.level !== 'trial_expired') {
+            await supabase.from('stickers').update({ level: 'trial_expired' }).eq('id', trialSticker.id);
+          }
+          setValidationResult({
+            status: 'invalid',
+            code: clean,
+            discountToApply: '',
+            message: '⚠️ MEMBRESÍA DE 7 DÍAS CONCLUIDA: El periodo de cortesía de este cliente ha finalizado. Invítalo a adquirir su Membresía Digital Oficial ($80 MXN).',
+            isTrialPass: true
+          });
+          setIsSaving(false);
+          return;
+        }
+
+        // ¡Pase de 7 Días Válido y Vigente!
+        playFeedback('success');
+        await incrementPromotionCount();
+
+        const remainingDays = Math.max(0, Math.floor(7 - diffDays));
+        const timeStr = now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+        setTodayValidations(prev => [
+          { time: timeStr, member: `Cortesía 7D Juárez`, discount: activePromoDiscount },
+          ...prev
+        ]);
+
+        const phoneMasked = trialSticker?.phone 
+          ? `${trialSticker.phone.slice(0, 2)} •••• ${trialSticker.phone.slice(-2)}` 
+          : '';
+
+        const { record: promoRecord } = recordPromotionDelivery({
+          allyId: ally.id,
+          allyName: ally.name,
+          allyCategory: ally.category,
+          memberNumber: 0,
+          memberCode: clean,
+          memberLevel: 'Cortesía 7 Días Vive Juárez',
+          discountApplied: activePromoDiscount,
+          validationMethod: 'Cámara QR en vivo',
+          phoneMasked: phoneMasked,
+          notes: 'Membresía de 7 días aplicada en caja'
+        });
+        setAllyPromotions(prev => [promoRecord, ...prev.filter(p => p.id !== promoRecord.id)]);
+
+        setValidationResult({
+          status: 'valid',
+          code: clean,
+          member_number: 0,
+          level: 'trial_7d',
+          phone: phoneMasked,
+          discountToApply: activePromoDiscount,
+          message: `🎁 ¡MEMBRESÍA DE 7 DÍAS VÁLIDA! Aplica descuento al cliente. Le quedan aprox. ${remainingDays} días de prueba gratuita.`,
+          isTrialPass: true,
+          isDynamic: parsedQr.isDynamic,
+          ageSeconds: parsedQr.ageSeconds
+        });
+        setManualInput('');
+        setIsSaving(false);
+        return;
+      } catch (trialErr) {
+        console.error('Error validando pase de 7 días:', trialErr);
+      }
+    }
 
     // ── VERIFICACIÓN ESPECIAL DE PASE DE CORTESÍA 24 HORAS (TRIAL-XXXX) ──
     if (clean.startsWith('TRIAL-')) {
@@ -1178,10 +1270,14 @@ const AliadoPanel: React.FC = () => {
         </span>
       </div>
 
-      {/* ── BOTÓN DE CIERRE DE VENTA POST-PAGO: REGALAR PASE DE CORTESÍA (24H) ── */}
+      {/* ── BOTÓN DE CIERRE DE VENTA POST-PAGO: REGALAR PASE DE CORTESÍA (7 DÍAS EN JUÁREZ / 24H EN CAMPECHE) ── */}
       <div style={{
-        background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(20, 30, 25, 0.85) 100%)',
-        border: '1.5px solid rgba(74, 222, 128, 0.45)',
+        background: isJuarez 
+          ? 'linear-gradient(135deg, rgba(220, 38, 38, 0.18) 0%, rgba(20, 20, 28, 0.9) 100%)' 
+          : 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(20, 30, 25, 0.85) 100%)',
+        border: isJuarez 
+          ? '1.5px solid rgba(220, 38, 38, 0.45)' 
+          : '1.5px solid rgba(74, 222, 128, 0.45)',
         borderRadius: '20px',
         padding: '1.2rem',
         marginBottom: '1.5rem',
@@ -1192,47 +1288,85 @@ const AliadoPanel: React.FC = () => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={20} color="#4ADE80" />
-            <span style={{ fontSize: '0.9rem', fontWeight: 900, color: '#4ADE80', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Regalo Post-Pago para tu Cliente
+            <Sparkles size={20} color={isJuarez ? "#FF6B6B" : "#4ADE80"} />
+            <span style={{ fontSize: '0.9rem', fontWeight: 900, color: isJuarez ? "#FF6B6B" : "#4ADE80", textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              {isJuarez ? '🎉 Campaña de Lanzamiento: 7 Días Gratis' : 'Regalo Post-Pago para tu Cliente'}
             </span>
           </div>
           <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 10px', borderRadius: '100px', backgroundColor: 'rgba(212,175,55,0.2)', color: 'var(--accent-gold)', border: '1px solid rgba(212,175,55,0.4)' }}>
-            Vende la calcomanía de $90
+            {isJuarez ? 'Membresías 7D Ilimitadas' : 'Vende la calcomanía de $90'}
           </span>
         </div>
         
         <p style={{ margin: 0, fontSize: '0.82rem', color: '#E2E8F0', lineHeight: 1.45 }}>
-          <strong>Cobra su cuenta completa sin descuento hoy.</strong> Al pagar, obsequíale este <strong>Pase de Cortesía de 24 horas</strong> como agradecimiento para sus próximas visitas. ¡Tu negocio no pierde dinero hoy y aprovechas para venderle la calcomanía física de <strong>$90 MXN</strong>!
+          {isJuarez ? (
+            <>
+              <strong>Durante la semana de lanzamiento de Vive Juárez:</strong> todos tus clientes pueden llevarse una <strong>Membresía Digital GRATIS por 7 Días</strong>. Coloca el cartel con QR en tu mostrador o activa a tu cliente al cobrar ingresando su celular.
+            </>
+          ) : (
+            <>
+              <strong>Cobra su cuenta completa sin descuento hoy.</strong> Al pagar, obsequíale este <strong>Pase de Cortesía de 24 horas</strong> como agradecimiento para sus próximas visitas. ¡Tu negocio no pierde dinero hoy y aprovechas para venderle la calcomanía física de <strong>$90 MXN</strong>!
+            </>
+          )}
         </p>
 
-        <button
-          type="button"
-          onClick={() => {
-            setTrialGiftError('');
-            setTrialGiftSuccess(null);
-            setShowTrialGiftModal(true);
-          }}
-          style={{
-            width: '100%',
-            padding: '1rem',
-            borderRadius: '14px',
-            backgroundColor: '#22C55E',
-            color: '#0A2514',
-            fontWeight: 900,
-            fontSize: '1rem',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            boxShadow: '0 4px 20px rgba(34, 197, 94, 0.4)',
-            transition: 'transform 0.15s ease'
-          }}
-        >
-          <Gift size={20} /> Obsequiar Pase de Cortesía (24h) al Cobrar
-        </button>
+        <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
+          {isJuarez && (
+            <button
+              type="button"
+              onClick={() => window.open(`/juarez/poster-mostrador?ally=${encodeURIComponent(ally?.name || '')}`, '_blank')}
+              style={{
+                flex: 1,
+                minWidth: '220px',
+                padding: '0.9rem',
+                borderRadius: '14px',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#FFF',
+                fontWeight: 800,
+                fontSize: '0.88rem',
+                border: '1.5px solid rgba(255, 255, 255, 0.2)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}
+            >
+              <QrCode size={18} color="var(--accent-gold)" />
+              <span>Imprimir Cartel QR Mostrador</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => {
+              setTrialGiftError('');
+              setTrialGiftSuccess(null);
+              setShowTrialGiftModal(true);
+            }}
+            style={{
+              flex: 1,
+              minWidth: '220px',
+              padding: '0.9rem',
+              borderRadius: '14px',
+              backgroundColor: isJuarez ? '#DC2626' : '#22C55E',
+              color: '#FFFFFF',
+              fontWeight: 900,
+              fontSize: '0.92rem',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              boxShadow: isJuarez ? '0 4px 20px rgba(220, 38, 38, 0.4)' : '0 4px 20px rgba(34, 197, 94, 0.4)',
+              transition: 'transform 0.15s ease'
+            }}
+          >
+            <Gift size={18} />
+            <span>{isJuarez ? 'Activar Membresía 7 Días al Cobrar' : 'Obsequiar Pase de Cortesía (24h) al Cobrar'}</span>
+          </button>
+        </div>
       </div>
 
       {errorMsg && (
@@ -1867,22 +2001,30 @@ const AliadoPanel: React.FC = () => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '6px',
-                  backgroundColor: 'rgba(74,222,128,0.15)',
-                  border: '1px solid rgba(74,222,128,0.35)',
-                  color: '#4ADE80',
+                  backgroundColor: isJuarez ? 'rgba(220,38,38,0.15)' : 'rgba(74,222,128,0.15)',
+                  border: isJuarez ? '1px solid rgba(220,38,38,0.35)' : '1px solid rgba(74,222,128,0.35)',
+                  color: isJuarez ? '#FF6B6B' : '#4ADE80',
                   padding: '4px 12px',
                   borderRadius: '100px',
                   fontSize: '0.72rem',
                   fontWeight: 800,
                   marginBottom: '0.6rem'
                 }}>
-                  <Gift size={14} /> REGALO POST-PAGO • FIDELIZACIÓN
+                  <Gift size={14} /> {isJuarez ? '★ SEMANA DE LANZAMIENTO VIVE JUÁREZ ★' : 'REGALO POST-PAGO • FIDELIZACIÓN'}
                 </div>
                 <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#FFF', margin: '0 0 0.3rem' }}>
-                  Pase de Cortesía (24h)
+                  {isJuarez ? 'Membresía Digital Gratis (7 Días)' : 'Pase de Cortesía (24h)'}
                 </h2>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', margin: 0 }}>
-                  Obsequia este pase <strong>después de que el cliente pague su cuenta completa</strong>. Tu negocio no pierde dinero hoy y aprovechas para venderle la calcomanía física de <strong>$90 pesos</strong>.
+                  {isJuarez ? (
+                    <>
+                      Tus clientes obtienen <strong>7 días de membresía digital gratis</strong> para disfrutar de descuentos en tu negocio y en toda la red de Ciudad Juárez.
+                    </>
+                  ) : (
+                    <>
+                      Obsequia este pase <strong>después de que el cliente pague su cuenta completa</strong>. Tu negocio no pierde dinero hoy y aprovechas para venderle la calcomanía física de <strong>$90 pesos</strong>.
+                    </>
+                  )}
                 </p>
               </div>
 
@@ -1901,8 +2043,14 @@ const AliadoPanel: React.FC = () => {
                 <QRCodeSVG
                   value={trialInviteUrl}
                   size={180}
-                  level="M"
+                  level="H"
                   includeMargin={false}
+                  imageSettings={isJuarez ? {
+                    src: '/vive_juarez_qr_icon.png',
+                    height: 42,
+                    width: 42,
+                    excavate: true
+                  } : undefined}
                 />
                 <div style={{ marginTop: '0.6rem', fontSize: '0.75rem', fontWeight: 800, color: '#121212', textAlign: 'center' }}>
                   📱 Pide al cliente que escanee con su cámara
@@ -1930,8 +2078,33 @@ const AliadoPanel: React.FC = () => {
                   }}
                 >
                   {copiedTrialLink ? <Check size={16} color="#4ADE80" /> : <Copy size={16} />}
-                  {copiedTrialLink ? '¡Enlace copiado!' : 'Copiar Enlace para Compartir'}
+                  <span>{copiedTrialLink ? '¡Enlace copiado!' : 'Copiar Enlace'}</span>
                 </button>
+
+                {isJuarez && (
+                  <button
+                    type="button"
+                    onClick={() => window.open(`/juarez/poster-mostrador?ally=${encodeURIComponent(ally?.name || '')}`, '_blank')}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem',
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(220,38,38,0.15)',
+                      border: '1px solid rgba(220,38,38,0.4)',
+                      color: '#FF6B6B',
+                      fontWeight: 800,
+                      fontSize: '0.8rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Printer size={16} />
+                    <span>Imprimir Cartel</span>
+                  </button>
+                )}
               </div>
 
               {/* Opción 2: O teclear su WhatsApp directo si el cliente prefiere */}
@@ -1943,7 +2116,7 @@ const AliadoPanel: React.FC = () => {
                 marginBottom: '1rem'
               }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 800, textTransform: 'uppercase', marginBottom: '0.6rem' }}>
-                  O actívalo tú mismo en caja:
+                  {isJuarez ? 'O activa la membresía de 7 días aquí en caja:' : 'O actívalo tú mismo en caja:'}
                 </div>
                 <form onSubmit={handleActivateCustomerTrial}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
@@ -2000,8 +2173,8 @@ const AliadoPanel: React.FC = () => {
                         width: '100%',
                         padding: '0.85rem',
                         borderRadius: '10px',
-                        backgroundColor: trialGiftPhone.length === 10 ? '#4ADE80' : 'rgba(255,255,255,0.1)',
-                        color: '#0A2514',
+                        backgroundColor: trialGiftPhone.length === 10 ? (isJuarez ? '#DC2626' : '#4ADE80') : 'rgba(255,255,255,0.1)',
+                        color: isJuarez ? '#FFFFFF' : '#0A2514',
                         fontWeight: 900,
                         fontSize: '0.88rem',
                         border: 'none',
@@ -2013,7 +2186,7 @@ const AliadoPanel: React.FC = () => {
                       }}
                     >
                       {trialGiftLoading ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
-                      {trialGiftLoading ? 'Obsequiando pase...' : 'Obsequiar Pase 24h al Cliente'}
+                      {trialGiftLoading ? 'Activando...' : (isJuarez ? 'Activar Membresía 7 Días al Cliente' : 'Obsequiar Pase 24h al Cliente')}
                     </button>
                   </div>
                 </form>

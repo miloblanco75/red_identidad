@@ -21,6 +21,8 @@ const Comercio = React.lazy(() => import('./pages/Comercio'));
 const AliadoPanel = React.lazy(() => import('./pages/AliadoPanel'));
 const EnvelopeStickerDesigner = React.lazy(() => import('./components/EnvelopeStickerDesigner'));
 const PagoExitoso = React.lazy(() => import('./pages/PagoExitoso'));
+const JuarezSemanaGratis = React.lazy(() => import('./pages/JuarezSemanaGratis'));
+const JuarezPosterStand = React.lazy(() => import('./pages/JuarezPosterStand'));
 
 // Layout para la Web App Móvil con su contenedor optimizado y navegación inferior
 const MobileAppLayout: React.FC = () => {
@@ -63,6 +65,13 @@ function App() {
               <Route path="/juarez" element={<LandingJuarez />} />
               <Route path="/juarez/landing" element={<LandingJuarez />} />
               <Route path="/vivejuarez" element={<LandingJuarez />} />
+
+              {/* Campaña de Lanzamiento Vive Juárez: 7 Días de Membresía Gratis */}
+              <Route path="/juarez/semana-gratis" element={<JuarezSemanaGratis />} />
+              <Route path="/semana-gratis" element={<JuarezSemanaGratis />} />
+              <Route path="/juarez/promo7" element={<JuarezSemanaGratis />} />
+              <Route path="/juarez/poster-mostrador" element={<JuarezPosterStand />} />
+              <Route path="/juarez/display-mesa" element={<JuarezPosterStand />} />
 
               {/* Rutas de la Web App Móvil y PWA de Miembros */}
               <Route element={<MobileAppLayout />}>

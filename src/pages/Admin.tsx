@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award, Plus, Crown } from 'lucide-react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award, Plus, Crown, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import StickerQRCode from '../components/StickerQRCode';
 
@@ -1830,6 +1830,50 @@ const Admin: React.FC = () => {
               }
             }
           `}</style>
+
+          {/* Banner Especial: Cartel Mostrador Campaña de Lanzamiento Juárez */}
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(20, 20, 28, 0.9) 100%)',
+            border: '1.5px solid rgba(220, 38, 38, 0.45)',
+            borderRadius: '20px',
+            padding: '1.2rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.3)'
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FF6B6B', fontWeight: 900, fontSize: '0.95rem' }}>
+                <Sparkles size={18} /> Cartel Mostrador con QR Oficial — Lanzamiento Juárez (7 Días Gratis)
+              </div>
+              <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#E2E8F0', maxWidth: '600px' }}>
+                Póster imprimible listo para colocar en acrílicos o mostradores de comercios aliados. Los clientes escanean el QR y obtienen su membresía de cortesía de 7 días.
+              </p>
+            </div>
+            <button
+              onClick={() => window.open('/juarez/poster-mostrador', '_blank')}
+              style={{
+                backgroundColor: '#DC2626',
+                color: '#FFF',
+                border: 'none',
+                padding: '0.75rem 1.4rem',
+                borderRadius: '12px',
+                fontWeight: 800,
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 15px rgba(220, 38, 38, 0.4)'
+              }}
+            >
+              <Printer size={16} />
+              <span>Abrir / Imprimir Cartel de Mostrador</span>
+            </button>
+          </div>
 
           {/* Controles */}
           <section className="glass" style={{ padding: '1.5rem', borderRadius: '20px', marginBottom: '1.5rem' }}>

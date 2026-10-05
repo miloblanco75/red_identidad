@@ -223,6 +223,39 @@ export const LandingJuarez: React.FC = () => {
         </div>
       </div>
 
+      {/* ── BANNER ESPECIAL SEMANA DE LANZAMIENTO JUÁREZ (7 DÍAS GRATIS) ── */}
+      <div style={{
+        background: 'linear-gradient(90deg, #991B1B 0%, #DC2626 50%, #991B1B 100%)',
+        color: '#FFFFFF',
+        padding: '0.65rem 1.2rem',
+        fontSize: '0.85rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        textAlign: 'center',
+        gap: '0.8rem',
+        flexWrap: 'wrap',
+        boxShadow: '0 2px 12px rgba(220, 38, 38, 0.4)'
+      }}>
+        <span>🎉 <strong>¡Semana de Lanzamiento Vive Juárez!</strong> Comercios aliados regalan membresías digitales gratis por 7 días.</span>
+        <button
+          onClick={() => navigate('/juarez/semana-gratis')}
+          style={{
+            backgroundColor: '#FFFFFF',
+            color: '#991B1B',
+            fontWeight: 900,
+            fontSize: '0.78rem',
+            padding: '4px 14px',
+            borderRadius: '100px',
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+          }}
+        >
+          Obtener 7 Días Gratis →
+        </button>
+      </div>
+
       {/* ── NAVBAR PRINCIPAL VIVE JUÁREZ ── */}
       <nav 
         style={{
