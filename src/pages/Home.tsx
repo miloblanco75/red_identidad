@@ -305,10 +305,13 @@ const Home: React.FC = () => {
   };
 
   const isJuarezAlly = (a: any) => {
+    const lat = Number(a.lat);
     const lng = Number(a.lng);
     const name = (a.name || '').toLowerCase();
     const addr = (a.address || '').toLowerCase();
-    return lng < -100 || name.includes('juarez') || name.includes('juárez') || addr.includes('juarez') || addr.includes('juárez');
+    const isJuarezGeo = (lat >= 31.0 && lat <= 32.5 && lng >= -107.0 && lng <= -105.5);
+    const isJuarezText = name.includes('juarez') || name.includes('juárez') || addr.includes('juarez') || addr.includes('juárez');
+    return isJuarezGeo || isJuarezText;
   };
 
   const weekAgo = new Date();

@@ -121,15 +121,25 @@ export function formatDistance(km: number): string {
 export function getAllyZone(ally: Ally): 'campeche' | 'carmen' | 'juarez' | 'digitales' {
   const isDigital = !ally.lat || !ally.lng || isNaN(Number(ally.lat)) || isNaN(Number(ally.lng)) || (Number(ally.lat) === 0 && Number(ally.lng) === 0);
   if (isDigital) return 'digitales';
+  const lat = Number(ally.lat);
   const lng = Number(ally.lng);
   const nameLower = (ally.name || '').toLowerCase();
   const addressLower = (ally.address || '').toLowerCase();
-  if (lng < -100 || nameLower.includes('juarez') || nameLower.includes('juárez') || addressLower.includes('juarez') || addressLower.includes('juárez')) {
+
+  // Coordenadas estrictas de Ciudad Juárez (Latitud 31 a 32.5, Longitud -107 a -105.5) o mención textual
+  const isJuarezGeo = (lat >= 31.0 && lat <= 32.5 && lng >= -107.0 && lng <= -105.5);
+  const isJuarezText = nameLower.includes('juarez') || nameLower.includes('juárez') || addressLower.includes('juarez') || addressLower.includes('juárez');
+  if (isJuarezGeo || isJuarezText) {
     return 'juarez';
   }
-  if (lng < -91.2 || nameLower.includes('carmen') || addressLower.includes('carmen')) {
+
+  // Coordenadas de Ciudad del Carmen (Longitud -91.2 a -92.5) o mención textual
+  const isCarmenGeo = (lng < -91.2 && lng > -92.5);
+  const isCarmenText = nameLower.includes('carmen') || addressLower.includes('carmen');
+  if (isCarmenGeo || isCarmenText) {
     return 'carmen';
   }
+
   return 'campeche';
 }
 
@@ -160,14 +170,18 @@ function ChangeView({ center, zoom }: { center: [number, number]; zoom: number }
 
 const Aliados: React.FC = () => {
   const navigate = useNavigate();
-  const { isJuarez } = useCity();
+  const { city, setCity, isJuarez } = useCity();
 
   const [dbAllies, setDbAllies] = useState<Ally[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mapCenter, setMapCenter] = useState<[number, number]>(() => isJuarez ? [31.6904, -106.4245] : [19.8301, -90.5349]);
-  const [mapZoom, setMapZoom] = useState<number>(() => isJuarez ? 13 : 12);
+  const [mapCenter, setMapCenter] = useState<[number, number]>(() => {
+    if (isJuarez) return [31.6904, -106.4245];
+    if (city === 'carmen') return [18.6481, -91.8219];
+    return [19.8301, -90.5349];
+  });
+  const [mapZoom, setMapZoom] = useState<number>(13);
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
-  const [selectedZone, setSelectedZone] = useState<string>('todas');
+  const [selectedZone, setSelectedZone] = useState<string>(() => city === 'carmen' ? 'carmen' : 'todas');
 
   // Estados de Geolocalización "Cerca de Mí"
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -193,12 +207,16 @@ const Aliados: React.FC = () => {
       setSelectedZone('todas');
       setMapCenter([31.6904, -106.4245]);
       setMapZoom(13);
+    } else if (city === 'carmen') {
+      setSelectedZone('carmen');
+      setMapCenter([18.6481, -91.8219]);
+      setMapZoom(13);
     } else {
       setSelectedZone('todas');
-      setMapCenter([19.25, -91.1]);
-      setMapZoom(9);
+      setMapCenter([19.8301, -90.5349]);
+      setMapZoom(13);
     }
-  }, [isJuarez]);
+  }, [isJuarez, city]);
 
   useEffect(() => {
     fetchAllies();
@@ -447,6 +465,105 @@ const Aliados: React.FC = () => {
         </p>
       </div>
 
+      {/* ── SELECTOR DE PLAZA / CIUDAD (CAMPECHE | CARMEN | JUÁREZ) ── */}
+      <div style={{ marginBottom: '1.2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '0.5rem' }}>
+          <MapPin size={14} color="var(--accent-gold)" />
+          <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--text-dim)', fontWeight: 800, letterSpacing: '0.08em' }}>
+            Plaza Activa:
+          </span>
+        </div>
+        <div style={{
+          display: 'flex',
+          gap: '6px',
+          padding: '4px',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          borderRadius: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
+        }}>
+          <button
+            onClick={() => {
+              setCity('campeche');
+              setSelectedZone('todas');
+              setMapCenter([19.8301, -90.5349]);
+              setMapZoom(13);
+            }}
+            style={{
+              flex: 1,
+              padding: '0.65rem 0.5rem',
+              borderRadius: '12px',
+              backgroundColor: (!isJuarez && city !== 'carmen') ? 'var(--accent-gold)' : 'transparent',
+              color: (!isJuarez && city !== 'carmen') ? '#121212' : 'var(--text-dim)',
+              border: 'none',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px'
+            }}
+          >
+            <span>🏛️ Campeche</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setCity('carmen');
+              setSelectedZone('carmen');
+              setMapCenter([18.6481, -91.8219]);
+              setMapZoom(13);
+            }}
+            style={{
+              flex: 1,
+              padding: '0.65rem 0.5rem',
+              borderRadius: '12px',
+              backgroundColor: city === 'carmen' ? 'var(--accent-gold)' : 'transparent',
+              color: city === 'carmen' ? '#121212' : 'var(--text-dim)',
+              border: 'none',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px'
+            }}
+          >
+            <span>🏖️ Carmen</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setCity('juarez');
+              setSelectedZone('todas');
+              setMapCenter([31.6904, -106.4245]);
+              setMapZoom(13);
+            }}
+            style={{
+              flex: 1,
+              padding: '0.65rem 0.5rem',
+              borderRadius: '12px',
+              backgroundColor: isJuarez ? '#EF4444' : 'transparent',
+              color: isJuarez ? '#FFF' : 'var(--text-dim)',
+              border: 'none',
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px'
+            }}
+          >
+            <span>🌵 Cd. Juárez</span>
+          </button>
+        </div>
+      </div>
+
       {/* ── FILTRO POR ZONA ── */}
       <div style={{ marginBottom: '1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
@@ -589,7 +706,11 @@ const Aliados: React.FC = () => {
           )}
 
           {filteredAllies
-            .filter(partner => partner.lat != null && partner.lng != null && !isNaN(Number(partner.lat)) && !isNaN(Number(partner.lng)) && Number(partner.lat) !== 0 && Number(partner.lng) !== 0)
+            .filter(partner => {
+              const lat = Number(partner.lat);
+              const lng = Number(partner.lng);
+              return !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && (lat !== 0 || lng !== 0);
+            })
             .map(partner => {
               const goldIcon = L.divIcon({
                 className: 'custom-gold-marker',

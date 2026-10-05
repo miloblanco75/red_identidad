@@ -1,20 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, CreditCard, MapPin, Store } from 'lucide-react';
-import { useCity } from '../contexts/CityContext';
 
 const BottomNavigation: React.FC = () => {
-  const { isJuarez } = useCity();
-
-  const getPath = (basePath: string) => {
-    return isJuarez ? `${basePath}?city=juarez` : basePath;
-  };
-
   const tabs = [
-    { path: getPath('/app'), icon: Home, label: 'Inicio' },
-    { path: getPath('/registro'), icon: CreditCard, label: 'Mi Pase' },
-    { path: getPath('/aliados'), icon: MapPin, label: 'Aliados' },
-    { path: getPath('/aliado-panel'), icon: Store, label: 'Mi Negocio' },
+    { path: '/app', icon: Home, label: 'Inicio' },
+    { path: '/registro', icon: CreditCard, label: 'Mi Pase' },
+    { path: '/aliados', icon: MapPin, label: 'Aliados' },
+    { path: '/aliado-panel', icon: Store, label: 'Mi Negocio' },
   ];
 
   return (
