@@ -137,21 +137,41 @@ export const JuarezPosterStand: React.FC = () => {
           background: 'linear-gradient(90deg, #DC2626 0%, #0B1525 50%, #DC2626 100%)'
         }} />
 
-        {/* Insignia Oficial Juárez Conecta */}
-        <div style={{ marginBottom: '0.6rem' }}>
+        {/* Insignia Oficial Juárez Conecta — Gran Protagonismo de Marca */}
+        <div style={{
+          margin: '0.2rem auto 0.8rem',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
           <img 
             src="/juarez_conecta.png" 
             alt="Juárez Conecta — Red Identidad" 
             style={{ 
-              height: '92px', 
+              height: '175px', 
               width: 'auto', 
-              maxWidth: '260px',
+              maxWidth: '330px',
               objectFit: 'contain',
               display: 'block',
-              margin: '0 auto'
+              margin: '0 auto',
+              filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.1))'
             }} 
           />
         </div>
+
+        {/* Comercio Aliado (si fue personalizado) */}
+        {allyParam && (
+          <div style={{
+            fontSize: '1.1rem',
+            fontWeight: 900,
+            color: '#0B1525',
+            marginBottom: '0.4rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em'
+          }}>
+            📍 {allyParam}
+          </div>
+        )}
 
         {/* Badge de Campaña */}
         <div style={{
@@ -164,7 +184,7 @@ export const JuarezPosterStand: React.FC = () => {
           fontWeight: 900,
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
-          marginBottom: '0.6rem',
+          marginBottom: '0.5rem',
           boxShadow: '0 2px 8px rgba(220, 38, 38, 0.25)'
         }}>
           ★ SEMANA DE LANZAMIENTO ★
@@ -172,11 +192,11 @@ export const JuarezPosterStand: React.FC = () => {
 
         {/* Título Principal de Alto Impacto */}
         <h1 style={{
-          fontSize: '1.85rem',
+          fontSize: '1.75rem',
           fontWeight: 950,
           lineHeight: 1.15,
           color: '#0B1525',
-          margin: '0 0 0.4rem',
+          margin: '0 0 0.35rem',
           letterSpacing: '-0.02em',
           textTransform: 'uppercase'
         }}>
@@ -184,11 +204,11 @@ export const JuarezPosterStand: React.FC = () => {
         </h1>
 
         <p style={{
-          fontSize: '0.92rem',
+          fontSize: '0.88rem',
           fontWeight: 600,
           color: '#475569',
-          maxWidth: '480px',
-          margin: '0 auto 1rem',
+          maxWidth: '470px',
+          margin: '0 auto 0.9rem',
           lineHeight: 1.35
         }}>
           Escanea con la cámara de tu celular y llévate descuentos inmediatos en restaurantes y comercios aliados de <strong>Juárez Conecta</strong>.
@@ -199,29 +219,29 @@ export const JuarezPosterStand: React.FC = () => {
           backgroundColor: '#F8FAFC',
           border: '2.5px dashed #CBD5E1',
           borderRadius: '20px',
-          padding: '1.1rem 1.2rem',
-          maxWidth: '350px',
-          margin: '0 auto 1.1rem',
+          padding: '1rem 1.2rem',
+          maxWidth: '340px',
+          margin: '0 auto 1rem',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center'
         }}>
           <div style={{
             backgroundColor: '#FFFFFF',
-            padding: '1.1rem',
+            padding: '1rem',
             borderRadius: '18px',
             boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-            marginBottom: '0.6rem',
+            marginBottom: '0.5rem',
             border: '2.5px solid #0B1525'
           }}>
             <QRCodeSVG 
               value={campaignUrl}
-              size={230}
+              size={215}
               level="H"
               imageSettings={{
                 src: '/juarez_conecta.png',
-                height: 52,
-                width: 96,
+                height: 54,
+                width: 99,
                 excavate: true
               }}
             />
@@ -330,7 +350,7 @@ export const JuarezPosterStand: React.FC = () => {
           color: '#64748B'
         }}>
           <div>
-            <strong>Punto Aliado Oficial</strong> • Ciudad Juárez, Chih.
+            <strong>{allyParam ? allyParam : 'Punto Aliado Oficial'}</strong> • Ciudad Juárez, Chih.
           </div>
           <div style={{ fontWeight: 700, color: '#0B1525' }}>
             Red Identidad — Orgullo Juarense
