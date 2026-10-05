@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award, Plus, Crown, Sparkles } from 'lucide-react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award, Plus, Crown, Sparkles, Copy, Check, ExternalLink } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import StickerQRCode from '../components/StickerQRCode';
 
@@ -20,6 +20,10 @@ const Admin: React.FC = () => {
   const [codeCity, setCodeCity] = useState<'campeche' | 'juarez'>('campeche');
   const [statusCityFilter, setStatusCityFilter] = useState<'all' | 'campeche' | 'juarez'>('all');
   const [alliesCityFilter, setAlliesCityFilter] = useState<'all' | 'campeche' | 'juarez'>('all');
+
+  // Digital Sticker Viewer / Delivery
+  const [selectedDigitalSticker, setSelectedDigitalSticker] = useState<any | null>(null);
+  const [copiedStickerCode, setCopiedStickerCode] = useState<string | null>(null);
 
   // Print states
   const [printStickers, setPrintStickers] = useState<any[]>([]);
@@ -2416,26 +2420,133 @@ const Admin: React.FC = () => {
                             )}
                           </div>
 
+                          {isClaimed && (
+                            <button
+                              onClick={() => handleResetSingleSticker(sticker.id, sticker.code)}
+                              style={{
+                                padding: '0.4rem 0.8rem',
+                                borderRadius: '8px',
+                                backgroundColor: 'rgba(212,175,55,0.15)',
+                                border: '1px solid var(--accent-gold)',
+                                color: 'var(--accent-gold)',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <RotateCcw size={13} /> Liberar Código
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Barra de Acciones del Pase Digital */}
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '0.6rem',
+                        borderTop: '1px solid rgba(255,255,255,0.06)',
+                        paddingTop: '0.65rem'
+                      }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                           <button
-                            onClick={() => handleResetSingleSticker(sticker.id, sticker.code)}
+                            onClick={() => setSelectedDigitalSticker(sticker)}
                             style={{
-                              padding: '0.4rem 0.8rem',
+                              padding: '0.42rem 0.85rem',
                               borderRadius: '8px',
-                              backgroundColor: 'rgba(212,175,55,0.15)',
-                              border: '1px solid var(--accent-gold)',
-                              color: 'var(--accent-gold)',
+                              backgroundColor: isJuarSticker ? '#DC2626' : 'rgba(212,175,55,0.2)',
+                              color: isJuarSticker ? '#FFF' : 'var(--accent-gold)',
+                              border: isJuarSticker ? 'none' : '1px solid var(--accent-gold)',
                               fontSize: '0.75rem',
                               fontWeight: 700,
                               cursor: 'pointer',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '4px'
+                              gap: '5px'
                             }}
                           >
-                            <RotateCcw size={13} /> Liberar Código
+                            <QrCode size={14} /> Ver QR Digital
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              const cityParam = isJuarSticker ? '&city=juarez' : '';
+                              const link = `https://redidentidad.vercel.app/registro?c=${sticker.code}${cityParam}`;
+                              navigator.clipboard.writeText(link);
+                              setCopiedStickerCode(sticker.code);
+                              setTimeout(() => setCopiedStickerCode(null), 2500);
+                            }}
+                            style={{
+                              padding: '0.42rem 0.85rem',
+                              borderRadius: '8px',
+                              backgroundColor: 'rgba(255,255,255,0.08)',
+                              border: '1px solid rgba(255,255,255,0.15)',
+                              color: '#FFF',
+                              fontSize: '0.75rem',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '5px'
+                            }}
+                          >
+                            {copiedStickerCode === sticker.code ? <Check size={14} color="#4ADE80" /> : <Copy size={14} />}
+                            <span>{copiedStickerCode === sticker.code ? '¡Copiado!' : 'Copiar Link'}</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              const cityParam = isJuarSticker ? '&city=juarez' : '';
+                              const link = `https://redidentidad.vercel.app/registro?c=${sticker.code}${cityParam}`;
+                              const msg = `¡Hola! Aquí tienes tu Membresía Digital Oficial Vive Juárez (${sticker.code}). Ábrela en tu celular para activar tus descuentos: ${link}`;
+                              window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+                            }}
+                            style={{
+                              padding: '0.42rem 0.85rem',
+                              borderRadius: '8px',
+                              backgroundColor: 'rgba(37, 211, 102, 0.15)',
+                              border: '1px solid #25D366',
+                              color: '#25D366',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '5px'
+                            }}
+                          >
+                            <Smartphone size={14} /> WhatsApp
                           </button>
                         </div>
-                      )}
+
+                        <button
+                          onClick={() => {
+                            const cityParam = isJuarSticker ? '&city=juarez' : '';
+                            const testUrl = `https://redidentidad.vercel.app/registro?c=${sticker.code}${cityParam}`;
+                            window.open(testUrl, '_blank');
+                          }}
+                          style={{
+                            padding: '0.4rem 0.75rem',
+                            borderRadius: '8px',
+                            backgroundColor: 'transparent',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            color: '#A0A0A8',
+                            fontSize: '0.72rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <ExternalLink size={12} /> Probar Escaneo
+                        </button>
+                      </div>
                     </div>
                   );
                 });
@@ -2471,6 +2582,158 @@ const Admin: React.FC = () => {
         <section>
           <PressPassesManager />
         </section>
+      )}
+
+      {/* Modal Visor de QR Digital para entrega / WhatsApp */}
+      {selectedDigitalSticker && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(8px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}>
+          <div style={{
+            backgroundColor: '#141419',
+            border: '2px solid rgba(220, 38, 38, 0.4)',
+            borderRadius: '24px',
+            padding: '2rem 1.8rem',
+            maxWidth: '420px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.8)',
+            position: 'relative'
+          }}>
+            <button
+              onClick={() => setSelectedDigitalSticker(null)}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'none',
+                border: 'none',
+                color: '#A0A0A8',
+                cursor: 'pointer'
+              }}
+            >
+              <X size={20} />
+            </button>
+
+            <div style={{ fontSize: '0.8rem', color: '#EF4444', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem' }}>
+              Membresía Digital Oficial
+            </div>
+
+            <h3 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#FFF', margin: '0 0 1rem', fontFamily: 'monospace' }}>
+              {selectedDigitalSticker.code}
+            </h3>
+
+            {/* Código QR en Alta Definición con Logo */}
+            <div style={{
+              backgroundColor: '#FFFFFF',
+              padding: '1.2rem',
+              borderRadius: '20px',
+              display: 'inline-block',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
+              marginBottom: '1rem'
+            }}>
+              <StickerQRCode 
+                value={selectedDigitalSticker.code} 
+                level={selectedDigitalSticker.level} 
+                size={220} 
+              />
+            </div>
+
+            <p style={{ color: 'var(--text-dim)', fontSize: '0.8rem', margin: '0 0 1.2rem' }}>
+              Este pase digital se activa automáticamente al ser abierto por el cliente en su celular.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              <button
+                onClick={() => {
+                  const isJ = selectedDigitalSticker.code?.startsWith('VJ') || (selectedDigitalSticker.level || '').toLowerCase().includes('juar');
+                  const link = `https://redidentidad.vercel.app/registro?c=${selectedDigitalSticker.code}${isJ ? '&city=juarez' : ''}`;
+                  const msg = `¡Hola! Aquí tienes tu Membresía Digital Oficial Vive Juárez (${selectedDigitalSticker.code}). Ábrela en tu celular para activar tus descuentos exclusivos: ${link}`;
+                  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+                }}
+                style={{
+                  padding: '0.8rem',
+                  borderRadius: '12px',
+                  backgroundColor: '#25D366',
+                  color: '#FFF',
+                  fontWeight: 800,
+                  fontSize: '0.88rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <Smartphone size={16} /> Enviar por WhatsApp
+              </button>
+
+              <button
+                onClick={() => {
+                  const isJ = selectedDigitalSticker.code?.startsWith('VJ') || (selectedDigitalSticker.level || '').toLowerCase().includes('juar');
+                  const link = `https://redidentidad.vercel.app/registro?c=${selectedDigitalSticker.code}${isJ ? '&city=juarez' : ''}`;
+                  navigator.clipboard.writeText(link);
+                  setCopiedStickerCode(selectedDigitalSticker.code);
+                  setTimeout(() => setCopiedStickerCode(null), 2500);
+                }}
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '12px',
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  color: '#FFF',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                {copiedStickerCode === selectedDigitalSticker.code ? <Check size={15} color="#4ADE80" /> : <Copy size={15} />}
+                <span>{copiedStickerCode === selectedDigitalSticker.code ? '¡Enlace de Activación Copiado!' : 'Copiar Enlace para el Cliente'}</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  const isJ = selectedDigitalSticker.code?.startsWith('VJ') || (selectedDigitalSticker.level || '').toLowerCase().includes('juar');
+                  const scanLink = `https://redidentidad.vercel.app/registro?c=${encodeURIComponent(selectedDigitalSticker.code)}${isJ ? '&city=juarez' : ''}`;
+                  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(scanLink)}`;
+                  window.open(qrUrl, '_blank');
+                }}
+                style={{
+                  padding: '0.7rem',
+                  borderRadius: '12px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid var(--glass-border)',
+                  color: 'var(--text-dim)',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Download size={14} /> Descargar Imagen QR (PNG)
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
