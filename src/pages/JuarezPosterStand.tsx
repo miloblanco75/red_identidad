@@ -114,16 +114,17 @@ export const JuarezPosterStand: React.FC = () => {
         id="printable-poster"
         style={{
           width: '100%',
-          maxWidth: '650px',
+          maxWidth: '580px',
           backgroundColor: '#FFFFFF',
           color: '#0F172A',
-          borderRadius: '24px',
-          padding: '3rem 2.5rem',
+          borderRadius: '20px',
+          padding: '1.8rem 2rem 1.4rem',
           boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
           position: 'relative',
           overflow: 'hidden',
-          border: '4px solid #0B1525',
-          textAlign: 'center'
+          border: '3px solid #0B1525',
+          textAlign: 'center',
+          boxSizing: 'border-box'
         }}
       >
         {/* Franja decorativa superior con colores oficiales */}
@@ -132,17 +133,17 @@ export const JuarezPosterStand: React.FC = () => {
           top: 0,
           left: 0,
           right: 0,
-          height: '10px',
+          height: '8px',
           background: 'linear-gradient(90deg, #DC2626 0%, #0B1525 50%, #DC2626 100%)'
         }} />
 
         {/* Insignia Oficial Vive Juárez */}
-        <div style={{ marginBottom: '1.2rem' }}>
+        <div style={{ marginBottom: '0.5rem' }}>
           <img 
             src="/vive_juarez_oficial.png" 
             alt="Vive Juárez Insignia Oficial" 
             style={{ 
-              height: '110px', 
+              height: '80px', 
               width: 'auto', 
               objectFit: 'contain',
               display: 'block',
@@ -156,25 +157,25 @@ export const JuarezPosterStand: React.FC = () => {
           display: 'inline-block',
           backgroundColor: '#DC2626',
           color: '#FFFFFF',
-          padding: '6px 20px',
+          padding: '4px 16px',
           borderRadius: '100px',
-          fontSize: '0.85rem',
+          fontSize: '0.78rem',
           fontWeight: 900,
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
-          marginBottom: '1rem',
-          boxShadow: '0 4px 12px rgba(220, 38, 38, 0.25)'
+          marginBottom: '0.6rem',
+          boxShadow: '0 2px 8px rgba(220, 38, 38, 0.25)'
         }}>
           ★ SEMANA DE LANZAMIENTO ★
         </div>
 
         {/* Título Principal de Alto Impacto */}
         <h1 style={{
-          fontSize: '2.4rem',
+          fontSize: '1.85rem',
           fontWeight: 950,
-          lineHeight: 1.1,
+          lineHeight: 1.15,
           color: '#0B1525',
-          margin: '0 0 0.8rem',
+          margin: '0 0 0.4rem',
           letterSpacing: '-0.02em',
           textTransform: 'uppercase'
         }}>
@@ -182,12 +183,12 @@ export const JuarezPosterStand: React.FC = () => {
         </h1>
 
         <p style={{
-          fontSize: '1.15rem',
+          fontSize: '0.92rem',
           fontWeight: 600,
           color: '#475569',
-          maxWidth: '520px',
-          margin: '0 auto 1.8rem',
-          lineHeight: 1.4
+          maxWidth: '480px',
+          margin: '0 auto 1rem',
+          lineHeight: 1.35
         }}>
           Escanea con la cámara de tu celular y llévate descuentos inmediatos en restaurantes y comercios de Ciudad Juárez.
         </p>
@@ -195,38 +196,38 @@ export const JuarezPosterStand: React.FC = () => {
         {/* Recuadro Destacado con el Código QR */}
         <div style={{
           backgroundColor: '#F8FAFC',
-          border: '3px dashed #CBD5E1',
-          borderRadius: '24px',
-          padding: '1.8rem 1.5rem',
-          maxWidth: '380px',
-          margin: '0 auto 2rem',
+          border: '2.5px dashed #CBD5E1',
+          borderRadius: '20px',
+          padding: '1.1rem 1.2rem',
+          maxWidth: '330px',
+          margin: '0 auto 1.1rem',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center'
         }}>
           <div style={{
             backgroundColor: '#FFFFFF',
-            padding: '1.2rem',
-            borderRadius: '20px',
-            boxShadow: '0 8px 30px rgba(0,0,0,0.1)',
-            marginBottom: '1rem',
+            padding: '0.9rem',
+            borderRadius: '16px',
+            boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+            marginBottom: '0.6rem',
             border: '2px solid #0B1525'
           }}>
             <QRCodeSVG 
               value={campaignUrl}
-              size={220}
+              size={175}
               level="H"
               imageSettings={{
                 src: '/vive_juarez_qr_icon.png',
-                height: 52,
-                width: 52,
+                height: 44,
+                width: 44,
                 excavate: true
               }}
             />
           </div>
 
           <div style={{
-            fontSize: '0.9rem',
+            fontSize: '0.82rem',
             fontWeight: 800,
             color: '#DC2626',
             letterSpacing: '0.04em',
@@ -234,7 +235,7 @@ export const JuarezPosterStand: React.FC = () => {
           }}>
             📲 Escanea con tu cámara aquí
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '2px' }}>
+          <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>
             Sin costo • 100% Digital • Sin tarjetas
           </div>
         </div>
@@ -243,88 +244,88 @@ export const JuarezPosterStand: React.FC = () => {
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '1rem',
+          gap: '0.6rem',
           textAlign: 'center',
-          marginBottom: '2rem'
+          marginBottom: '1rem'
         }}>
           <div style={{
             backgroundColor: '#F1F5F9',
-            padding: '1rem 0.6rem',
-            borderRadius: '14px',
+            padding: '0.65rem 0.4rem',
+            borderRadius: '12px',
             border: '1px solid #E2E8F0'
           }}>
             <div style={{
-              width: '28px',
-              height: '28px',
+              width: '24px',
+              height: '24px',
               borderRadius: '50%',
               backgroundColor: '#0B1525',
               color: '#FFF',
               fontWeight: 900,
-              fontSize: '0.85rem',
+              fontSize: '0.75rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 6px'
+              margin: '0 auto 4px'
             }}>1</div>
-            <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0B1525' }}>Escanea el QR</div>
-            <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>Apunta tu celular</div>
+            <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#0B1525' }}>Escanea el QR</div>
+            <div style={{ fontSize: '0.66rem', color: '#64748B', marginTop: '1px' }}>Apunta tu celular</div>
           </div>
 
           <div style={{
             backgroundColor: '#F1F5F9',
-            padding: '1rem 0.6rem',
-            borderRadius: '14px',
+            padding: '0.65rem 0.4rem',
+            borderRadius: '12px',
             border: '1px solid #E2E8F0'
           }}>
             <div style={{
-              width: '28px',
-              height: '28px',
+              width: '24px',
+              height: '24px',
               borderRadius: '50%',
               backgroundColor: '#DC2626',
               color: '#FFF',
               fontWeight: 900,
-              fontSize: '0.85rem',
+              fontSize: '0.75rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 6px'
+              margin: '0 auto 4px'
             }}>2</div>
-            <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0B1525' }}>Ingresa tu Celular</div>
-            <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>Activación inmediata</div>
+            <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#0B1525' }}>Ingresa Celular</div>
+            <div style={{ fontSize: '0.66rem', color: '#64748B', marginTop: '1px' }}>Activación inmediata</div>
           </div>
 
           <div style={{
             backgroundColor: '#F1F5F9',
-            padding: '1rem 0.6rem',
-            borderRadius: '14px',
+            padding: '0.65rem 0.4rem',
+            borderRadius: '12px',
             border: '1px solid #E2E8F0'
           }}>
             <div style={{
-              width: '28px',
-              height: '28px',
+              width: '24px',
+              height: '24px',
               borderRadius: '50%',
               backgroundColor: '#0B1525',
               color: '#FFF',
               fontWeight: 900,
-              fontSize: '0.85rem',
+              fontSize: '0.75rem',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 6px'
+              margin: '0 auto 4px'
             }}>3</div>
-            <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0B1525' }}>Ahorra en Caja</div>
-            <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>Muestra tu Pase QR</div>
+            <div style={{ fontSize: '0.76rem', fontWeight: 800, color: '#0B1525' }}>Ahorra en Caja</div>
+            <div style={{ fontSize: '0.66rem', color: '#64748B', marginTop: '1px' }}>Muestra tu Pase QR</div>
           </div>
         </div>
 
         {/* Pie de Cartel Oficial */}
         <div style={{
-          borderTop: '2px solid #E2E8F0',
-          paddingTop: '1rem',
+          borderTop: '1.5px solid #E2E8F0',
+          paddingTop: '0.65rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          fontSize: '0.75rem',
+          fontSize: '0.72rem',
           color: '#64748B'
         }}>
           <div>
@@ -339,21 +340,41 @@ export const JuarezPosterStand: React.FC = () => {
 
       {/* Estilos específicos para impresión */}
       <style>{`
+        @page {
+          size: letter portrait;
+          margin: 8mm;
+        }
         @media print {
-          body {
+          html, body {
             background-color: #FFFFFF !important;
             padding: 0 !important;
             margin: 0 !important;
+            height: 100% !important;
+            overflow: hidden !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           .no-print {
             display: none !important;
           }
           #printable-poster {
+            width: 100% !important;
             max-width: 100% !important;
+            height: calc(100vh - 16mm) !important;
+            max-height: 260mm !important;
+            box-sizing: border-box !important;
             box-shadow: none !important;
-            border: 2px solid #000 !important;
-            margin: 0 !important;
-            padding: 2.5rem !important;
+            border: 3px solid #0B1525 !important;
+            border-radius: 16px !important;
+            margin: 0 auto !important;
+            padding: 1.2rem 1.6rem 0.8rem !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
           }
         }
       `}</style>
