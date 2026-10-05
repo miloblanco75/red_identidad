@@ -445,7 +445,7 @@ export const LandingJuarez: React.FC = () => {
               >
                 {/* Insignia Principal de la X de Juárez */}
                 <div style={{
-                  background: 'radial-gradient(circle, rgba(35, 35, 42, 0.9) 0%, rgba(18, 18, 22, 1) 100%)',
+                  background: 'radial-gradient(circle at center, rgba(220, 38, 38, 0.15) 0%, rgba(30, 30, 38, 0.9) 55%, rgba(15, 15, 18, 0.98) 100%)',
                   borderRadius: '16px',
                   padding: '2.5rem 1.5rem',
                   display: 'flex',
@@ -453,9 +453,10 @@ export const LandingJuarez: React.FC = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   minHeight: '260px',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
                   marginBottom: '1.2rem',
-                  position: 'relative'
+                  position: 'relative',
+                  boxShadow: 'inset 0 0 40px rgba(220, 38, 38, 0.1)'
                 }}>
                   <div style={{
                     position: 'absolute',
@@ -484,7 +485,7 @@ export const LandingJuarez: React.FC = () => {
                       maxHeight: '190px',
                       maxWidth: '100%',
                       objectFit: 'contain',
-                      filter: 'drop-shadow(0 6px 20px rgba(220,38,38,0.45))'
+                      filter: 'drop-shadow(0 0 12px rgba(255,255,255,0.3)) drop-shadow(0 8px 25px rgba(220,38,38,0.5))'
                     }}
                   />
 

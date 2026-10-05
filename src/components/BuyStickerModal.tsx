@@ -355,7 +355,7 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                           <img 
                             src="/vive_juarez_oficial.png" 
                             alt="Vive Juárez Distintivo Oficial" 
-                            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.3)) drop-shadow(0 2px 10px rgba(220,38,38,0.4))' }} 
                           />
                         </div>
                         <div style={{ flex: 1 }}>

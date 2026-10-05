@@ -703,18 +703,18 @@ const Home: React.FC = () => {
                 }}
               >
                 <img 
-                  src={isJuarez ? "/juarense_oficial.svg" : "/campechano_soy_coche.jpg"} 
-                  alt={isJuarez ? "Distintivo Oficial Vive Juárez (Plaza de la Mexicanidad)" : "Distintivo Oficial Campechano Soy (Puerta de Tierra)"} 
+                  src={isJuarez ? "/vive_juarez_auto.jpg" : "/campechano_soy_coche.jpg"} 
+                  alt={isJuarez ? "Distintivo Oficial Vive Juárez en Auto" : "Distintivo Oficial Campechano Soy (Puerta de Tierra)"} 
                   style={{
                     width: '100%',
                     height: 'auto',
                     maxHeight: '260px',
-                    objectFit: isJuarez ? 'contain' : 'cover',
+                    objectFit: 'cover',
                     borderRadius: '16px',
                     border: '1px solid rgba(212,175,55,0.4)',
                     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)',
                     display: 'block',
-                    padding: isJuarez ? '1rem' : 0
+                    padding: 0
                   }}
                 />
                 <div style={{
@@ -776,7 +776,7 @@ const Home: React.FC = () => {
                       <img 
                         src="/vive_juarez_oficial.png" 
                         alt="Vive Juárez Distintivo Oficial" 
-                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', filter: 'drop-shadow(0 2px 10px rgba(220,38,38,0.5))' }} 
+                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3)) drop-shadow(0 2px 12px rgba(220,38,38,0.5))' }} 
                       />
                     </div>
                     <div style={{ textAlign: 'left', flex: 1 }}>
