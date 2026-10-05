@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -37,6 +37,11 @@ const JUAREZ_OFFICIAL_STICKER: JuarezStickerInfo = {
 export const LandingJuarez: React.FC = () => {
   const navigate = useNavigate();
   const { setCity } = useCity();
+
+  // Asegurar que al estar en la landing de Juárez siempre se inicialice en modo Juárez
+  useEffect(() => {
+    setCity('juarez');
+  }, [setCity]);
 
   // Helper de navegación a la app móvil con contexto de Juárez
   const goToApp = (path: string = '/app') => {

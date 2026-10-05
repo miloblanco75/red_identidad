@@ -33,7 +33,11 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (queryCity === 'campeche') return 'campeche';
 
       const host = window.location.hostname.toLowerCase();
-      if (host.startsWith('juarez.') || host.includes('juarez')) return 'juarez';
+      const isJuarezHost = host.startsWith('juarez.') || host.includes('juarez');
+      const path = window.location.pathname.toLowerCase();
+
+      if (isJuarezHost || path.startsWith('/juarez') || path.startsWith('/vivejuarez')) return 'juarez';
+      if (path === '/' || path.startsWith('/campeche') || path.startsWith('/landing')) return 'campeche';
 
       const saved = localStorage.getItem('selected_city') as CityId;
       if (saved && ['campeche', 'carmen', 'juarez'].includes(saved)) {
@@ -54,12 +58,20 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const rawSearch = locationSearch || (typeof window !== 'undefined' ? window.location.search : '');
     const urlParams = new URLSearchParams(rawSearch);
     const queryCity = urlParams.get('city') || urlParams.get('ciudad');
-    if (queryCity === 'juarez' && city !== 'juarez') {
-      setCity('juarez');
-    } else if (queryCity === 'campeche' && city !== 'campeche') {
-      setCity('campeche');
-    } else if (queryCity === 'carmen' && city !== 'carmen') {
-      setCity('carmen');
+    const path = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
+    const host = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
+    const isJuarezHost = host.startsWith('juarez.') || host.includes('juarez');
+
+    if (queryCity === 'juarez' || queryCity === 'vivejuarez') {
+      if (city !== 'juarez') setCity('juarez');
+    } else if (queryCity === 'campeche') {
+      if (city !== 'campeche') setCity('campeche');
+    } else if (queryCity === 'carmen') {
+      if (city !== 'carmen') setCity('carmen');
+    } else if (isJuarezHost || path.startsWith('/juarez') || path.startsWith('/vivejuarez')) {
+      if (city !== 'juarez') setCity('juarez');
+    } else if (path === '/' || path.startsWith('/campeche') || path.startsWith('/landing')) {
+      if (city !== 'campeche') setCity('campeche');
     }
   }, [locationSearch, city]);
 

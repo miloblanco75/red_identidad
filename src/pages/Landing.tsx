@@ -12,6 +12,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { BuyStickerModal } from '../components/BuyStickerModal';
 import { useAuth } from '../contexts/AuthContext';
+import { useCity } from '../contexts/CityContext';
 
 // WhatsApp oficial de atención
 const ADMIN_WHATSAPP = '529811971305';
@@ -128,6 +129,18 @@ const STICKERS_DATA: StickerInfo[] = [
 export const Landing: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { setCity } = useCity();
+
+  // Asegurar que al estar en la landing de Campeche siempre se inicialice en modo Campeche
+  useEffect(() => {
+    setCity('campeche');
+  }, [setCity]);
+
+  // Helper de navegación a la app móvil asegurando contexto Campeche
+  const goToApp = (path: string = '/app') => {
+    setCity('campeche');
+    navigate(`${path}?city=campeche`);
+  };
 
   // Estados de navegación y modales
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -378,7 +391,7 @@ export const Landing: React.FC = () => {
         }}>
           <span>👋 ¡Bienvenido de nuevo, socio <strong>#{user.member_number || user.code}</strong>!</span>
           <button 
-            onClick={() => navigate('/app')}
+            onClick={() => goToApp('/app')}
             style={{
               background: 'var(--accent-gold)',
               color: '#121212',
@@ -474,7 +487,7 @@ export const Landing: React.FC = () => {
           {/* Actions: Portal App & Buy Button */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <button 
-              onClick={() => navigate('/app')}
+              onClick={() => goToApp('/app')}
               className="landing-btn-glass"
               style={{ padding: '0.65rem 1.25rem', fontSize: '0.88rem' }}
               title="Abrir la Web App de Miembros"
@@ -577,7 +590,7 @@ export const Landing: React.FC = () => {
               </a>
               <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem' }}>
                 <button 
-                  onClick={() => { setMobileMenuOpen(false); navigate('/app'); }}
+                  onClick={() => { setMobileMenuOpen(false); goToApp('/app'); }}
                   className="landing-btn-glass"
                   style={{ flex: 1, padding: '0.75rem' }}
                 >
@@ -1286,7 +1299,7 @@ export const Landing: React.FC = () => {
             </div>
 
             <button 
-              onClick={() => navigate('/aliados')}
+              onClick={() => goToApp('/aliados')}
               className="landing-btn-glass"
             >
               <span>Ver mapa interactivo</span>
@@ -1388,7 +1401,7 @@ export const Landing: React.FC = () => {
 
           <div style={{ textAlign: 'center', marginTop: '3rem' }}>
             <button 
-              onClick={() => navigate('/aliados')}
+              onClick={() => goToApp('/aliados')}
               className="landing-btn-gold"
             >
               <span>Explorar Directorio Completo (+15 Aliados)</span>
@@ -1862,7 +1875,7 @@ export const Landing: React.FC = () => {
                 </div>
 
                 <button 
-                  onClick={() => navigate('/aliado-panel')}
+                  onClick={() => goToApp('/aliado-panel')}
                   className="landing-btn-glass"
                   style={{ width: '100%', fontSize: '0.88rem', padding: '0.75rem' }}
                 >
@@ -1967,7 +1980,7 @@ export const Landing: React.FC = () => {
                 <span>Obtener Distintivo Oficial ($90)</span>
               </button>
               <button 
-                onClick={() => navigate('/app')}
+                onClick={() => goToApp('/app')}
                 className="landing-btn-glass"
                 style={{ padding: '1rem 2rem', fontSize: '1.05rem' }}
               >
@@ -2011,10 +2024,10 @@ export const Landing: React.FC = () => {
             <div>
               <h5 style={{ color: '#FFF', fontSize: '0.95rem', fontWeight: 600, marginBottom: '1rem' }}>Portales</h5>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                <button onClick={() => navigate('/app')} style={{ textAlign: 'left', color: '#90909A', textDecoration: 'none' }}>App de Miembros</button>
-                <button onClick={() => navigate('/registro')} style={{ textAlign: 'left', color: '#90909A', textDecoration: 'none' }}>Activar mi Código QR</button>
-                <button onClick={() => navigate('/aliado-panel')} style={{ textAlign: 'left', color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 600 }}>Portal de Comercios Aliados</button>
-                <button onClick={() => navigate('/admin')} style={{ textAlign: 'left', color: '#90909A', textDecoration: 'none' }}>Administración</button>
+                <button onClick={() => goToApp('/app')} style={{ textAlign: 'left', color: '#90909A', textDecoration: 'none' }}>App de Miembros</button>
+                <button onClick={() => goToApp('/registro')} style={{ textAlign: 'left', color: '#90909A', textDecoration: 'none' }}>Activar mi Código QR</button>
+                <button onClick={() => goToApp('/aliado-panel')} style={{ textAlign: 'left', color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 600 }}>Portal de Comercios Aliados</button>
+                <button onClick={() => goToApp('/admin')} style={{ textAlign: 'left', color: '#90909A', textDecoration: 'none' }}>Administración</button>
               </div>
             </div>
 
@@ -2239,7 +2252,7 @@ export const Landing: React.FC = () => {
         }}
       >
         <button 
-          onClick={() => navigate('/app')}
+          onClick={() => goToApp('/app')}
           className="landing-btn-glass"
           style={{ flex: 1, padding: '0.7rem', fontSize: '0.85rem' }}
         >
