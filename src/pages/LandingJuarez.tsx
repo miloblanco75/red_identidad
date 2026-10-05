@@ -7,7 +7,7 @@ import {
   CreditCard, Smartphone, Car, Utensils, Wine, 
   Briefcase, ArrowRight, MessageCircle, Star, Users,
   Calculator, Check, ExternalLink, Menu, X, Compass, Award,
-  Globe, QrCode
+  Globe, QrCode, Printer
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { BuyStickerModal } from '../components/BuyStickerModal';
@@ -292,6 +292,7 @@ export const LandingJuarez: React.FC = () => {
             <a href="#calculadora" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Calculadora</a>
             <a href="#planes" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Membresía ($80)</a>
             <a href="/juarez/manual" style={{ color: '#FCA5A5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 700 }}>📖 Manual de Uso</a>
+            <a href="/juarez/poster-mostrador" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 700 }}>📋 Cartel Mostrador</a>
             <a href="#negocios" style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Para Negocios</a>
           </div>
 
@@ -353,6 +354,7 @@ export const LandingJuarez: React.FC = () => {
               <a href="#pase-digital" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '1rem', fontWeight: 600 }}>Tu Pase con Código QR</a>
               <a href="#aliados" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Comercios en Cd. Juárez</a>
               <a href="/juarez/manual" onClick={() => setMobileMenuOpen(false)} style={{ color: '#FCA5A5', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>📖 Manual de Uso y Operaciones</a>
+              <a href="/juarez/poster-mostrador" target="_blank" rel="noopener noreferrer" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>📋 Cartel Mostrador Negocios</a>
               <a href="#calculadora" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Calculadora de Ahorro</a>
               <a href="#puntos-venta" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Puntos de Entrega</a>
               <a href="#planes" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Membresía ($80 MXN)</a>
@@ -1570,16 +1572,39 @@ export const LandingJuarez: React.FC = () => {
                 </div>
                 <h3 style={{ fontSize: '1.3rem', fontWeight: 700 }}>Insignia Oficial de Aliado Juárez</h3>
                 <p style={{ color: '#8E8E98', fontSize: '0.88rem', marginTop: '0.4rem', marginBottom: '1.5rem' }}>
-                  Recibe tu distintivo de mostrador y presencia destacada en la app de Juárez Conecta.
+                  Recibe tu distintivo de mostrador con código QR y presencia destacada en la app de Juárez Conecta.
                 </p>
-                <button 
-                  onClick={() => goToApp('/aliado-panel')}
-                  className="landing-btn-glass"
-                  style={{ width: '100%', fontSize: '0.88rem', padding: '0.75rem' }}
-                >
-                  <span>Portal para Comercios Afiliados</span>
-                  <ArrowRight size={15} />
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <button 
+                    onClick={() => goToApp('/aliado-panel')}
+                    className="landing-btn-glass"
+                    style={{ width: '100%', fontSize: '0.88rem', padding: '0.75rem' }}
+                  >
+                    <span>Portal para Comercios Afiliados</span>
+                    <ArrowRight size={15} />
+                  </button>
+
+                  <a 
+                    href="/juarez/poster-mostrador"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="landing-btn-gold"
+                    style={{
+                      width: '100%',
+                      fontSize: '0.88rem',
+                      padding: '0.75rem',
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Printer size={16} />
+                    <span>Ver / Imprimir Cartel de Mostrador (7 Días)</span>
+                  </a>
+                </div>
               </div>
 
             </div>
