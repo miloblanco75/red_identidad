@@ -226,7 +226,7 @@ const Aliados: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('allies')
-        .select('id, name, category, discount, lat, lng, promotions_given, facebook_url, website_url, logo_url, address, created_at')
+        .select('*')
         .order('promotions_given', { ascending: false });
       
       if (error) throw error;
