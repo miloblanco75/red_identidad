@@ -707,7 +707,7 @@ const Home: React.FC = () => {
               >
                 <img 
                   src={isJuarez ? "/vive_juarez_auto.jpg" : "/campechano_soy_coche.jpg"} 
-                  alt={isJuarez ? "Distintivo Oficial Vive Juárez en Auto" : "Distintivo Oficial Campechano Soy (Puerta de Tierra)"} 
+                  alt={isJuarez ? "Distintivo Oficial Juárez Conecta en Auto" : "Distintivo Oficial Campechano Soy (Puerta de Tierra)"} 
                   style={{
                     width: '100%',
                     height: 'auto',
@@ -730,7 +730,7 @@ const Home: React.FC = () => {
                   alignItems: 'center',
                   gap: '5px'
                 }}>
-                  <ShieldCheck size={14} /> {isJuarez ? 'Distintivo Oficial Vive Juárez' : 'Distintivo Físico Oficial'}
+                  <ShieldCheck size={14} /> {isJuarez ? 'Distintivo Oficial Juárez Conecta' : 'Distintivo Físico Oficial'}
                 </div>
               </div>
             </motion.div>
@@ -777,13 +777,13 @@ const Home: React.FC = () => {
                   >
                     <div style={{ width: '85px', height: '65px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <img 
-                        src="/vive_juarez_oficial.png" 
-                        alt="Vive Juárez Distintivo Oficial" 
+                        src="/juarez_conecta.png" 
+                        alt="Juárez Conecta Distintivo Oficial" 
                         style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3)) drop-shadow(0 2px 12px rgba(220,38,38,0.5))' }} 
                       />
                     </div>
                     <div style={{ textAlign: 'left', flex: 1 }}>
-                      <div style={{ fontSize: '0.95rem', fontWeight: 900, color: '#FFF' }}>VIVE JUÁREZ</div>
+                      <div style={{ fontSize: '0.95rem', fontWeight: 900, color: '#FFF' }}>JUÁREZ CONECTA</div>
                       <div style={{ fontSize: '0.74rem', color: 'var(--text-dim)', marginBottom: '6px' }}>Distintivo Digital Oficial (se convierte en tu Pase QR)</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span style={{ fontSize: '0.74rem', color: 'var(--accent-gold)', fontWeight: 800, backgroundColor: 'rgba(212,175,55,0.15)', padding: '2px 8px', borderRadius: '6px' }}>
@@ -1389,7 +1389,7 @@ const Home: React.FC = () => {
         <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', lineHeight: 1.6, textAlign: 'center', maxWidth: '440px', margin: '0 auto 1.2rem' }}>
           {isJuarez ? (
             <>
-              <strong>Vive Juárez</strong> by Red Identidad es la plataforma tecnológica y comunitaria que impulsa nuestra economía fronteriza. Conectamos personas, comercios independientes y talento local alrededor del orgullo juarense.
+              <strong>Juárez Conecta</strong> by Red Identidad es la plataforma tecnológica y comunitaria que impulsa nuestra economía fronteriza. Conectamos personas, comercios independientes y talento local alrededor del orgullo juarense.
             </>
           ) : (
             <>
@@ -1665,7 +1665,7 @@ const Home: React.FC = () => {
           </p>
 
           <div style={{ fontSize: '1.5rem', fontWeight: 900, marginBottom: '2rem' }} className="gold-text">
-            {isJuarez ? 'VIVE JUÁREZ.' : 'CAMPECHANO SOY.'}
+            {isJuarez ? 'JUÁREZ CONECTA.' : 'CAMPECHANO SOY.'}
           </div>
 
           <motion.button

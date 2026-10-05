@@ -28,7 +28,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const queryCity = urlParams.get('city') || urlParams.get('ciudad');
-      if (queryCity === 'juarez' || queryCity === 'vivejuarez') return 'juarez';
+      if (queryCity === 'juarez' || queryCity === 'vivejuarez' || queryCity === 'juarezconecta') return 'juarez';
       if (queryCity === 'carmen') return 'carmen';
       if (queryCity === 'campeche') return 'campeche';
 
@@ -36,7 +36,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const isJuarezHost = host.startsWith('juarez.') || host.includes('juarez');
       const path = window.location.pathname.toLowerCase();
 
-      if (isJuarezHost || path.startsWith('/juarez') || path.startsWith('/vivejuarez')) return 'juarez';
+      if (isJuarezHost || path.startsWith('/juarez') || path.startsWith('/vivejuarez') || path.startsWith('/juarez-conecta')) return 'juarez';
       if (path === '/' || path.startsWith('/campeche') || path.startsWith('/landing')) return 'campeche';
 
       const saved = localStorage.getItem('selected_city') as CityId;
@@ -62,13 +62,13 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const host = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
     const isJuarezHost = host.startsWith('juarez.') || host.includes('juarez');
 
-    if (queryCity === 'juarez' || queryCity === 'vivejuarez') {
+    if (queryCity === 'juarez' || queryCity === 'vivejuarez' || queryCity === 'juarezconecta') {
       if (city !== 'juarez') setCity('juarez');
     } else if (queryCity === 'campeche') {
       if (city !== 'campeche') setCity('campeche');
     } else if (queryCity === 'carmen') {
       if (city !== 'carmen') setCity('carmen');
-    } else if (isJuarezHost || path.startsWith('/juarez') || path.startsWith('/vivejuarez')) {
+    } else if (isJuarezHost || path.startsWith('/juarez') || path.startsWith('/vivejuarez') || path.startsWith('/juarez-conecta')) {
       if (city !== 'juarez') setCity('juarez');
     } else if (path === '/' || path.startsWith('/campeche') || path.startsWith('/landing')) {
       if (city !== 'campeche') setCity('campeche');
@@ -81,7 +81,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ? 'Ciudad del Carmen' 
     : 'San Francisco de Campeche';
 
-  const brandName = city === 'juarez' ? 'Vive Juárez' : 'Red Identidad';
+  const brandName = city === 'juarez' ? 'Juárez Conecta' : 'Red Identidad';
   const brandSlogan = city === 'juarez'
     ? 'El poder de consumir, ahorrar y pertenecer a esta frontera'
     : 'El poder de consumir, ahorrar y pertenecer a esta tierra';

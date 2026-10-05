@@ -73,7 +73,7 @@ export const JuarezManualModal: React.FC<JuarezManualModalProps> = ({ isOpen, on
             <span style={{ fontSize: '1.4rem' }}>🌵</span>
             <div>
               <h2 style={{ fontSize: '1.2rem', fontWeight: 800, margin: 0, color: '#FFF' }}>
-                Manual de Uso y Operaciones — Vive Juárez
+                Manual de Uso y Operaciones — Juárez Conecta
               </h2>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', margin: '2px 0 0 0' }}>
                 Guía completa para Socios, Administradores, Comercios Aliados y Clientes
@@ -169,10 +169,10 @@ export const JuarezManualModal: React.FC<JuarezManualModalProps> = ({ isOpen, on
           {/* MÓDULO 1: INTRODUCCIÓN Y MODELO DE NEGOCIO */}
           <section style={{ marginBottom: '2rem' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#F87171', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.6rem' }}>
-              <BookOpen size={20} color="#EF4444" /> 1. ¿Qué es Red Identidad Vive Juárez?
+              <BookOpen size={20} color="#EF4444" /> 1. ¿Qué es Juárez Conecta?
             </h3>
             <p>
-              <strong>Red Identidad Vive Juárez</strong> es una plataforma digital de lealtad y descuentos directos creada para incentivar el consumo en comercios locales de Ciudad Juárez.
+              <strong>Juárez Conecta</strong> (impulsado por Red Identidad) es una plataforma digital de lealtad y descuentos directos creada para incentivar el consumo en comercios locales de Ciudad Juárez.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
               <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '1rem' }}>

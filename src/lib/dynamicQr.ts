@@ -56,12 +56,14 @@ export interface QrValidationResult {
 }
 
 /**
- * Lista blanca de dominios oficiales autorizados de Red Identidad / Vive Juárez
+ * Lista blanca de dominios oficiales autorizados de Red Identidad / Juárez Conecta
  */
 const ALLOWED_DOMAINS = [
   'redidentidad.vercel.app',
   'redidentidad.app',
   'juarez.redidentidad.app',
+  'juarezconecta.mx',
+  'juarezconecta.app',
   'vivejuarez.mx',
   'localhost',
   '127.0.0.1'
@@ -90,7 +92,7 @@ export function verifyQrPayload(rawInput: string): QrValidationResult {
           isDynamic: false,
           isValid: false,
           isExpired: false,
-          errorMessage: `🚨 CÓDIGO EXTERNO BLOQUEADO: Este código QR intenta dirigir a un sitio web ajeno (${urlObj.hostname}). Solo se aceptan membresías oficiales de Red Identidad y Vive Juárez.`
+          errorMessage: `🚨 CÓDIGO EXTERNO BLOQUEADO: Este código QR intenta dirigir a un sitio web ajeno (${urlObj.hostname}). Solo se aceptan membresías oficiales de Red Identidad y Juárez Conecta.`
         };
       }
     } catch {

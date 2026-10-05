@@ -155,8 +155,8 @@ const Admin: React.FC = () => {
 
   const formatStickerLabel = (lbl: string) => {
     switch (lbl?.toLowerCase()) {
-      case 'juarense_oficial': return '🌵 Vive Juárez Oficial';
-      case 'juarez_oficial': return '🌵 Vive Juárez Oficial';
+      case 'juarense_oficial': return '🌵 Juárez Conecta Oficial';
+      case 'juarez_oficial': return '🌵 Juárez Conecta Oficial';
       case 'campechano_negra': return 'Campechano Negra';
       case 'campechano_blanca': return 'Campechano Blanca';
       case 'campechana_blanca': return 'Campechana Blanca';
@@ -983,7 +983,7 @@ const Admin: React.FC = () => {
             <div style={{ fontSize: '1.05rem', fontWeight: 900, color: adminCity === 'juarez' ? '#F87171' : adminCity === 'campeche' ? 'var(--accent-gold)' : '#FFF' }}>
               {adminCity === 'all' && '🌐 Vista Global (Todas las Plazas)'}
               {adminCity === 'campeche' && '🏰 San Francisco de Campeche & Carmen'}
-              {adminCity === 'juarez' && '🌵 Ciudad Juárez (Vive Juárez)'}
+              {adminCity === 'juarez' && '🌵 Ciudad Juárez (Juárez Conecta)'}
             </div>
           </div>
         </div>
@@ -1319,7 +1319,7 @@ const Admin: React.FC = () => {
                     cursor: 'pointer'
                   }}
                 >
-                  🌵 Ciudad Juárez (Vive Juárez)
+                  🌵 Ciudad Juárez (Juárez Conecta)
                 </button>
               </div>
             </div>
@@ -1349,7 +1349,7 @@ const Admin: React.FC = () => {
               >
                 {codeCity === 'juarez' ? (
                   <>
-                    <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Vive Juárez — Distintivo Oficial Único ($80 Pase QR)</option>
+                    <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Juárez Conecta — Distintivo Oficial Único ($80 Pase QR)</option>
                   </>
                 ) : (
                   <>
@@ -1361,7 +1361,7 @@ const Admin: React.FC = () => {
                     <option value="carmelita_negro" style={{ color: '#000' }}>Carmelita — Negro</option>
                     <option value="carmelita_blanca" style={{ color: '#000' }}>Carmelita — Blanca</option>
                     <option value="carmelita_rosa" style={{ color: '#000' }}>Carmelita — Rosa</option>
-                    <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Vive Juárez — Distintivo Oficial Único</option>
+                    <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Juárez Conecta — Distintivo Oficial Único</option>
                   </>
                 )}
               </select>
@@ -2303,7 +2303,7 @@ const Admin: React.FC = () => {
                   style={{ width: '100%', padding: '0.8rem', backgroundColor: 'rgba(255,255,255,0.08)', border: '1.5px solid var(--accent-gold)', borderRadius: '12px', color: '#FFF', fontSize: '1rem', fontWeight: 800, outline: 'none' }}
                 >
                   <option value="all" style={{ color: '#000' }}>Todos los tipos (Cargar disponibles)</option>
-                  <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Vive Juárez — Distintivo Oficial Único ($80 Pase QR)</option>
+                  <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Juárez Conecta — Distintivo Oficial Único ($80 Pase QR)</option>
                   <option value="campechana_blanca" style={{ color: '#000' }}>🤍 Campechana — Blanca (Oficial QR)</option>
                   <option value="campechana_rosa" style={{ color: '#000' }}>🌸 Campechana — Rosa (Oficial QR)</option>
                   <option value="campechana_negra" style={{ color: '#000' }}>🖤 Campechana — Negra (Oficial QR)</option>
@@ -2909,7 +2909,7 @@ const Admin: React.FC = () => {
                             onClick={() => {
                               const cityParam = isJuarSticker ? '&city=juarez' : '';
                               const link = `https://redidentidad.vercel.app/registro?c=${sticker.code}${cityParam}`;
-                              const msg = `¡Hola! Aquí tienes tu Membresía Digital Oficial Vive Juárez (${sticker.code}). Ábrela en tu celular para activar tus descuentos: ${link}`;
+                              const msg = `¡Hola! Aquí tienes tu Membresía Digital Oficial Juárez Conecta (${sticker.code}). Ábrela en tu celular para activar tus descuentos: ${link}`;
                               window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
                             }}
                             style={{
@@ -3065,7 +3065,7 @@ const Admin: React.FC = () => {
                 onClick={() => {
                   const isJ = selectedDigitalSticker.code?.startsWith('VJ') || (selectedDigitalSticker.level || '').toLowerCase().includes('juar');
                   const link = `https://redidentidad.vercel.app/registro?c=${selectedDigitalSticker.code}${isJ ? '&city=juarez' : ''}`;
-                  const msg = `¡Hola! Aquí tienes tu Membresía Digital Oficial Vive Juárez (${selectedDigitalSticker.code}). Ábrela en tu celular para activar tus descuentos exclusivos: ${link}`;
+                  const msg = `¡Hola! Aquí tienes tu Membresía Digital Oficial Juárez Conecta (${selectedDigitalSticker.code}). Ábrela en tu celular para activar tus descuentos exclusivos: ${link}`;
                   window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
                 }}
                 style={{

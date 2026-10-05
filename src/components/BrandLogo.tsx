@@ -37,7 +37,6 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   const sloganSize = size === 'small' ? '0.75rem' : size === 'large' ? '0.95rem' : '0.85rem';
 
   if (isJuarez) {
-    const badgeSize = size === 'small' ? '36px' : size === 'large' ? '54px' : '44px';
     const textSize = size === 'small' ? '1.15rem' : size === 'large' ? '1.75rem' : '1.35rem';
 
     return (
@@ -53,19 +52,19 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
           <img 
-            src="/vive_juarez_qr_icon.png"
-            alt="Vive Juárez Oficial"
+            src="/juarez_conecta.png"
+            alt="Juárez Conecta Oficial"
             style={{
-              width: badgeSize,
-              height: badgeSize,
-              borderRadius: '10px',
+              width: size === 'small' ? '50px' : size === 'large' ? '76px' : '62px',
+              height: size === 'small' ? '28px' : size === 'large' ? '42px' : '34px',
+              borderRadius: '8px',
               objectFit: 'contain',
-              boxShadow: '0 4px 14px rgba(212, 175, 55, 0.4)'
+              boxShadow: '0 4px 14px rgba(220, 38, 38, 0.4)'
             }}
           />
           <div>
             <div style={{ fontSize: textSize, fontWeight: 900, letterSpacing: '0.04em', lineHeight: 1.1, color: '#FFFFFF' }}>
-              VIVE <span className="gold-text">JUÁREZ</span>
+              JUÁREZ <span className="gold-text">CONECTA</span>
             </div>
             <div style={{ fontSize: '0.65rem', color: '#8E8E98', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
               by Red Identidad

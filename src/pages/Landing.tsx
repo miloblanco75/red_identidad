@@ -437,7 +437,7 @@ export const Landing: React.FC = () => {
               fontWeight: 600
             }}
           >
-            <span>👉 Ir a Ciudad Juárez (Vive Juárez)</span>
+            <span>👉 Ir a Ciudad Juárez (Juárez Conecta)</span>
           </a>
         </div>
       </div>

@@ -72,7 +72,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
   useEffect(() => {
     if (selectedStickerType === 'juarense_oficial') {
       setPriceNumber('80');
-      setHeaderText('VIVE JUÁREZ');
+      setHeaderText('JUÁREZ CONECTA');
       setQrUrl('https://redidentidad.vercel.app/registro?c=VJ-DEMO-001&city=juarez');
     } else {
       setPriceNumber('90');
@@ -289,7 +289,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
               onChange={(e) => setSelectedStickerType(e.target.value as any)}
               style={{ width: '100%', padding: '0.9rem 1rem', backgroundColor: '#141416', border: '1.5px solid #D4AF37', borderRadius: '12px', color: '#FFF', fontSize: '1.05rem', fontWeight: 800, outline: 'none', cursor: 'pointer' }}
             >
-              <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Vive Juárez — Distintivo Oficial ($80)</option>
+              <option value="juarense_oficial" style={{ color: '#000' }}>🌵 Juárez Conecta — Distintivo Oficial ($80)</option>
               <option value="campechana_rosa" style={{ color: '#000' }}>🌸 Campechana — Rosa (Oficial QR)</option>
               <option value="campechana_negra" style={{ color: '#000' }}>🖤 Campechana — Negra (Oficial QR)</option>
               <option value="campechana_blanca" style={{ color: '#000' }}>🤍 Campechana — Blanca (Oficial QR)</option>
@@ -339,7 +339,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                   justifyContent: 'center',
                   gap: '4px'
                 }}>
-                  {selectedStickerType === 'juarense_oficial' ? '🌵 VIVE JUÁREZ' : selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 CAMPECHANA BLANCA' : headerText}
+                  {selectedStickerType === 'juarense_oficial' ? '🌵 JUÁREZ CONECTA' : selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 CAMPECHANA BLANCA' : headerText}
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: 'auto' }}>
@@ -407,7 +407,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
                   }}
                 >
                   <div style={{ fontSize: '6.5px', fontWeight: '900', color: selectedStickerType === 'juarense_oficial' ? '#991B1B' : selectedStickerType === 'campechana_rosa' ? '#FF5C9D' : '#000', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {selectedStickerType === 'juarense_oficial' ? '🌵 VIVE JUÁREZ' : selectedStickerType === 'campechana_rosa' ? '🌸 ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 BLANCA' : headerText}
+                    {selectedStickerType === 'juarense_oficial' ? '🌵 JUÁREZ CONECTA' : selectedStickerType === 'campechana_rosa' ? '🌸 ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 BLANCA' : headerText}
                   </div>
                   <StickerQRCode value={stickerItem.url || qrUrl} level={selectedStickerType} size={42} />
                   <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-end', fontSize: '4.5px', fontWeight: '800', color: '#000' }}>
@@ -622,7 +622,7 @@ export const EnvelopeStickerDesigner: React.FC<EnvelopeStickerDesignerProps> = (
             }}
           >
             <div style={{ fontSize: `${stickerSizeCm <= 3.2 ? 6.5 : 9}pt`, fontWeight: '900', letterSpacing: '0.01em', textAlign: 'center', lineHeight: '1', color: selectedStickerType === 'juarense_oficial' ? '#991B1B' : selectedStickerType === 'campechana_rosa' ? '#FF5C9D' : '#000000' }}>
-              {selectedStickerType === 'juarense_oficial' ? '🌵 VIVE JUÁREZ' : selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 CAMPECHANA BLANCA' : headerText}
+              {selectedStickerType === 'juarense_oficial' ? '🌵 JUÁREZ CONECTA' : selectedStickerType === 'campechana_rosa' ? '🌸 CAMPECHANA ROSA' : selectedStickerType === 'campechana_negra' ? '🖤 CAMPECHANA NEGRA' : selectedStickerType === 'campechana_blanca' ? '🤍 CAMPECHANA BLANCA' : headerText}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'center', margin: 'auto' }}>

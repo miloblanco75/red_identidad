@@ -1,8 +1,8 @@
 /**
- * Servicio de Membresía de Cortesía de 7 Días - Lanzamiento Vive Juárez
+ * Servicio de Membresía de Cortesía de 7 Días - Lanzamiento Juárez Conecta
  * 
  * Permite a los comercios aliados regalar membresías de cortesía ilimitadas
- * durante la semana de lanzamiento de Red Identidad Juárez.
+ * durante la semana de lanzamiento de Juárez Conecta (Red Identidad).
  * Control estricto anti-duplicados por número de celular (10 dígitos).
  * Al vencer los 7 días, redirige inmediatamente a la compra de la membresía digital ($80 MXN).
  */
@@ -21,7 +21,7 @@ export interface JuarezTrialPassData {
   remainingHours: number;
 }
 
-const STORAGE_KEY = 'vive_juarez_7d_trial_pass';
+const STORAGE_KEY = 'juarez_conecta_7d_trial_pass';
 export const TRIAL_DURATION_DAYS = 7;
 export const TRIAL_DURATION_MS = TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000;
 
@@ -30,7 +30,7 @@ export const TRIAL_DURATION_MS = TRIAL_DURATION_DAYS * 24 * 60 * 60 * 1000;
  */
 export function getStoredJuarezTrialPass(): JuarezTrialPassData | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('vive_juarez_7d_trial_pass');
     if (!raw) return null;
     const pass = JSON.parse(raw) as JuarezTrialPassData;
     
@@ -176,7 +176,7 @@ export async function requestJuarez7DayTrial(name: string, phone: string, _allyN
       const remainingHours = Math.floor((remainingMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
 
       const passData: JuarezTrialPassData = {
-        name: name.trim() || 'Invitado Vive Juárez',
+        name: name.trim() || 'Invitado Juárez Conecta',
         phone: cleanPhone,
         code: previousTrial.code,
         member_number: 0,
@@ -209,7 +209,7 @@ export async function requestJuarez7DayTrial(name: string, phone: string, _allyN
     }
 
     const passData: JuarezTrialPassData = {
-      name: name.trim() || 'Invitado Vive Juárez',
+      name: name.trim() || 'Invitado Juárez Conecta',
       phone: cleanPhone,
       code: trialCode,
       member_number: 0,
@@ -231,7 +231,7 @@ export async function requestJuarez7DayTrial(name: string, phone: string, _allyN
     const expiresAt = new Date(now.getTime() + TRIAL_DURATION_MS).toISOString();
 
     const passData: JuarezTrialPassData = {
-      name: name.trim() || 'Invitado Vive Juárez',
+      name: name.trim() || 'Invitado Juárez Conecta',
       phone: cleanPhone,
       code: fallbackCode,
       member_number: 0,

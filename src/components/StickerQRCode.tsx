@@ -57,9 +57,9 @@ export const StickerQRCode: React.FC<StickerQRCodeProps> = ({
       bgColor="#FFFFFF"
       fgColor={qrFgColor}
       imageSettings={isJuarez ? {
-        src: '/vive_juarez_qr_icon.png',
-        height: Math.max(16, Math.round(size * 0.24)),
-        width: Math.max(16, Math.round(size * 0.24)),
+        src: '/juarez_conecta.png',
+        height: Math.max(16, Math.round(size * 0.22)),
+        width: Math.max(28, Math.round(size * 0.40)),
         excavate: true,
       } : undefined}
       style={{ display: 'block', margin: '0 auto', ...style }}

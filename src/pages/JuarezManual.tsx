@@ -14,8 +14,8 @@ export const JuarezManual: React.FC = () => {
 
   const handleShare = async () => {
     const shareData = {
-      title: 'Manual de Uso y Operaciones — Vive Juárez',
-      text: 'Guía oficial para comercios aliados, operadores y clientes de Red Identidad Vive Juárez.',
+      title: 'Manual de Uso y Operaciones — Juárez Conecta',
+      text: 'Guía oficial para comercios aliados, operadores y clientes de Juárez Conecta (Red Identidad).',
       url: window.location.href,
     };
     if (navigator.share) {
@@ -74,7 +74,7 @@ export const JuarezManual: React.FC = () => {
           </button>
           <div>
             <h1 style={{ fontSize: '1.1rem', fontWeight: 800, margin: 0, color: '#FFF' }}>
-              Manual de Uso — Vive Juárez
+              Manual de Uso — Juárez Conecta
             </h1>
             <p style={{ fontSize: '0.72rem', color: 'var(--text-dim)', margin: 0 }}>
               Documento Oficial • Formato Imprimible Tamaño Carta
@@ -179,10 +179,10 @@ export const JuarezManual: React.FC = () => {
           {/* MÓDULO 1: INTRODUCCIÓN Y MODELO DE NEGOCIO */}
           <section style={{ marginBottom: '2.2rem' }}>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#F87171', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.6rem' }}>
-              <BookOpen size={20} color="#EF4444" /> 1. ¿Qué es Red Identidad Vive Juárez?
+              <BookOpen size={20} color="#EF4444" /> 1. ¿Qué es Juárez Conecta?
             </h3>
             <p>
-              <strong>Red Identidad Vive Juárez</strong> es una plataforma digital de lealtad y descuentos directos creada para impulsar el consumo en comercios locales de Ciudad Juárez.
+              <strong>Juárez Conecta</strong> (impulsado por Red Identidad) es una plataforma digital de lealtad y descuentos directos creada para impulsar el consumo en comercios locales de Ciudad Juárez.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
               <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '1.1rem' }}>

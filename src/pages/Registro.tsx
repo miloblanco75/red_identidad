@@ -632,7 +632,7 @@ const Registro: React.FC = () => {
           </div>
         )}
 
-        {/* Banner de Membresía 7 Días Vive Juárez Activa */}
+        {/* Banner de Membresía 7 Días Juárez Conecta Activa */}
         {(user.level === 'trial_7d' || user.code?.startsWith('VJ-7D-')) && !isJuarezTrialExpired && (
           <div style={{
             backgroundColor: 'rgba(220, 38, 38, 0.12)',
@@ -644,7 +644,7 @@ const Registro: React.FC = () => {
             boxShadow: '0 0 25px rgba(220, 38, 38, 0.25)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', color: '#FF6B6B', fontWeight: 800, fontSize: '0.88rem', marginBottom: '4px' }}>
-              <Clock size={18} /> Membresía Gratis por 7 Días • Vive Juárez
+              <Clock size={18} /> Membresía Gratis por 7 Días • Juárez Conecta
             </div>
             <p style={{ color: '#E2E8F0', fontSize: '0.78rem', margin: '0 0 10px 0', lineHeight: 1.35 }}>
               {juarezTrialDaysLeft !== null 
@@ -832,9 +832,9 @@ const Registro: React.FC = () => {
               size={190} 
               level="H" 
               imageSettings={isJuarezUser ? {
-                src: '/vive_juarez_qr_icon.png',
-                height: 44,
-                width: 44,
+                src: '/juarez_conecta.png',
+                height: 42,
+                width: 76,
                 excavate: true
               } : undefined}
             />

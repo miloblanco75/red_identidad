@@ -389,7 +389,7 @@ const AliadoPanel: React.FC = () => {
           allyCategory: ally.category,
           memberNumber: 0,
           memberCode: clean,
-          memberLevel: 'Cortesía 7 Días Vive Juárez',
+          memberLevel: 'Cortesía 7 Días Juárez Conecta',
           discountApplied: activePromoDiscount,
           validationMethod: 'Cámara QR en vivo',
           phoneMasked: phoneMasked,
@@ -651,7 +651,7 @@ const AliadoPanel: React.FC = () => {
         return;
       }
 
-      // E. Fallback: Prefijos oficiales reconocidos de la Red Identidad y Vive Juárez
+      // E. Fallback: Prefijos oficiales reconocidos de la Red Identidad y Juárez Conecta
       const officialPrefixes = ['BLAN', 'ROSA', 'NEGR', 'CB-', 'CN-', 'CRN-', 'CRB-', 'RED-', 'TUL', 'DIG-', 'TRIAL-', 'VJ-', 'JUA-', 'VIVE-'];
       const isOfficialPattern = officialPrefixes.some(p => clean.startsWith(p) || clean.includes(p));
 
@@ -663,7 +663,7 @@ const AliadoPanel: React.FC = () => {
             status: 'invalid',
             code: clean,
             discountToApply: '',
-            message: `⚠️ CALCOMANÍA NO ACTIVADA: Pide al cliente que escanee el código con su celular para dar de alta su número en ${isJuarez ? 'vivejuarez' : 'redidentidad.vercel.app'} antes de aplicar el descuento.`,
+            message: `⚠️ CALCOMANÍA NO ACTIVADA: Pide al cliente que escanee el código con su celular para dar de alta su número en ${isJuarez ? 'juarezconecta' : 'redidentidad.vercel.app'} antes de aplicar el descuento.`,
             isPhysicalSticker: true,
           });
           return;
@@ -708,7 +708,7 @@ const AliadoPanel: React.FC = () => {
           member_number: memberNum,
           level: derivedLevel,
           discountToApply: activePromoDiscount,
-          message: isJuarez ? '¡Pase Digital Vive Juárez Verificado! ✓' : '¡Pase Digital Oficial Verificado!',
+          message: isJuarez ? '¡Pase Digital Juárez Conecta Verificado! ✓' : '¡Pase Digital Oficial Verificado!',
           isDynamic: true,
           ageSeconds: parsedQr.ageSeconds,
           isUnclaimedOfficial: true,
@@ -729,7 +729,7 @@ const AliadoPanel: React.FC = () => {
         code: clean,
         discountToApply: '',
         message: isJuarez 
-          ? `El código "${clean}" no pertenece a Vive Juárez o no está activado.`
+          ? `El código "${clean}" no pertenece a Juárez Conecta o no está activado.`
           : `El código "${clean}" no pertenece a la Red Identidad o no está activado.`
       });
 
@@ -836,7 +836,7 @@ const AliadoPanel: React.FC = () => {
       return { name: '🎙️ PRENSA OFICIAL / INVITADO DE HONOR', color: '#F59E0B', icon: Crown };
     }
     if (s.includes('juarense') || s.includes('juarez') || s.includes('vj-') || s.includes('vive')) {
-      return { name: 'VIVE JUÁREZ OFICIAL', color: '#EF4444', icon: Crown };
+      return { name: 'JUÁREZ CONECTA OFICIAL', color: '#EF4444', icon: Crown };
     }
     if (s.includes('digital') || s.startsWith('dig')) {
       return { name: 'MEMBRESÍA DIGITAL OFICIAL', color: '#38BDF8', icon: Crown };
@@ -865,7 +865,7 @@ const AliadoPanel: React.FC = () => {
     if (s.includes('silver')) {
       return { name: 'COLECCIÓN PLATA', color: '#C0C0C0', icon: Sparkles };
     }
-    return { name: isJuarez ? 'VIVE JUÁREZ OFICIAL' : 'DISTINTIVO OFICIAL', color: isJuarez ? '#EF4444' : '#4ADE80', icon: ShieldCheck };
+    return { name: isJuarez ? 'JUÁREZ CONECTA OFICIAL' : 'DISTINTIVO OFICIAL', color: isJuarez ? '#EF4444' : '#4ADE80', icon: ShieldCheck };
   };
 
   /* ─── LOGIN ─── */
@@ -887,11 +887,11 @@ const AliadoPanel: React.FC = () => {
             <Store size={34} color={isJuarez ? '#EF4444' : 'var(--accent-gold)'} />
           </div>
           <h1 style={{ fontSize: '1.7rem', marginBottom: '0.4rem' }}>
-            {isJuarez ? 'Portal de Negocios Vive Juárez' : 'Portal de Aliados'}
+            {isJuarez ? 'Portal de Negocios Juárez Conecta' : 'Portal de Aliados'}
           </h1>
           <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', lineHeight: 1.5 }}>
             {isJuarez 
-              ? 'Valida los distintivos oficiales y pases digitales de Vive Juárez y registra promociones otorgadas a socios juarenses.'
+              ? 'Valida los distintivos oficiales y pases digitales de Juárez Conecta y registra promociones otorgadas a socios juarenses.'
               : 'Valida los distintivos oficiales y registra las promociones que otorgas a los miembros.'}
           </p>
         </div>
@@ -1347,7 +1347,7 @@ const AliadoPanel: React.FC = () => {
         <p style={{ margin: 0, fontSize: '0.82rem', color: '#E2E8F0', lineHeight: 1.45 }}>
           {isJuarez ? (
             <>
-              <strong>Durante la semana de lanzamiento de Vive Juárez:</strong> todos tus clientes pueden llevarse una <strong>Membresía Digital GRATIS por 7 Días</strong>. Coloca el cartel con QR en tu mostrador o activa a tu cliente al cobrar ingresando su celular.
+              <strong>Durante la semana de lanzamiento de Juárez Conecta:</strong> todos tus clientes pueden llevarse una <strong>Membresía Digital GRATIS por 7 Días</strong>. Coloca el cartel con QR en tu mostrador o activa a tu cliente al cobrar ingresando su celular.
             </>
           ) : (
             <>
@@ -2056,7 +2056,7 @@ const AliadoPanel: React.FC = () => {
                   fontWeight: 800,
                   marginBottom: '0.6rem'
                 }}>
-                  <Gift size={14} /> {isJuarez ? '★ SEMANA DE LANZAMIENTO VIVE JUÁREZ ★' : 'REGALO POST-PAGO • FIDELIZACIÓN'}
+                  <Gift size={14} /> {isJuarez ? '★ SEMANA DE LANZAMIENTO JUÁREZ CONECTA ★' : 'REGALO POST-PAGO • FIDELIZACIÓN'}
                 </div>
                 <h2 style={{ fontSize: '1.35rem', fontWeight: 900, color: '#FFF', margin: '0 0 0.3rem' }}>
                   {isJuarez ? 'Membresía Digital Gratis (7 Días)' : 'Pase de Cortesía (24h)'}
@@ -2092,9 +2092,9 @@ const AliadoPanel: React.FC = () => {
                   level="H"
                   includeMargin={false}
                   imageSettings={isJuarez ? {
-                    src: '/vive_juarez_qr_icon.png',
-                    height: 42,
-                    width: 42,
+                    src: '/juarez_conecta.png',
+                    height: 40,
+                    width: 72,
                     excavate: true
                   } : undefined}
                 />

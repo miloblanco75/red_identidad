@@ -55,19 +55,22 @@ function App() {
         <CityProvider>
           <React.Suspense fallback={<div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0B0B0E', color: '#F5F5F7' }}>Cargando...</div>}>
             <Routes>
-              {/* Si entra desde juarez.redidentidad.app, la raíz '/' muestra Vive Juárez; sino, muestra Campeche */}
+              {/* Si entra desde juarez.redidentidad.app, la raíz '/' muestra Juárez Conecta; sino, muestra Campeche */}
               <Route path="/" element={isJuarezSubdomain ? <LandingJuarez /> : <Landing />} />
               
               {/* Rutas explícitas para Campeche */}
               <Route path="/campeche" element={<Landing />} />
               <Route path="/landing" element={<Landing />} />
 
-              {/* Rutas explícitas para Vive Juárez (Ciudad Juárez) */}
+              {/* Rutas explícitas para Juárez Conecta (Ciudad Juárez) */}
               <Route path="/juarez" element={<LandingJuarez />} />
+              <Route path="/juarez-conecta" element={<LandingJuarez />} />
+              <Route path="/juarezconecta" element={<LandingJuarez />} />
+              <Route path="/juarez/conecta" element={<LandingJuarez />} />
               <Route path="/juarez/landing" element={<LandingJuarez />} />
               <Route path="/vivejuarez" element={<LandingJuarez />} />
 
-              {/* Campaña de Lanzamiento Vive Juárez: 7 Días de Membresía Gratis */}
+              {/* Campaña de Lanzamiento Juárez Conecta: 7 Días de Membresía Gratis */}
               <Route path="/juarez/semana-gratis" element={<JuarezSemanaGratis />} />
               <Route path="/semana-gratis" element={<JuarezSemanaGratis />} />
               <Route path="/juarez/promo7" element={<JuarezSemanaGratis />} />

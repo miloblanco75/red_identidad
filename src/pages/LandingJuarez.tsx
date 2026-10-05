@@ -27,9 +27,9 @@ interface JuarezStickerInfo {
 
 const JUAREZ_OFFICIAL_STICKER: JuarezStickerInfo = {
   id: 'juarense_oficial',
-  name: 'Vive Juárez — Edición Oficial Única',
+  name: 'Juárez Conecta — Edición Oficial Única',
   edition: 'Edición Oficial 2026',
-  imagePath: '/vive_juarez_oficial.png',
+  imagePath: '/juarez_conecta.png',
   description: 'Insignia oficial con la emblemática X de Juárez en vías ferroviarias rojas y el corazón de nuestra frontera juarense.',
   perk: 'Acceso a la Red de Aliados, descuentos directos de hasta 15% en restaurantes y comercios en Ciudad Juárez.'
 };
@@ -137,8 +137,8 @@ export const LandingJuarez: React.FC = () => {
   // Preguntas Frecuentes de Ciudad Juárez
   const faqList = [
     {
-      q: '¿Qué es Vive Juárez?',
-      a: 'Vive Juárez es el movimiento de orgullo local y club de beneficios exclusivos de Ciudad Juárez respaldado por la plataforma Red Identidad. Al colocar tu distintivo oficial automotriz (o pase digital) obtienes hasta un 15% de descuento en restaurantes, servicios y comercios aliados en toda la ciudad.'
+      q: '¿Qué es Juárez Conecta?',
+      a: 'Juárez Conecta es el movimiento de orgullo local y club de beneficios exclusivos de Ciudad Juárez respaldado por la plataforma Red Identidad. Al colocar tu distintivo oficial automotriz (o pase digital) obtienes hasta un 15% de descuento en restaurantes, servicios y comercios aliados en toda la ciudad.'
     },
     {
       q: '¿La calcomanía soporta el clima extremo de Ciudad Juárez?',
@@ -163,7 +163,7 @@ export const LandingJuarez: React.FC = () => {
     if (!merchantForm.businessName || !merchantForm.phone) return;
 
     const message = encodeURIComponent(
-      `👋 ¡Hola! Me interesa afiliar mi negocio a Vive Juárez (Ciudad Juárez).\n\n` +
+      `👋 ¡Hola! Me interesa afiliar mi negocio a Juárez Conecta (Ciudad Juárez).\n\n` +
       `🏢 *Negocio:* ${merchantForm.businessName}\n` +
       `🏷️ *Giro:* ${merchantForm.category}\n` +
       `📍 *Zona:* ${merchantForm.zone}\n` +
@@ -243,7 +243,7 @@ export const LandingJuarez: React.FC = () => {
       </div>
 
 
-      {/* ── NAVBAR PRINCIPAL VIVE JUÁREZ ── */}
+      {/* ── NAVBAR PRINCIPAL JUÁREZ CONECTA ── */}
       <nav 
         style={{
           position: 'sticky',
@@ -257,25 +257,25 @@ export const LandingJuarez: React.FC = () => {
       >
         <div className="landing-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '76px' }}>
           
-          {/* Logo Vive Juárez */}
+          {/* Logo Juárez Conecta */}
           <div 
             style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer' }}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <img 
-              src="/vive_juarez_qr_icon.png"
-              alt="Vive Juárez"
+              src="/juarez_conecta.png"
+              alt="Juárez Conecta"
               style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '10px',
+                width: '54px',
+                height: '36px',
+                borderRadius: '8px',
                 objectFit: 'contain',
                 boxShadow: '0 4px 12px rgba(220,38,38,0.35)'
               }}
             />
             <div>
               <div style={{ fontSize: '1.25rem', fontWeight: 900, letterSpacing: '0.04em', lineHeight: 1.1 }}>
-                VIVE <span className="gold-text">JUÁREZ</span>
+                JUÁREZ <span className="gold-text">CONECTA</span>
               </div>
               <div style={{ fontSize: '0.68rem', color: '#8E8E98', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 by Red Identidad
@@ -409,7 +409,7 @@ export const LandingJuarez: React.FC = () => {
                 marginBottom: '2.2rem',
                 maxWidth: '560px'
               }}>
-                <strong>Vive Juárez</strong> es el distintivo digital oficial por <strong>$80 MXN</strong> que se convierte en tu <strong>pase digital con código QR</strong> en tu smartphone, con el logotipo oficial incrustado para obtener <strong>hasta un 15% de descuento en comercios y restaurantes aliados</strong> de Ciudad Juárez.
+                <strong>Juárez Conecta</strong> es el distintivo digital oficial por <strong>$80 MXN</strong> que se convierte en tu <strong>pase digital con código QR</strong> en tu smartphone, con el logotipo oficial incrustado para obtener <strong>hasta un 15% de descuento en comercios y restaurantes aliados</strong> de Ciudad Juárez.
               </p>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '2.5rem' }}>
@@ -443,7 +443,7 @@ export const LandingJuarez: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <CheckCircle2 size={16} color="var(--accent-gold)" />
-                  <span>Código QR con el escudo oficial Vive Juárez insertado al centro</span>
+                  <span>Código QR con el escudo oficial Juárez Conecta insertado al centro</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <CheckCircle2 size={16} color="var(--accent-gold)" />
@@ -501,8 +501,8 @@ export const LandingJuarez: React.FC = () => {
                   </div>
 
                   <img 
-                    src="/vive_juarez_oficial.png" 
-                    alt="Vive Juárez Insignia Oficial" 
+                    src="/juarez_conecta.png" 
+                    alt="Juárez Conecta Insignia Oficial" 
                     style={{
                       maxHeight: '190px',
                       maxWidth: '100%',
@@ -512,7 +512,7 @@ export const LandingJuarez: React.FC = () => {
                   />
 
                   <div style={{ marginTop: '0.8rem', fontSize: '0.9rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
-                    La "X" Monumental • Red Identidad Juárez
+                    La "X" Monumental • Juárez Conecta
                   </div>
                   <div style={{ fontSize: '0.72rem', color: '#A0A0A8' }}>
                     Edición Oficial Única • Sin colores alternos
@@ -653,7 +653,7 @@ export const LandingJuarez: React.FC = () => {
               <span>Simple, Rápido y Transparente</span>
             </div>
             <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.7rem)', fontWeight: 800, marginBottom: '1rem' }}>
-              ¿Cómo funciona Vive Juárez?
+              ¿Cómo funciona Juárez Conecta?
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
               Sin mensualidades ni cobros automáticos. Un solo pago y disfrutas de beneficios permanentes en la frontera.
@@ -679,7 +679,7 @@ export const LandingJuarez: React.FC = () => {
               </div>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '0.8rem' }}>QR con Escudo Insertado</h3>
               <p style={{ color: '#9E9EA8', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                Tu código QR personal incluye el escudo oficial de Vive Juárez en su centro. Mantenlo en tu smartphone o guárdalo como imagen.
+                Tu código QR personal incluye el escudo oficial de Juárez Conecta en su centro. Mantenlo en tu smartphone o guárdalo como imagen.
               </p>
             </div>
 
@@ -697,7 +697,7 @@ export const LandingJuarez: React.FC = () => {
         </div>
       </section>
 
-      {/* ── SECCIÓN 2: EL DISTINTIVO OFICIAL VIVE JUÁREZ ── */}
+      {/* ── SECCIÓN 2: EL DISTINTIVO OFICIAL JUÁREZ CONECTA ── */}
       <section id="distintivo" style={{ padding: '6rem 0', backgroundColor: '#0F0F13' }}>
         <div className="landing-container">
           
@@ -741,7 +741,7 @@ export const LandingJuarez: React.FC = () => {
               }}>
                 <img 
                   src="/vive_juarez_auto.jpg" 
-                  alt="Distintivo Vive Juárez colocado en vehículo"
+                  alt="Distintivo Juárez Conecta colocado en vehículo"
                   style={{
                     width: '100%',
                     height: '260px',
@@ -903,7 +903,7 @@ export const LandingJuarez: React.FC = () => {
                     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
                       <img 
                         src="/vive_juarez_auto.jpg" 
-                        alt="Distintivo Vive Juárez en Vehículo"
+                        alt="Distintivo Juárez Conecta en Vehículo"
                         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                       />
                       <div style={{
@@ -997,7 +997,7 @@ export const LandingJuarez: React.FC = () => {
               Tu Distintivo se Convierte en tu Pase con QR
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
-              Por solo <strong>$80 pesos (pago único)</strong>, adquieres tu distintivo digital oficial que <strong>se convierte en tu pase personal con código QR</strong> en tu celular. El código QR lleva la <strong>imagen oficial de Vive Juárez inserta en el centro</strong> para validar tus descuentos al instante.
+              Por solo <strong>$80 pesos (pago único)</strong>, adquieres tu distintivo digital oficial que <strong>se convierte en tu pase personal con código QR</strong> en tu celular. El código QR lleva la <strong>imagen oficial de Juárez Conecta inserta en el centro</strong> para validar tus descuentos al instante.
             </p>
           </div>
 
@@ -1027,14 +1027,14 @@ export const LandingJuarez: React.FC = () => {
                   <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
                     <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', flexShrink: 0, fontWeight: 800, fontSize: '0.85rem' }}>1</div>
                     <div style={{ fontSize: '0.9rem', color: '#D0D0D8', lineHeight: 1.5 }}>
-                      <strong>Un solo pago de $80 MXN:</strong> Adquieres tu distintivo oficial Vive Juárez sin mensualidades ni cobros posteriores.
+                      <strong>Un solo pago de $80 MXN:</strong> Adquieres tu distintivo oficial Juárez Conecta sin mensualidades ni cobros posteriores.
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
                     <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', flexShrink: 0, fontWeight: 800, fontSize: '0.85rem' }}>2</div>
                     <div style={{ fontSize: '0.9rem', color: '#D0D0D8', lineHeight: 1.5 }}>
-                      <strong>Se convierte en tu Pase con QR:</strong> Tu distintivo digital genera tu código QR con la insignia oficial de Vive Juárez insertada en el centro.
+                      <strong>Se convierte en tu Pase con QR:</strong> Tu distintivo digital genera tu código QR con la insignia oficial de Juárez Conecta insertada en el centro.
                     </div>
                   </div>
 
@@ -1079,7 +1079,7 @@ export const LandingJuarez: React.FC = () => {
                   maxWidth: '300px'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.8rem' }}>
-                    <img src="/vive_juarez_qr_icon.png" alt="Vive Juárez" style={{ width: '24px', height: '24px', borderRadius: '6px' }} />
+                    <img src="/juarez_conecta.png" alt="Juárez Conecta" style={{ width: '32px', height: '20px', objectFit: 'contain' }} />
                     <span style={{ fontSize: '0.85rem', fontWeight: 900, letterSpacing: '0.06em', color: '#FFF' }}>PASE DIGITAL OFICIAL</span>
                   </div>
 
@@ -1093,21 +1093,21 @@ export const LandingJuarez: React.FC = () => {
                   }}>
                     <QRCodeSVG 
                       value="https://redidentidad.vercel.app/app?city=juarez"
-                      size={175}
+                      size={185}
                       level="H"
                       bgColor="#FFFFFF"
                       fgColor="#121212"
                       imageSettings={{
-                        src: '/vive_juarez_qr_icon.png',
-                        height: 46,
-                        width: 46,
+                        src: '/juarez_conecta.png',
+                        height: 42,
+                        width: 76,
                         excavate: true
                       }}
                     />
                   </div>
 
                   <div style={{ marginTop: '0.8rem', fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
-                    VIVE JUÁREZ • $80 MXN
+                    JUÁREZ CONECTA • $80 MXN
                   </div>
                   <div style={{ fontSize: '0.74rem', color: '#9E9EA8', marginTop: '4px', lineHeight: 1.4 }}>
                     Código QR único con imagen oficial incrustada. Válido en toda la red de comercios aliados.
@@ -1239,7 +1239,7 @@ export const LandingJuarez: React.FC = () => {
               <span>Retorno Inmediato</span>
             </div>
             <h2 style={{ fontSize: 'clamp(1.9rem, 3.5vw, 2.7rem)', fontWeight: 800, marginBottom: '1rem' }}>
-              ¿Cuánto te ahorras con Vive Juárez?
+              ¿Cuánto te ahorras con Juárez Conecta?
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
               Ajusta tu consumo habitual y comprueba que una calcomanía de $90 se paga sola desde tus primeras salidas.
@@ -1386,7 +1386,7 @@ export const LandingJuarez: React.FC = () => {
                 }}>
                   <span>{store.city}</span>
                   <a 
-                    href={`https://wa.me/${JUAREZ_WHATSAPP}?text=${encodeURIComponent(`Hola, me gustaría más información sobre el distintivo de Vive Juárez en el punto ${store.name} (${store.zone}).`)}`}
+                    href={`https://wa.me/${JUAREZ_WHATSAPP}?text=${encodeURIComponent(`Hola, me gustaría más información sobre el distintivo de Juárez Conecta en el punto ${store.name} (${store.zone}).`)}`}
                     target="_blank"
                     rel="noreferrer"
                     style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}
@@ -1454,7 +1454,7 @@ export const LandingJuarez: React.FC = () => {
                   Membresía Digital Completa
                 </span>
                 <h3 style={{ fontSize: '1.7rem', fontWeight: 800, margin: '0.4rem 0 1rem' }}>
-                  Distintivo & Pase Vive Juárez
+                  Distintivo & Pase Juárez Conecta
                 </h3>
                 
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.4rem', marginBottom: '1.5rem' }}>
@@ -1466,7 +1466,7 @@ export const LandingJuarez: React.FC = () => {
                   {[
                     'Distintivo Digital Oficial en alta resolución con la X de Juárez (Rojo y Negro)',
                     'Se convierte en tu Pase Digital con código QR en tu smartphone',
-                    'Código QR oficial con la insignia Vive Juárez incrustada en el centro',
+                    'Código QR oficial con la insignia Juárez Conecta incrustada en el centro',
                     'Hasta 15% de descuento en restaurantes, talleres y comercios aliados en Cd. Juárez',
                     'Folio único de socio fronterizo registrado en el sistema',
                     'Sin plazos forzosos ni mensualidades (un solo pago de $80 MXN)',
@@ -1520,7 +1520,7 @@ export const LandingJuarez: React.FC = () => {
                     </div>
                     <div>
                       <h4 style={{ fontSize: '1.05rem', fontWeight: 600 }}>Clientes Locales Frecuentes</h4>
-                      <p style={{ color: '#8E8E98', fontSize: '0.88rem' }}>Los socios de Vive Juárez buscan consumir preferentemente en negocios que portan el distintivo.</p>
+                      <p style={{ color: '#8E8E98', fontSize: '0.88rem' }}>Los socios de Juárez Conecta buscan consumir preferentemente en negocios que portan el distintivo.</p>
                     </div>
                   </div>
 
@@ -1546,7 +1546,7 @@ export const LandingJuarez: React.FC = () => {
                   </button>
 
                   <a 
-                    href={`https://wa.me/${JUAREZ_WHATSAPP}?text=${encodeURIComponent('Hola, me gustaría afiliar mi negocio como comercio aliado de Vive Juárez.')}`}
+                    href={`https://wa.me/${JUAREZ_WHATSAPP}?text=${encodeURIComponent('Hola, me gustaría afiliar mi negocio como comercio aliado de Juárez Conecta.')}`}
                     target="_blank"
                     rel="noreferrer"
                     className="landing-btn-glass"
@@ -1570,7 +1570,7 @@ export const LandingJuarez: React.FC = () => {
                 </div>
                 <h3 style={{ fontSize: '1.3rem', fontWeight: 700 }}>Insignia Oficial de Aliado Juárez</h3>
                 <p style={{ color: '#8E8E98', fontSize: '0.88rem', marginTop: '0.4rem', marginBottom: '1.5rem' }}>
-                  Recibe tu distintivo de mostrador y presencia destacada en la app de Vive Juárez.
+                  Recibe tu distintivo de mostrador y presencia destacada en la app de Juárez Conecta.
                 </p>
                 <button 
                   onClick={() => goToApp('/aliado-panel')}
@@ -1595,7 +1595,7 @@ export const LandingJuarez: React.FC = () => {
               Preguntas Frecuentes
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
-              Todo lo que necesitas saber sobre Vive Juárez.
+              Todo lo que necesitas saber sobre Juárez Conecta.
             </p>
           </div>
 
@@ -1651,14 +1651,14 @@ export const LandingJuarez: React.FC = () => {
         </div>
       </section>
 
-      {/* ── FOOTER VIVE JUÁREZ ── */}
+      {/* ── FOOTER JUÁREZ CONECTA ── */}
       <footer style={{ backgroundColor: '#08080A', borderTop: '1px solid rgba(255, 255, 255, 0.08)', padding: '4rem 0 2.5rem', color: '#7E7E88', fontSize: '0.88rem' }}>
         <div className="landing-container">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '2.5rem', marginBottom: '3.5rem' }}>
             
             <div>
               <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#FFF', marginBottom: '0.3rem' }}>
-                VIVE <span className="gold-text">JUÁREZ</span>
+                JUÁREZ <span className="gold-text">CONECTA</span>
               </div>
               <p style={{ color: 'var(--accent-gold)', fontStyle: 'italic', fontSize: '0.82rem', marginBottom: '1rem' }}>
                 "El poder de consumir, ahorrar y pertenecer a esta frontera"
@@ -1721,12 +1721,12 @@ export const LandingJuarez: React.FC = () => {
             fontSize: '0.8rem'
           }}>
             <div>
-              © 2026 Vive Juárez. Red Identidad. Todos los derechos reservados.
+              © 2026 Juárez Conecta. Red Identidad. Todos los derechos reservados.
             </div>
             <div style={{ display: 'flex', gap: '1.5rem' }}>
               <span>Juarense Soy</span>
               <span>•</span>
-              <span>Vive Juárez</span>
+              <span>Juárez Conecta</span>
             </div>
           </div>
         </div>
@@ -1781,7 +1781,7 @@ export const LandingJuarez: React.FC = () => {
                 <div style={{ textAlign: 'center', padding: '2rem 0' }}>
                   <CheckCircle2 size={48} color="var(--accent-gold)" style={{ margin: '0 auto 1rem' }} />
                   <h4 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>¡Solicitud enviada con éxito!</h4>
-                  <p style={{ color: '#A0A0AA', fontSize: '0.9rem' }}>Te contactaremos de inmediato por WhatsApp para activar tu perfil de aliado en Vive Juárez.</p>
+                  <p style={{ color: '#A0A0AA', fontSize: '0.9rem' }}>Te contactaremos de inmediato por WhatsApp para activar tu perfil de aliado en Juárez Conecta.</p>
                 </div>
               ) : (
                 <form onSubmit={handleMerchantSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

@@ -137,14 +137,15 @@ export const JuarezPosterStand: React.FC = () => {
           background: 'linear-gradient(90deg, #DC2626 0%, #0B1525 50%, #DC2626 100%)'
         }} />
 
-        {/* Insignia Oficial Vive Juárez */}
-        <div style={{ marginBottom: '0.5rem' }}>
+        {/* Insignia Oficial Juárez Conecta */}
+        <div style={{ marginBottom: '0.6rem' }}>
           <img 
-            src="/vive_juarez_oficial.png" 
-            alt="Vive Juárez Insignia Oficial" 
+            src="/juarez_conecta.png" 
+            alt="Juárez Conecta — Red Identidad" 
             style={{ 
-              height: '80px', 
+              height: '92px', 
               width: 'auto', 
+              maxWidth: '260px',
               objectFit: 'contain',
               display: 'block',
               margin: '0 auto'
@@ -157,7 +158,7 @@ export const JuarezPosterStand: React.FC = () => {
           display: 'inline-block',
           backgroundColor: '#DC2626',
           color: '#FFFFFF',
-          padding: '4px 16px',
+          padding: '4px 18px',
           borderRadius: '100px',
           fontSize: '0.78rem',
           fontWeight: 900,
@@ -190,7 +191,7 @@ export const JuarezPosterStand: React.FC = () => {
           margin: '0 auto 1rem',
           lineHeight: 1.35
         }}>
-          Escanea con la cámara de tu celular y llévate descuentos inmediatos en restaurantes y comercios de Ciudad Juárez.
+          Escanea con la cámara de tu celular y llévate descuentos inmediatos en restaurantes y comercios aliados de <strong>Juárez Conecta</strong>.
         </p>
 
         {/* Recuadro Destacado con el Código QR */}
@@ -199,7 +200,7 @@ export const JuarezPosterStand: React.FC = () => {
           border: '2.5px dashed #CBD5E1',
           borderRadius: '20px',
           padding: '1.1rem 1.2rem',
-          maxWidth: '330px',
+          maxWidth: '350px',
           margin: '0 auto 1.1rem',
           display: 'flex',
           flexDirection: 'column',
@@ -207,27 +208,27 @@ export const JuarezPosterStand: React.FC = () => {
         }}>
           <div style={{
             backgroundColor: '#FFFFFF',
-            padding: '0.9rem',
-            borderRadius: '16px',
-            boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+            padding: '1.1rem',
+            borderRadius: '18px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
             marginBottom: '0.6rem',
-            border: '2px solid #0B1525'
+            border: '2.5px solid #0B1525'
           }}>
             <QRCodeSVG 
               value={campaignUrl}
-              size={175}
+              size={230}
               level="H"
               imageSettings={{
-                src: '/vive_juarez_qr_icon.png',
-                height: 44,
-                width: 44,
+                src: '/juarez_conecta.png',
+                height: 52,
+                width: 96,
                 excavate: true
               }}
             />
           </div>
 
           <div style={{
-            fontSize: '0.82rem',
+            fontSize: '0.85rem',
             fontWeight: 800,
             color: '#DC2626',
             letterSpacing: '0.04em',
@@ -235,7 +236,7 @@ export const JuarezPosterStand: React.FC = () => {
           }}>
             📲 Escanea con tu cámara aquí
           </div>
-          <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '2px' }}>
+          <div style={{ fontSize: '0.72rem', color: '#64748B', marginTop: '2px', fontWeight: 600 }}>
             Sin costo • 100% Digital • Sin tarjetas
           </div>
         </div>

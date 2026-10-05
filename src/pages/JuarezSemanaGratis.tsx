@@ -103,10 +103,10 @@ export const JuarezSemanaGratis: React.FC = () => {
         {/* Cabecera / Logotipo Oficial */}
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <img 
-            src="/vive_juarez_oficial.png" 
-            alt="Vive Juárez Oficial" 
+            src="/juarez_conecta.png" 
+            alt="Juárez Conecta Oficial" 
             style={{ 
-              height: '80px', 
+              height: '70px', 
               width: 'auto', 
               objectFit: 'contain',
               filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3)) drop-shadow(0 4px 20px rgba(220,38,38,0.5))',
@@ -167,7 +167,7 @@ export const JuarezSemanaGratis: React.FC = () => {
             <p style={{ color: 'var(--text-dim)', fontSize: '0.88rem', lineHeight: 1.5, marginBottom: '1.5rem' }}>
               Esperamos que hayas disfrutado tus descuentos en los comercios aliados de Ciudad Juárez.
               <br /><br />
-              Para seguir disfrutando de <strong>descuentos ilimitados todo el año</strong>, adquiere hoy tu <strong>Membresía Digital Oficial Vive Juárez</strong>.
+              Para seguir disfrutando de <strong>descuentos ilimitados todo el año</strong>, adquiere hoy tu <strong>Membresía Digital Oficial Juárez Conecta</strong>.
             </p>
 
             <div style={{
@@ -178,7 +178,7 @@ export const JuarezSemanaGratis: React.FC = () => {
               marginBottom: '1.5rem'
             }}>
               <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 800, textTransform: 'uppercase' }}>
-                Membresía Digital Vive Juárez
+                Membresía Digital Juárez Conecta
               </div>
               <div style={{ fontSize: '2rem', fontWeight: 900, color: '#FFF', margin: '4px 0' }}>
                 $80 <span style={{ fontSize: '0.9rem', color: 'var(--text-dim)', fontWeight: 600 }}>MXN</span>
@@ -284,9 +284,9 @@ export const JuarezSemanaGratis: React.FC = () => {
                 size={200}
                 level="H"
                 imageSettings={{
-                  src: '/vive_juarez_qr_icon.png',
-                  height: 48,
-                  width: 48,
+                  src: '/juarez_conecta.png',
+                  height: 44,
+                  width: 80,
                   excavate: true
                 }}
               />
@@ -552,7 +552,7 @@ export const JuarezSemanaGratis: React.FC = () => {
               textDecoration: 'underline'
             }}
           >
-            Conocer la Red de Aliados Vive Juárez →
+            Conocer la Red de Aliados Juárez Conecta →
           </button>
         </div>
 

@@ -254,9 +254,9 @@ export const MemberCardModal: React.FC<MemberCardModalProps> = ({ user, onClose 
             size={190} 
             level="H" 
             imageSettings={isJuarezMember ? {
-              src: '/vive_juarez_qr_icon.png',
-              height: 44,
-              width: 44,
+              src: '/juarez_conecta.png',
+              height: 42,
+              width: 76,
               excavate: true
             } : undefined}
           />

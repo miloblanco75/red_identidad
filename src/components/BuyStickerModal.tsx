@@ -52,7 +52,7 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
     { id: 'campechana_negra', label: 'Campechana — Negra', tag: 'Negra', bg: '#333', color: '#FFF' },
     { id: 'campechana_rosa', label: 'Campechana — Rosa', tag: 'Rosa', bg: '#FF69B4', color: '#FFF' },
 
-    { id: 'juarense_oficial', label: 'Vive Juárez — Edición Oficial Única', tag: 'Oficial', bg: '#121212', color: '#D4AF37' },
+    { id: 'juarense_oficial', label: 'Juárez Conecta — Edición Oficial Única', tag: 'Oficial', bg: '#121212', color: '#D4AF37' },
   ];
 
   // Puntos de Venta Físicos
@@ -156,10 +156,10 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
     }
 
     const chosenOption = stickerOptions.find(s => s.id === selectedSticker);
-    const chosenName = effectiveIsJuarez ? 'Vive Juárez — Edición Oficial Única' : (chosenOption ? chosenOption.label : 'Campechano — Negra');
+    const chosenName = effectiveIsJuarez ? 'Juárez Conecta — Edición Oficial Única' : (chosenOption ? chosenOption.label : 'Campechano — Negra');
 
     const message = effectiveIsJuarez
-      ? `¡Hola! 👋 Deseo adquirir mi Distintivo Digital Oficial Vive Juárez ($80 MXN).\n\n` +
+      ? `¡Hola! 👋 Deseo adquirir mi Distintivo Digital Oficial Juárez Conecta ($80 MXN).\n\n` +
         `📋 *Detalles del Pedido:*\n` +
         `• Formato: 📱 Distintivo 100% Digital Oficial\n` +
         `• Ciudad: Ciudad Juárez, Chih.\n` +
@@ -353,8 +353,8 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                       >
                         <div style={{ width: '80px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <img 
-                            src="/vive_juarez_oficial.png" 
-                            alt="Vive Juárez Distintivo Oficial" 
+                            src="/juarez_conecta.png" 
+                            alt="Juárez Conecta Distintivo Oficial" 
                             style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.3)) drop-shadow(0 2px 10px rgba(220,38,38,0.4))' }} 
                           />
                         </div>
@@ -368,7 +368,7 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                             </span>
                           </div>
                           <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#FFF', margin: '2px 0' }}>
-                            Vive Juárez — Edición Única
+                            Juárez Conecta — Edición Única
                           </div>
                           <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', lineHeight: 1.3 }}>
                             Activación 100% digital inmediata. Descuentos en la red de comercios aliados. (Calcomanía física próximamente en puntos de entrega).
@@ -388,7 +388,7 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                       }}>
                         <QrCode size={18} color="var(--accent-gold)" style={{ flexShrink: 0 }} />
                         <span style={{ fontSize: '0.76rem', color: '#E0E0E5', lineHeight: 1.35 }}>
-                          Tu distintivo de $80 se convierte en tu <strong>Pase Oficial con Código QR</strong> y el escudo de Vive Juárez inserto al centro.
+                          Tu distintivo de $80 se convierte en tu <strong>Pase Oficial con Código QR</strong> y el escudo de Juárez Conecta inserto al centro.
                         </span>
                       </div>
                     </div>
