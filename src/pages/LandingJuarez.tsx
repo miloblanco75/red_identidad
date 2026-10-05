@@ -204,7 +204,26 @@ export const LandingJuarez: React.FC = () => {
           <span style={{ fontWeight: 600, color: 'var(--accent-gold)' }}>Plataforma Oficial Ciudad Juárez, Chihuahua</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
+          <a
+            href="/juarez/manual"
+            style={{
+              color: '#FFF',
+              backgroundColor: '#DC2626',
+              textDecoration: 'none',
+              fontSize: '0.78rem',
+              fontWeight: 700,
+              padding: '3px 10px',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              boxShadow: '0 2px 8px rgba(220,38,38,0.4)'
+            }}
+          >
+            <span>📖 Manual de Uso</span>
+          </a>
+
           <span style={{ color: '#8E8E98' }}>Cambiar de ciudad:</span>
           <a 
             href="/" 
@@ -272,6 +291,7 @@ export const LandingJuarez: React.FC = () => {
             <a href="#aliados" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Comercios Aliados</a>
             <a href="#calculadora" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Calculadora</a>
             <a href="#planes" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}>Membresía ($80)</a>
+            <a href="/juarez/manual" style={{ color: '#FCA5A5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 700 }}>📖 Manual de Uso</a>
             <a href="#negocios" style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Para Negocios</a>
           </div>
 
@@ -332,6 +352,7 @@ export const LandingJuarez: React.FC = () => {
               <a href="#distintivo" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>El Distintivo Oficial Único</a>
               <a href="#pase-digital" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '1rem', fontWeight: 600 }}>Tu Pase con Código QR</a>
               <a href="#aliados" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Comercios en Cd. Juárez</a>
+              <a href="/juarez/manual" onClick={() => setMobileMenuOpen(false)} style={{ color: '#FCA5A5', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>📖 Manual de Uso y Operaciones</a>
               <a href="#calculadora" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Calculadora de Ahorro</a>
               <a href="#puntos-venta" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Puntos de Entrega</a>
               <a href="#planes" onClick={() => setMobileMenuOpen(false)} style={{ color: '#E0E0E6', textDecoration: 'none', fontSize: '1rem' }}>Membresía ($80 MXN)</a>

@@ -23,6 +23,7 @@ const EnvelopeStickerDesigner = React.lazy(() => import('./components/EnvelopeSt
 const PagoExitoso = React.lazy(() => import('./pages/PagoExitoso'));
 const JuarezSemanaGratis = React.lazy(() => import('./pages/JuarezSemanaGratis'));
 const JuarezPosterStand = React.lazy(() => import('./pages/JuarezPosterStand'));
+const JuarezManual = React.lazy(() => import('./pages/JuarezManual'));
 
 // Layout para la Web App Móvil con su contenedor optimizado y navegación inferior
 const MobileAppLayout: React.FC = () => {
@@ -72,6 +73,11 @@ function App() {
               <Route path="/juarez/promo7" element={<JuarezSemanaGratis />} />
               <Route path="/juarez/poster-mostrador" element={<JuarezPosterStand />} />
               <Route path="/juarez/display-mesa" element={<JuarezPosterStand />} />
+
+              {/* Manual de Uso y Operaciones Ciudad Juárez */}
+              <Route path="/juarez/manual" element={<JuarezManual />} />
+              <Route path="/manual-juarez" element={<JuarezManual />} />
+              <Route path="/manual" element={<JuarezManual />} />
 
               {/* Rutas de la Web App Móvil y PWA de Miembros */}
               <Route element={<MobileAppLayout />}>

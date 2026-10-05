@@ -973,7 +973,30 @@ const AliadoPanel: React.FC = () => {
             </button>
           </div>
 
-          <p style={{ color: 'var(--text-dim)', fontSize: '0.75rem', textAlign: 'center', marginTop: '1.2rem', lineHeight: 1.5 }}>
+          <div style={{ marginTop: '1.2rem', textAlign: 'center' }}>
+            <a
+              href="/juarez/manual"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '0.6rem 1.1rem',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.35)',
+                color: '#FCA5A5',
+                fontSize: '0.82rem',
+                fontWeight: 700,
+                textDecoration: 'none'
+              }}
+            >
+              📖 Manual de Uso y Validación (Imprimible)
+            </a>
+          </div>
+
+          <p style={{ color: 'var(--text-dim)', fontSize: '0.75rem', textAlign: 'center', marginTop: '1rem', lineHeight: 1.5 }}>
             ¿No tienes acceso? Contacta al administrador de la Red para obtener tu PIN.
           </p>
         </form>
@@ -1078,23 +1101,46 @@ const AliadoPanel: React.FC = () => {
           </p>
           <h1 style={{ fontSize: '1.6rem', lineHeight: 1.2, margin: 0 }}>{ally?.name}</h1>
         </div>
-        <button
-          onClick={handleLogout}
-          style={{
-            backgroundColor: 'rgba(255,255,255,0.06)',
-            border: '1px solid var(--glass-border)',
-            color: 'var(--text-dim)',
-            borderRadius: '10px',
-            padding: '0.5rem 0.8rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px',
-            fontSize: '0.75rem',
-            cursor: 'pointer'
-          }}
-        >
-          <LogOut size={14} /> Salir
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <a
+            href="/juarez/manual"
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.15)',
+              border: '1px solid rgba(239, 68, 68, 0.4)',
+              color: '#FCA5A5',
+              borderRadius: '10px',
+              padding: '0.5rem 0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              textDecoration: 'none'
+            }}
+            title="Abrir o imprimir el manual de operaciones y validación"
+          >
+            📖 Manual
+          </a>
+          <button
+            onClick={handleLogout}
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              border: '1px solid var(--glass-border)',
+              color: 'var(--text-dim)',
+              borderRadius: '10px',
+              padding: '0.5rem 0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              fontSize: '0.75rem',
+              cursor: 'pointer'
+            }}
+          >
+            <LogOut size={14} /> Salir
+          </button>
+        </div>
       </div>
 
       {/* Promoción(es) activas en caja */}

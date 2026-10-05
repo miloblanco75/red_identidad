@@ -9,6 +9,7 @@ import AlliesMessenger from '../components/AlliesMessenger';
 import LoyaltyAdminManager from '../components/LoyaltyAdminManager';
 import PressPassesManager from '../components/PressPassesManager';
 import { parsePromotions, formatPromotions } from '../lib/promotionsHelper';
+import JuarezManualModal from '../components/JuarezManualModal';
 
 export type AdminRole = 'superadmin' | 'juarez_operator';
 
@@ -45,6 +46,9 @@ const Admin: React.FC = () => {
 
   // Digital Sticker Viewer / Delivery
   const [selectedDigitalSticker, setSelectedDigitalSticker] = useState<any | null>(null);
+
+  // Manual de Operaciones Juárez Modal
+  const [showJuarezManual, setShowJuarezManual] = useState<boolean>(false);
 
   // Batch Audit Log
   const [batchAudits, setBatchAudits] = useState<BatchAuditItem[]>(() => {
@@ -910,24 +914,47 @@ const Admin: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: '0.5rem 0.9rem',
-            borderRadius: '10px',
-            backgroundColor: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.15)',
-            color: '#FFF',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-          }}
-        >
-          <LogOut size={14} /> Cerrar Sesión
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <button
+            onClick={() => setShowJuarezManual(true)}
+            style={{
+              padding: '0.5rem 0.9rem',
+              borderRadius: '10px',
+              backgroundColor: 'rgba(239, 68, 68, 0.15)',
+              border: '1.5px solid #EF4444',
+              color: '#FCA5A5',
+              fontSize: '0.8rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 10px rgba(239, 68, 68, 0.2)'
+            }}
+            title="Ver o imprimir el manual de operaciones de Ciudad Juárez"
+          >
+            <BookOpen size={15} color="#EF4444" /> Manual de Uso
+          </button>
+
+          <button
+            onClick={handleLogout}
+            style={{
+              padding: '0.5rem 0.9rem',
+              borderRadius: '10px',
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: '#FFF',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <LogOut size={14} /> Cerrar Sesión
+          </button>
+        </div>
       </div>
 
       {/* Master City Switcher Banner */}
@@ -3114,6 +3141,12 @@ const Admin: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Interactivo e Imprimible del Manual de Uso de Ciudad Juárez */}
+      <JuarezManualModal 
+        isOpen={showJuarezManual} 
+        onClose={() => setShowJuarezManual(false)} 
+      />
     </div>
   );
 };
