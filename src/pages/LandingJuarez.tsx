@@ -13,8 +13,8 @@ import { QRCodeSVG } from 'qrcode.react';
 import { BuyStickerModal } from '../components/BuyStickerModal';
 import { useCity } from '../contexts/CityContext';
 
-// WhatsApp oficial de atención para Ciudad Juárez
-const JUAREZ_WHATSAPP = '529811971305'; // Configurable para Lada 656
+// WhatsApp oficial de atención para Ciudad Juárez (Lada 656)
+const JUAREZ_WHATSAPP = '526562859358';
 
 interface JuarezStickerInfo {
   id: string;
@@ -1726,7 +1726,7 @@ export const LandingJuarez: React.FC = () => {
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-gold)', fontWeight: 600, textDecoration: 'none' }}
               >
                 <MessageCircle size={16} />
-                <span>WhatsApp Atención Juárez</span>
+                <span>WhatsApp: (656) 285-9358</span>
               </a>
               <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#6A6A74' }}>
                 Ciudad Juárez, Chihuahua, México

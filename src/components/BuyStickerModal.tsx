@@ -36,7 +36,7 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
     }
   }, [initialSticker, effectiveIsJuarez]);
 
-  const ADMIN_PHONE = effectiveIsJuarez ? '529811971305' : '9811971305';
+  const ADMIN_PHONE = effectiveIsJuarez ? '526562859358' : '9811971305';
   const currentPrice = effectiveIsJuarez ? 80 : (membershipType === 'digital' ? PRODUCTS.digital.price : PRODUCTS.physical.price);
 
   // Catálogo exacto de distintivos físicos
@@ -97,35 +97,35 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
       name: 'Punto Gómez Morín',
       address: 'Corredor Gómez Morín (Zona Gastronómica)',
       hours: 'Punto de Venta Oficial',
-      phone: '529811971305'
+      phone: '526562859358'
     },
     {
       city: 'Ciudad Juárez, Chih.',
       name: 'Punto Las Misiones',
       address: 'Av. Paseo de la Victoria',
       hours: 'Punto de Venta Oficial',
-      phone: '529811971305'
+      phone: '526562859358'
     },
     {
       city: 'Ciudad Juárez, Chih.',
       name: 'Punto Pronaf / San Lorenzo',
       address: 'Zona Pronaf',
       hours: 'Punto de Venta Oficial',
-      phone: '529811971305'
+      phone: '526562859358'
     },
     {
       city: 'Ciudad Juárez, Chih.',
       name: 'Punto Av. Tecnológico',
       address: 'Av. Tecnológico',
       hours: 'Punto de Venta Oficial',
-      phone: '529811971305'
+      phone: '526562859358'
     },
     {
       city: 'Ciudad Juárez, Chih.',
       name: 'Punto Valle del Sol',
       address: 'Zona Residencial Valle del Sol',
       hours: 'Punto de Venta Oficial',
-      phone: '529811971305'
+      phone: '526562859358'
     }
   ];
 

@@ -226,14 +226,20 @@ export const PagoExitoso: React.FC = () => {
       {/* Soporte WhatsApp */}
       <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>
         ¿Tienes alguna duda o necesitas ayuda?{' '}
-        <a
-          href={`https://wa.me/529811385474?text=${encodeURIComponent(`Hola, acabo de comprar mi membresía (Socio #${activatedUser?.memberNumber || ''}) y tengo una pregunta.`)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: 'var(--accent-gold)', fontWeight: 700, textDecoration: 'none' }}
-        >
-          Escríbenos por WhatsApp
-        </a>
+        {(() => {
+          const isJuarezMember = stickerStyle.includes('juarense') || stickerStyle.includes('juarez') || (activatedUser?.code || '').startsWith('VJ-');
+          const supportPhone = isJuarezMember ? '526562859358' : '529811385474';
+          return (
+            <a
+              href={`https://wa.me/${supportPhone}?text=${encodeURIComponent(`Hola, acabo de comprar mi membresía (Socio #${activatedUser?.memberNumber || ''}) y tengo una pregunta.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--accent-gold)', fontWeight: 700, textDecoration: 'none' }}
+            >
+              Escríbenos por WhatsApp
+            </a>
+          );
+        })()}
       </div>
     </div>
   );

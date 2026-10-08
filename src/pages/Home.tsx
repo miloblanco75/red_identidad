@@ -155,31 +155,31 @@ const Home: React.FC = () => {
       city: 'Ciudad Juárez, Chih.',
       name: 'Punto Gómez Morín',
       address: 'Corredor Gómez Morín (Zona Gastronómica)',
-      phone: '529811971305'
+      phone: '526562859358'
     },
     {
       city: 'Ciudad Juárez, Chih.',
       name: 'Punto Las Misiones',
       address: 'Av. Paseo de la Victoria',
-      phone: '529811971305'
+      phone: '526562859358'
     },
     {
       city: 'Ciudad Juárez, Chih.',
       name: 'Punto Pronaf / San Lorenzo',
       address: 'Zona Pronaf',
-      phone: '529811971305'
+      phone: '526562859358'
     },
     {
       city: 'Ciudad Juárez, Chih.',
       name: 'Punto Av. Tecnológico',
       address: 'Av. Tecnológico',
-      phone: '529811971305'
+      phone: '526562859358'
     },
     {
       city: 'Ciudad Juárez, Chih.',
       name: 'Punto Valle del Sol',
       address: 'Zona Residencial Valle del Sol',
-      phone: '529811971305'
+      phone: '526562859358'
     }
   ];
 
