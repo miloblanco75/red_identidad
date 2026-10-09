@@ -7,7 +7,7 @@ import {
   CreditCard, Smartphone, Car, Utensils, Wine, HeartPulse, 
   Briefcase, ArrowRight, MessageCircle, Star, Users,
   Calculator, Check, ExternalLink, Menu, X, Compass, Award,
-  Info
+  Info, Share, PlusSquare, ArrowUp, Download
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { BuyStickerModal } from '../components/BuyStickerModal';
@@ -147,6 +147,49 @@ export const Landing: React.FC = () => {
   const [showBuyModal, setShowBuyModal] = useState(false);
   const [selectedStickerForModal, setSelectedStickerForModal] = useState<string>('campechano_negra');
   const [showMerchantModal, setShowMerchantModal] = useState(false);
+
+  // Estados para instalación de PWA / Ícono y navegación rápida
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [installDeviceTab, setInstallDeviceTab] = useState<'ios' | 'android'>('ios');
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const ua = window.navigator.userAgent;
+    const isIos = /iPhone|iPad|iPod/.test(ua);
+    setInstallDeviceTab(isIos ? 'ios' : 'android');
+
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+
+    const handleScroll = () => {
+      if (window.scrollY > 400) {
+        setShowBackToTop(true);
+      } else {
+        setShowBackToTop(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const handleTriggerAndroidInstall = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowInstallModal(false);
+      }
+      setDeferredPrompt(null);
+    }
+  };
 
   // Estados del visor de la colección oficial (idéntico a Galeria.tsx)
   const [galleryCategory, setGalleryCategory] = useState<'todos' | 'campechano' | 'campechana' | 'carmelita'>('todos');
@@ -487,6 +530,28 @@ export const Landing: React.FC = () => {
           {/* Actions: Portal App & Buy Button */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <button 
+              onClick={() => setShowInstallModal(true)}
+              style={{
+                backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                border: '1px solid rgba(212, 175, 55, 0.45)',
+                color: 'var(--accent-gold)',
+                padding: '0.62rem 1.15rem',
+                borderRadius: '12px',
+                fontSize: '0.86rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'none',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+              className="d-md-flex"
+              title="Instalar ícono de la app en iPhone o Android"
+            >
+              <Smartphone size={16} />
+              <span>Instalar App</span>
+            </button>
+
+            <button 
               onClick={() => goToApp('/app')}
               className="landing-btn-glass"
               style={{ padding: '0.65rem 1.25rem', fontSize: '0.88rem' }}
@@ -539,6 +604,29 @@ export const Landing: React.FC = () => {
                 gap: '1rem'
               }}
             >
+              {/* Botón Destacado de Instalación Móvil */}
+              <button
+                onClick={() => { setMobileMenuOpen(false); setShowInstallModal(true); }}
+                style={{
+                  backgroundColor: 'rgba(212, 175, 55, 0.18)',
+                  border: '1.5px solid var(--accent-gold)',
+                  color: 'var(--accent-gold)',
+                  borderRadius: '12px',
+                  padding: '0.85rem 1rem',
+                  fontWeight: 800,
+                  fontSize: '0.92rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  marginBottom: '0.3rem',
+                  boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)'
+                }}
+              >
+                <Smartphone size={18} />
+                <span>Instalar Ícono en Celular (iPhone / Android)</span>
+              </button>
               <a 
                 href="#como-funciona" 
                 onClick={() => setMobileMenuOpen(false)}
@@ -674,6 +762,20 @@ export const Landing: React.FC = () => {
                 >
                   <Smartphone size={19} />
                   <span>Pase 100% Digital ($45)</span>
+                </button>
+
+                <button 
+                  onClick={() => setShowInstallModal(true)}
+                  className="landing-btn-glass"
+                  style={{ 
+                    padding: '1rem 1.6rem', 
+                    fontSize: '1.05rem',
+                    border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                    color: 'var(--accent-gold)'
+                  }}
+                >
+                  <Smartphone size={19} />
+                  <span>Instalar Ícono (iPhone / Android)</span>
                 </button>
               </div>
 
@@ -852,6 +954,87 @@ export const Landing: React.FC = () => {
               <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#FFF' }}>5</div>
               <div style={{ fontSize: '0.9rem', color: '#A0A0A8', marginTop: '0.2rem' }}>Puntos de Entrega en Campeche</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── ATAJOS DE NAVEGACIÓN RÁPIDA (SALTAR A SECCIONES SIN SCROLLEAR TANTO) ── */}
+      <section style={{ 
+        backgroundColor: '#0F0F14',
+        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        padding: '1.4rem 0',
+        position: 'relative'
+      }}>
+        <div className="landing-container">
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.8rem',
+            marginBottom: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Compass size={18} color="var(--accent-gold)" />
+              <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#FFF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                Atajos Rápidos • Salta directo a lo que buscas:
+              </span>
+            </div>
+
+            <button
+              onClick={() => setShowInstallModal(true)}
+              style={{
+                backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                border: '1px solid rgba(212, 175, 55, 0.45)',
+                color: 'var(--accent-gold)',
+                padding: '0.45rem 1.1rem',
+                borderRadius: '100px',
+                fontSize: '0.82rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Smartphone size={15} />
+              <span>Instalar Ícono en iPhone / Android</span>
+            </button>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            gap: '0.65rem',
+            overflowX: 'auto',
+            paddingBottom: '0.6rem',
+            scrollbarWidth: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
+            <a href="#como-funciona" className="landing-shortcut-pill">
+              🔍 ¿Cómo Funciona?
+            </a>
+            <a href="#distintivo" className="landing-shortcut-pill">
+              🏷️ Calcomanías Oficiales
+            </a>
+            <a href="#aliados" className="landing-shortcut-pill">
+              🏬 Comercios Aliados (15+)
+            </a>
+            <a href="#calculadora" className="landing-shortcut-pill">
+              🧮 Calculadora de Ahorro
+            </a>
+            <a href="#puntos-venta" className="landing-shortcut-pill">
+              📍 Puntos de Entrega
+            </a>
+            <a href="#planes" className="landing-shortcut-pill">
+              💳 Planes y Precios ($45 / $90)
+            </a>
+            <a href="#negocios" className="landing-shortcut-pill">
+              💼 Para Negocios
+            </a>
+            <a href="#faq" className="landing-shortcut-pill">
+              ❓ Preguntas Frecuentes
+            </a>
           </div>
         </div>
       </section>
@@ -2234,6 +2417,467 @@ export const Landing: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* ── BOTÓN FLOTANTE VOLVER ARRIBA Y DOCK RÁPIDO ── */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            style={{
+              position: 'fixed',
+              bottom: '5.2rem',
+              right: '1.2rem',
+              zIndex: 95,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.6rem',
+              alignItems: 'flex-end'
+            }}
+          >
+            <button
+              onClick={() => setShowInstallModal(true)}
+              className="d-flex d-lg-none align-items-center gap-2"
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: '#FFF',
+                border: 'none',
+                borderRadius: '50px',
+                padding: '0.55rem 0.9rem',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                boxShadow: '0 8px 24px rgba(16, 185, 129, 0.45)',
+                cursor: 'pointer'
+              }}
+            >
+              <Download size={14} />
+              <span>Instalar Ícono</span>
+            </button>
+
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              aria-label="Volver arriba"
+              style={{
+                width: '44px',
+                height: '44px',
+                borderRadius: '50%',
+                background: 'rgba(25, 25, 30, 0.9)',
+                border: '1px solid rgba(212, 175, 55, 0.4)',
+                color: '#D4AF37',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.5)',
+                cursor: 'pointer',
+                backdropFilter: 'blur(10px)'
+              }}
+            >
+              <ArrowUp size={20} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MODAL DE INSTALACIÓN PASO A PASO (IPHONE & ANDROID) ── */}
+      <AnimatePresence>
+        {showInstallModal && (
+          <div 
+            style={{
+              position: 'fixed',
+              inset: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.85)',
+              backdropFilter: 'blur(10px)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1.2rem'
+            }}
+            onClick={() => setShowInstallModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'linear-gradient(165deg, #1C1C22 0%, #111115 100%)',
+                border: '1px solid rgba(212, 175, 55, 0.35)',
+                borderRadius: '24px',
+                padding: '2rem 1.8rem',
+                maxWidth: '520px',
+                width: '100%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                position: 'relative',
+                boxShadow: '0 25px 60px rgba(0,0,0,0.85)'
+              }}
+            >
+              <button 
+                onClick={() => setShowInstallModal(false)}
+                style={{
+                  position: 'absolute',
+                  top: '1.2rem',
+                  right: '1.2rem',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: 'none',
+                  color: '#AAA',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={18} />
+              </button>
+
+              <div style={{ textAlign: 'center', marginBottom: '1.4rem' }}>
+                <div style={{
+                  width: '68px',
+                  height: '68px',
+                  margin: '0 auto 0.8rem',
+                  borderRadius: '18px',
+                  padding: '4px',
+                  background: 'linear-gradient(135deg, #D4AF37 0%, rgba(212,175,55,0.2) 100%)',
+                  boxShadow: '0 10px 25px rgba(212,175,55,0.25)'
+                }}>
+                  <img 
+                    src="/logo.png" 
+                    alt="Logo" 
+                    style={{ width: '100%', height: '100%', borderRadius: '14px', objectFit: 'cover' }}
+                  />
+                </div>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#FFF', margin: '0 0 0.4rem' }}>
+                  Instalar en tu Celular
+                </h3>
+                <p style={{ fontSize: '0.88rem', color: '#AAA', margin: 0 }}>
+                  Agrega el ícono a tu pantalla principal para entrar directo como una App sin descargar de la tienda y sin ocupar espacio.
+                </p>
+              </div>
+
+              {/* Selector de Dispositivo */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '0.5rem',
+                background: 'rgba(0,0,0,0.3)',
+                padding: '0.35rem',
+                borderRadius: '14px',
+                marginBottom: '1.4rem',
+                border: '1px solid rgba(255,255,255,0.06)'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setInstallDeviceTab('ios')}
+                  style={{
+                    padding: '0.65rem 0.8rem',
+                    borderRadius: '10px',
+                    border: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.88rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    background: installDeviceTab === 'ios' ? 'linear-gradient(135deg, #D4AF37 0%, #AA8010 100%)' : 'transparent',
+                    color: installDeviceTab === 'ios' ? '#000' : '#888'
+                  }}
+                >
+                  <span>🍏 iPhone / iPad</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInstallDeviceTab('android')}
+                  style={{
+                    padding: '0.65rem 0.8rem',
+                    borderRadius: '10px',
+                    border: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.88rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.4rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    background: installDeviceTab === 'android' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'transparent',
+                    color: installDeviceTab === 'android' ? '#FFF' : '#888'
+                  }}
+                >
+                  <span>🤖 Android</span>
+                </button>
+              </div>
+
+              {/* Instrucciones iOS */}
+              {installDeviceTab === 'ios' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.9rem',
+                    background: 'rgba(255,255,255,0.03)',
+                    padding: '0.9rem',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.06)'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'rgba(212,175,55,0.2)',
+                      color: '#D4AF37',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      flexShrink: 0
+                    }}>1</div>
+                    <div style={{ fontSize: '0.88rem', color: '#DDD', lineHeight: 1.4 }}>
+                      Abre este sitio en el navegador <strong>Safari</strong> de tu iPhone.
+                    </div>
+                  </div>
+
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.9rem',
+                    background: 'rgba(255,255,255,0.03)',
+                    padding: '0.9rem',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.06)'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'rgba(212,175,55,0.2)',
+                      color: '#D4AF37',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      flexShrink: 0
+                    }}>2</div>
+                    <div style={{ fontSize: '0.88rem', color: '#DDD', lineHeight: 1.4 }}>
+                      Toca el botón <strong>Compartir</strong> <Share size={15} style={{ verticalAlign: 'text-bottom', color: '#38bdf8' }} /> (el cuadrado con la flecha hacia arriba en la barra inferior de Safari).
+                    </div>
+                  </div>
+
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.9rem',
+                    background: 'rgba(255,255,255,0.03)',
+                    padding: '0.9rem',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.06)'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'rgba(212,175,55,0.2)',
+                      color: '#D4AF37',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      flexShrink: 0
+                    }}>3</div>
+                    <div style={{ fontSize: '0.88rem', color: '#DDD', lineHeight: 1.4 }}>
+                      Desliza hacia abajo en el menú y selecciona <strong>"Agregar a pantalla de inicio"</strong> <PlusSquare size={15} style={{ verticalAlign: 'text-bottom', color: '#D4AF37' }} />.
+                    </div>
+                  </div>
+
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.9rem',
+                    background: 'rgba(255,255,255,0.03)',
+                    padding: '0.9rem',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.06)'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'rgba(212,175,55,0.2)',
+                      color: '#D4AF37',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      flexShrink: 0
+                    }}>4</div>
+                    <div style={{ fontSize: '0.88rem', color: '#DDD', lineHeight: 1.4 }}>
+                      Toca <strong>"Agregar"</strong> en la esquina superior derecha ¡y listo! Tendrás el ícono listo en tu inicio.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Instrucciones Android */}
+              {installDeviceTab === 'android' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+                  {deferredPrompt && (
+                    <button
+                      onClick={handleTriggerAndroidInstall}
+                      style={{
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: '#FFF',
+                        border: 'none',
+                        borderRadius: '12px',
+                        padding: '0.85rem 1.2rem',
+                        fontWeight: 700,
+                        fontSize: '0.95rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        cursor: 'pointer',
+                        boxShadow: '0 8px 20px rgba(16,185,129,0.35)',
+                        marginBottom: '0.5rem'
+                      }}
+                    >
+                      <Download size={18} />
+                      <span>Instalar Automáticamente Ahora</span>
+                    </button>
+                  )}
+
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.9rem',
+                    background: 'rgba(255,255,255,0.03)',
+                    padding: '0.9rem',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.06)'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'rgba(16,185,129,0.2)',
+                      color: '#10b981',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      flexShrink: 0
+                    }}>1</div>
+                    <div style={{ fontSize: '0.88rem', color: '#DDD', lineHeight: 1.4 }}>
+                      Abre este sitio en <strong>Google Chrome</strong> en tu celular Android.
+                    </div>
+                  </div>
+
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.9rem',
+                    background: 'rgba(255,255,255,0.03)',
+                    padding: '0.9rem',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.06)'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'rgba(16,185,129,0.2)',
+                      color: '#10b981',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      flexShrink: 0
+                    }}>2</div>
+                    <div style={{ fontSize: '0.88rem', color: '#DDD', lineHeight: 1.4 }}>
+                      Toca los <strong>3 puntos ⋮</strong> en la esquina superior derecha del navegador Chrome.
+                    </div>
+                  </div>
+
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.9rem',
+                    background: 'rgba(255,255,255,0.03)',
+                    padding: '0.9rem',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.06)'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'rgba(16,185,129,0.2)',
+                      color: '#10b981',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      flexShrink: 0
+                    }}>3</div>
+                    <div style={{ fontSize: '0.88rem', color: '#DDD', lineHeight: 1.4 }}>
+                      Selecciona la opción <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.
+                    </div>
+                  </div>
+
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.9rem',
+                    background: 'rgba(255,255,255,0.03)',
+                    padding: '0.9rem',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255,255,255,0.06)'
+                  }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: 'rgba(16,185,129,0.2)',
+                      color: '#10b981',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 800,
+                      fontSize: '0.85rem',
+                      flexShrink: 0
+                    }}>4</div>
+                    <div style={{ fontSize: '0.88rem', color: '#DDD', lineHeight: 1.4 }}>
+                      Confirma dando clic en <strong>"Instalar"</strong>. Se creará el ícono en tu pantalla de inicio automáticamente.
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={() => setShowInstallModal(false)}
+                style={{
+                  width: '100%',
+                  marginTop: '1.4rem',
+                  padding: '0.85rem',
+                  borderRadius: '12px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: '#FFF',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Entendido, cerrar
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* ── BARRA FLOTANTE FIJA INFERIOR PARA MÓVILES (CONVERSIÓN RÁPIDA) ── */}
       <div 
         className="d-lg-none"
@@ -2245,27 +2889,50 @@ export const Landing: React.FC = () => {
           backgroundColor: 'rgba(15, 15, 18, 0.95)',
           backdropFilter: 'blur(16px)',
           borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          padding: '0.75rem 1.2rem calc(0.75rem + env(safe-area-inset-bottom))',
-          display: 'flex',
-          gap: '0.8rem',
+          padding: '0.65rem 0.8rem calc(0.65rem + env(safe-area-inset-bottom))',
+          display: 'grid',
+          gridTemplateColumns: '1fr 1.1fr 1.3fr',
+          gap: '0.5rem',
           zIndex: 90
         }}
       >
         <button 
+          onClick={() => setShowInstallModal(true)}
+          style={{
+            background: 'rgba(16, 185, 129, 0.15)',
+            border: '1px solid rgba(16, 185, 129, 0.4)',
+            color: '#10b981',
+            borderRadius: '10px',
+            padding: '0.65rem 0.3rem',
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '2px',
+            cursor: 'pointer'
+          }}
+        >
+          <Download size={15} />
+          <span>Instalar</span>
+        </button>
+
+        <button 
           onClick={() => goToApp('/app')}
           className="landing-btn-glass"
-          style={{ flex: 1, padding: '0.7rem', fontSize: '0.85rem' }}
+          style={{ padding: '0.65rem 0.4rem', fontSize: '0.78rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px' }}
         >
-          <Smartphone size={16} />
+          <Smartphone size={15} />
           <span>Abrir App</span>
         </button>
 
         <button 
           onClick={() => handleOpenBuy('campechano_negra')}
           className="landing-btn-gold"
-          style={{ flex: 1.4, padding: '0.7rem', fontSize: '0.85rem' }}
+          style={{ padding: '0.65rem 0.5rem', fontSize: '0.78rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
         >
-          <ShoppingBag size={16} />
+          <ShoppingBag size={15} />
           <span>Distintivo $90</span>
         </button>
       </div>

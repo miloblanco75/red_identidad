@@ -224,6 +224,35 @@ html {
   }
 }
 
+.landing-shortcut-pill {
+  padding: 0.55rem 1.05rem;
+  border-radius: 100px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #E2E8F0;
+  text-decoration: none;
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.landing-shortcut-pill:hover {
+  background-color: rgba(212, 175, 55, 0.18);
+  border-color: rgba(212, 175, 55, 0.55);
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.25);
+}
+
+.landing-shortcut-pill:active {
+  transform: translateY(0);
+}
+
 /* Responsive display utilities */
 @media (min-width: 768px) {
   .d-md-flex {
