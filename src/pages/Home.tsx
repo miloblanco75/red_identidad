@@ -939,7 +939,7 @@ const Home: React.FC = () => {
                 onClick={() => {
                   const el = document.getElementById('beneficios');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  else navigate(isJuarez ? '/aliados?city=juarez' : '/aliados');
+                  else navigate(`/aliados?city=${city}`);
                 }}
                 style={{
                   width: '100%',
@@ -1276,7 +1276,7 @@ const Home: React.FC = () => {
                         🎁 {promo.promotions_given || 0} promociones dadas
                       </span>
                       <button 
-                        onClick={() => navigate(isJuarez ? '/aliados?city=juarez' : '/aliados')}
+                        onClick={() => navigate(`/aliados?city=${city}`)}
                         style={{ 
                           backgroundColor: 'rgba(212,175,55,0.15)', 
                           color: 'var(--accent-gold)', 
@@ -1302,7 +1302,7 @@ const Home: React.FC = () => {
         )}
 
         <button
-          onClick={() => navigate(isJuarez ? '/aliados?city=juarez' : '/aliados')}
+          onClick={() => navigate(`/aliados?city=${city}`)}
           style={{ 
             width: '100%', 
             marginTop: '1.2rem', 
@@ -1338,7 +1338,7 @@ const Home: React.FC = () => {
                 <motion.div
                   key={ally.id}
                   className="glass"
-                  onClick={() => navigate(isJuarez ? '/aliados?city=juarez' : '/aliados')}
+                  onClick={() => navigate(`/aliados?city=${city}`)}
                   style={{
                     padding: '1rem 1.2rem',
                     borderRadius: '16px',

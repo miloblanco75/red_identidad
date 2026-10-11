@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export type CityId = 'campeche' | 'carmen' | 'juarez';
 
@@ -15,14 +15,8 @@ interface CityContextType {
 const CityContext = createContext<CityContextType | undefined>(undefined);
 
 export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  let locationSearch = '';
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const location = useLocation();
-    locationSearch = location.search;
-  } catch {
-    if (typeof window !== 'undefined') locationSearch = window.location.search;
-  }
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [city, setCityState] = useState<CityId>(() => {
     if (typeof window !== 'undefined') {
@@ -47,33 +41,63 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return 'campeche';
   });
 
-  const setCity = (newCity: CityId) => {
+  const setCity = useCallback((newCity: CityId) => {
     setCityState(newCity);
     if (typeof window !== 'undefined') {
       localStorage.setItem('selected_city', newCity);
     }
-  };
+
+    // Sincronizar parámetro en la URL para evitar que query params desfasados reviertan la elección
+    try {
+      const params = new URLSearchParams(location.search);
+      if (params.get('city') !== newCity) {
+        params.set('city', newCity);
+        params.delete('ciudad');
+        navigate(
+          {
+            pathname: location.pathname,
+            search: params.toString() ? `?${params.toString()}` : '',
+            hash: location.hash
+          },
+          { replace: true }
+        );
+      }
+    } catch {
+      // Ignorar si navigate no está disponible
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
-    const rawSearch = locationSearch || (typeof window !== 'undefined' ? window.location.search : '');
-    const urlParams = new URLSearchParams(rawSearch);
+    const urlParams = new URLSearchParams(location.search);
     const queryCity = urlParams.get('city') || urlParams.get('ciudad');
-    const path = typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '';
+    const path = location.pathname.toLowerCase();
     const host = typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
     const isJuarezHost = host.startsWith('juarez.') || host.includes('juarez');
 
+    let targetCity: CityId | null = null;
+
     if (queryCity === 'juarez' || queryCity === 'vivejuarez' || queryCity === 'juarezconecta') {
-      if (city !== 'juarez') setCity('juarez');
+      targetCity = 'juarez';
     } else if (queryCity === 'campeche') {
-      if (city !== 'campeche') setCity('campeche');
+      targetCity = 'campeche';
     } else if (queryCity === 'carmen') {
-      if (city !== 'carmen') setCity('carmen');
+      targetCity = 'carmen';
     } else if (isJuarezHost || path.startsWith('/juarez') || path.startsWith('/vivejuarez') || path.startsWith('/juarez-conecta')) {
-      if (city !== 'juarez') setCity('juarez');
+      targetCity = 'juarez';
     } else if (path === '/' || path.startsWith('/campeche') || path.startsWith('/landing')) {
-      if (city !== 'campeche') setCity('campeche');
+      targetCity = 'campeche';
     }
-  }, [locationSearch, city]);
+
+    if (targetCity) {
+      setCityState(prev => {
+        if (prev === targetCity) return prev;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('selected_city', targetCity);
+        }
+        return targetCity;
+      });
+    }
+  }, [location.pathname, location.search]);
 
   const cityName = city === 'juarez' 
     ? 'Ciudad Juárez' 
