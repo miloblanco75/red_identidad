@@ -1357,7 +1357,7 @@ const AliadoPanel: React.FC = () => {
         </p>
 
         <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
-          {isJuarez && (
+          {isJuarez ? (
             <button
               type="button"
               onClick={() => window.open(`/juarez/poster-mostrador?ally=${encodeURIComponent(ally?.name || '')}`, '_blank')}
@@ -1380,6 +1380,31 @@ const AliadoPanel: React.FC = () => {
             >
               <QrCode size={18} color="var(--accent-gold)" />
               <span>Imprimir Cartel QR Mostrador</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => window.open(`/campeche/poster-mostrador?ally=${encodeURIComponent(ally?.name || '')}`, '_blank')}
+              style={{
+                flex: 1,
+                minWidth: '220px',
+                padding: '0.9rem',
+                borderRadius: '14px',
+                backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                color: '#FFD700',
+                fontWeight: 800,
+                fontSize: '0.88rem',
+                border: '1.5px solid rgba(212, 175, 55, 0.45)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)'
+              }}
+            >
+              <QrCode size={18} color="#FFD700" />
+              <span>Imprimir Cartel QR 7 Días (12x12 cm)</span>
             </button>
           )}
 
@@ -2127,7 +2152,7 @@ const AliadoPanel: React.FC = () => {
                   <span>{copiedTrialLink ? '¡Enlace copiado!' : 'Copiar Enlace'}</span>
                 </button>
 
-                {isJuarez && (
+                {isJuarez ? (
                   <button
                     type="button"
                     onClick={() => window.open(`/juarez/poster-mostrador?ally=${encodeURIComponent(ally?.name || '')}`, '_blank')}
@@ -2149,6 +2174,29 @@ const AliadoPanel: React.FC = () => {
                   >
                     <Printer size={16} />
                     <span>Imprimir Cartel</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => window.open(`/campeche/poster-mostrador?ally=${encodeURIComponent(ally?.name || '')}`, '_blank')}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem',
+                      borderRadius: '12px',
+                      backgroundColor: 'rgba(212,175,55,0.15)',
+                      border: '1px solid rgba(212,175,55,0.4)',
+                      color: '#FFD700',
+                      fontWeight: 800,
+                      fontSize: '0.8rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Printer size={16} />
+                    <span>Imprimir QR 12x12 cm</span>
                   </button>
                 )}
               </div>

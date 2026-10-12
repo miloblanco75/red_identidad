@@ -24,6 +24,8 @@ const PagoExitoso = React.lazy(() => import('./pages/PagoExitoso'));
 const JuarezSemanaGratis = React.lazy(() => import('./pages/JuarezSemanaGratis'));
 const JuarezPosterStand = React.lazy(() => import('./pages/JuarezPosterStand'));
 const JuarezManual = React.lazy(() => import('./pages/JuarezManual'));
+const CampechePosterStand = React.lazy(() => import('./pages/CampechePosterStand'));
+const CampecheSemanaGratis = React.lazy(() => import('./pages/CampecheSemanaGratis'));
 
 // Layout para la Web App Móvil con su contenedor optimizado y navegación inferior
 const MobileAppLayout: React.FC = () => {
@@ -61,6 +63,13 @@ function App() {
               {/* Rutas explícitas para Campeche */}
               <Route path="/campeche" element={<Landing />} />
               <Route path="/landing" element={<Landing />} />
+
+              {/* Campaña Masiva Campeche: 7 Días de Membresía Gratis & QR 12x12 cm */}
+              <Route path="/campeche/semana-gratis" element={<CampecheSemanaGratis />} />
+              <Route path="/campeche/7dias" element={<CampecheSemanaGratis />} />
+              <Route path="/campeche/poster-mostrador" element={<CampechePosterStand />} />
+              <Route path="/campeche/cartel-qr" element={<CampechePosterStand />} />
+              <Route path="/campeche/qr-12x12" element={<CampechePosterStand />} />
 
               {/* Rutas explícitas para Juárez Conecta (Ciudad Juárez) */}
               <Route path="/juarez" element={<LandingJuarez />} />

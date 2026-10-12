@@ -525,6 +525,7 @@ export const Landing: React.FC = () => {
             <a href="#puntos-venta" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}>Puntos de Venta</a>
             <a href="#planes" style={{ color: '#C0C0C5', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.2s' }}>Precios</a>
             <a href="#negocios" style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>Para Negocios</a>
+            <a href="/campeche/poster-mostrador" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 700 }}>📋 Cartel QR (12x12 cm)</a>
           </div>
 
           {/* Actions: Portal App & Buy Button */}
@@ -675,6 +676,15 @@ export const Landing: React.FC = () => {
                 style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '1rem', fontWeight: 600, padding: '0.4rem 0' }}
               >
                 Afiliar mi Negocio (Comercios)
+              </a>
+              <a 
+                href="/campeche/poster-mostrador" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                onClick={() => setMobileMenuOpen(false)} 
+                style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontSize: '1rem', fontWeight: 700, padding: '0.4rem 0' }}
+              >
+                📋 Cartel QR (12x12 cm)
               </a>
               <div style={{ display: 'flex', gap: '0.8rem', marginTop: '0.5rem' }}>
                 <button 

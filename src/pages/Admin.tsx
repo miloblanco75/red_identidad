@@ -936,7 +936,7 @@ const Admin: React.FC = () => {
             <BookOpen size={15} color="#EF4444" /> Manual de Uso
           </button>
 
-          {(userRole === 'juarez_operator' || adminCity === 'juarez') && (
+          {(userRole === 'juarez_operator' || adminCity === 'juarez') ? (
             <button
               type="button"
               onClick={() => window.open('/juarez/poster-mostrador', '_blank')}
@@ -955,7 +955,28 @@ const Admin: React.FC = () => {
                 boxShadow: '0 4px 14px rgba(220, 38, 38, 0.4)'
               }}
             >
-              <Printer size={15} /> Cartel Mostrador 7D
+              <Printer size={15} /> Cartel Juárez 7D
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => window.open('/campeche/poster-mostrador', '_blank')}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '10px',
+                backgroundColor: 'rgba(212, 175, 55, 0.15)',
+                border: '1px solid #D4AF37',
+                color: '#FFD700',
+                fontSize: '0.82rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 4px 14px rgba(212, 175, 55, 0.25)'
+              }}
+            >
+              <Printer size={15} /> QR Campeche 12x12 cm
             </button>
           )}
 
@@ -1143,7 +1164,7 @@ const Admin: React.FC = () => {
         </button>
 
         {/* Tab Específico: Cartel Mostrador 7 Días */}
-        {(userRole === 'juarez_operator' || adminCity === 'juarez') && (
+        {(userRole === 'juarez_operator' || adminCity === 'juarez') ? (
           <button 
             type="button"
             onClick={() => window.open('/juarez/poster-mostrador', '_blank')}
@@ -1165,7 +1186,31 @@ const Admin: React.FC = () => {
               boxShadow: '0 4px 14px rgba(220, 38, 38, 0.4)'
             }}
           >
-            <Printer size={16} /> Cartel Mostrador (7D)
+            <Printer size={16} /> Cartel Juárez (7D)
+          </button>
+        ) : (
+          <button 
+            type="button"
+            onClick={() => window.open('/campeche/poster-mostrador', '_blank')}
+            style={{
+              flex: 1,
+              minWidth: '140px',
+              padding: '0.8rem 0.6rem',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(212, 175, 55, 0.15)',
+              color: '#FFD700',
+              border: '1.5px solid #D4AF37',
+              fontWeight: 800,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(212, 175, 55, 0.25)'
+            }}
+          >
+            <Printer size={16} /> QR Campeche (12x12 cm)
           </button>
         )}
         {userRole === 'superadmin' && (
@@ -1534,77 +1579,150 @@ const Admin: React.FC = () => {
       {/* Tab: Allies */}
       {activeTab === 'allies' && (
         <section className="glass" style={{ padding: '2rem', borderRadius: '24px' }}>
-          {/* Banner Cartel Mostrador 7 Días Lanzamiento Juárez */}
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.18) 0%, rgba(153, 27, 27, 0.28) 100%)',
-            border: '1px solid rgba(239, 68, 68, 0.45)',
-            borderRadius: '16px',
-            padding: '1.2rem',
-            marginBottom: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            boxShadow: '0 8px 25px rgba(0,0,0,0.3)'
-          }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FCA5A5', fontWeight: 800, fontSize: '1rem' }}>
-                <Sparkles size={18} color="#EF4444" />
-                <span>Cartel Mostrador QR para Negocios (Lanzamiento Juárez 7 Días Gratis)</span>
+          {/* Banner Cartel Mostrador / QR 7 Días */}
+          {(adminCity === 'juarez' || userRole === 'juarez_operator') ? (
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.18) 0%, rgba(153, 27, 27, 0.28) 100%)',
+              border: '1px solid rgba(239, 68, 68, 0.45)',
+              borderRadius: '16px',
+              padding: '1.2rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              boxShadow: '0 8px 25px rgba(0,0,0,0.3)'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FCA5A5', fontWeight: 800, fontSize: '1rem' }}>
+                  <Sparkles size={18} color="#EF4444" />
+                  <span>Cartel Mostrador QR para Negocios (Lanzamiento Juárez 7 Días Gratis)</span>
+                </div>
+                <p style={{ margin: '6px 0 0', fontSize: '0.83rem', color: '#E2E8F0', maxWidth: '640px', lineHeight: 1.4 }}>
+                  Póster imprimible listo para colocar en acrílicos o mostradores de comercios en Ciudad Juárez con el nuevo logotipo grande. Cualquier negocio o cliente puede abrirlo sin necesidad de contraseña.
+                </p>
               </div>
-              <p style={{ margin: '6px 0 0', fontSize: '0.83rem', color: '#E2E8F0', maxWidth: '640px', lineHeight: 1.4 }}>
-                Póster imprimible listo para colocar en acrílicos o mostradores de comercios en Ciudad Juárez con el nuevo logotipo grande. Cualquier negocio o cliente puede abrirlo sin necesidad de contraseña.
-              </p>
+              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => window.open('/juarez/poster-mostrador', '_blank')}
+                  style={{
+                    backgroundColor: '#DC2626',
+                    color: '#FFF',
+                    border: 'none',
+                    padding: '0.7rem 1.2rem',
+                    borderRadius: '10px',
+                    fontWeight: 800,
+                    fontSize: '0.86rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 15px rgba(220, 38, 38, 0.4)'
+                  }}
+                >
+                  <Printer size={16} />
+                  <span>Abrir Cartel Mostrador</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = `${window.location.origin}/juarez/poster-mostrador`;
+                    navigator.clipboard.writeText(url);
+                    alert('¡Enlace público copiado al portapapeles!\n\n' + url + '\n\nPuedes compartir este enlace directamente a los comercios.');
+                  }}
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    color: '#FFF',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    padding: '0.7rem 1rem',
+                    borderRadius: '10px',
+                    fontWeight: 600,
+                    fontSize: '0.86rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Copy size={15} />
+                  <span>Copiar Enlace Público</span>
+                </button>
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => window.open('/juarez/poster-mostrador', '_blank')}
-                style={{
-                  backgroundColor: '#DC2626',
-                  color: '#FFF',
-                  border: 'none',
-                  padding: '0.7rem 1.2rem',
-                  borderRadius: '10px',
-                  fontWeight: 800,
-                  fontSize: '0.86rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: '0 4px 15px rgba(220, 38, 38, 0.4)'
-                }}
-              >
-                <Printer size={16} />
-                <span>Abrir Cartel Mostrador</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const url = `${window.location.origin}/juarez/poster-mostrador`;
-                  navigator.clipboard.writeText(url);
-                  alert('¡Enlace público copiado al portapapeles!\n\n' + url + '\n\nPuedes compartir este enlace directamente a los comercios.');
-                }}
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                  color: '#FFF',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  padding: '0.7rem 1rem',
-                  borderRadius: '10px',
-                  fontWeight: 600,
-                  fontSize: '0.86rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}
-              >
-                <Copy size={15} />
-                <span>Copiar Enlace Público</span>
-              </button>
+          ) : (
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.18) 0%, rgba(30, 25, 15, 0.95) 100%)',
+              border: '1.5px solid rgba(212, 175, 55, 0.45)',
+              borderRadius: '16px',
+              padding: '1.2rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              boxShadow: '0 8px 25px rgba(0,0,0,0.3)'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FFD700', fontWeight: 800, fontSize: '1rem' }}>
+                  <Sparkles size={18} color="#FFD700" />
+                  <span>Cartel Mostrador y Sticker QR 12x12 cm (Campaña Masiva Campeche 7 Días)</span>
+                </div>
+                <p style={{ margin: '6px 0 0', fontSize: '0.83rem', color: '#E2E8F0', maxWidth: '640px', lineHeight: 1.4 }}>
+                  Generador de carteles de mostrador y stickers QR calibrados exactamente a <strong>12 x 12 cm</strong>. Al escanearlo, los clientes reciben su membresía digital gratis por 7 días.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => window.open('/campeche/poster-mostrador', '_blank')}
+                  style={{
+                    backgroundColor: 'var(--accent-gold)',
+                    color: '#121212',
+                    border: 'none',
+                    padding: '0.7rem 1.2rem',
+                    borderRadius: '10px',
+                    fontWeight: 800,
+                    fontSize: '0.86rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 15px rgba(212, 175, 55, 0.35)'
+                  }}
+                >
+                  <Printer size={16} />
+                  <span>Abrir QR 12x12 cm / Cartel</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = `${window.location.origin}/campeche/poster-mostrador`;
+                    navigator.clipboard.writeText(url);
+                    alert('¡Enlace público copiado al portapapeles!\n\n' + url + '\n\nPuedes compartir este enlace directamente a los comercios de Campeche.');
+                  }}
+                  style={{
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    color: '#FFF',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    padding: '0.7rem 1rem',
+                    borderRadius: '10px',
+                    fontWeight: 600,
+                    fontSize: '0.86rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Copy size={15} />
+                  <span>Copiar Enlace Público</span>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Manual de Uso / Guía de Inicio */}
           <div style={{
@@ -2025,7 +2143,7 @@ const Admin: React.FC = () => {
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                    {isJuarezAlly && (
+                    {isJuarezAlly ? (
                       <button
                         onClick={() => window.open(`/juarez/poster-mostrador?ally=${encodeURIComponent(ally.name)}`, '_blank')}
                         title={`Abrir e imprimir cartel 7 días para ${ally.name}`}
@@ -2045,6 +2163,27 @@ const Admin: React.FC = () => {
                       >
                         <Printer size={15} />
                         <span>Cartel 7D</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => window.open(`/campeche/poster-mostrador?ally=${encodeURIComponent(ally.name)}`, '_blank')}
+                        title={`Abrir e imprimir QR 12x12 cm de 7 días para ${ally.name}`}
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(212,175,55,0.2) 0%, rgba(212,175,55,0.05) 100%)',
+                          border: '1px solid #D4AF37',
+                          color: '#FFD700',
+                          cursor: 'pointer',
+                          padding: '0.5rem 0.75rem',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: '0.78rem',
+                          fontWeight: 700
+                        }}
+                      >
+                        <Printer size={15} />
+                        <span>QR 12x12 cm</span>
                       </button>
                     )}
                     <button 
