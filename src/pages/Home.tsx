@@ -560,18 +560,18 @@ const Home: React.FC = () => {
               textTransform: 'uppercase',
               letterSpacing: '0.05em'
             }}>
-              💥 Campaña Masiva Campeche
+              💥 Campaña Callejera Campeche
             </span>
             <span style={{ color: '#FFD700', fontSize: '0.75rem', fontWeight: 800 }}>
-              QR 12 x 12 cm
+              Sticker 12 x 12 cm
             </span>
           </div>
 
           <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FFF', marginBottom: '4px', lineHeight: 1.25 }}>
-            7 Días de Membresía Gratis
+            Sticker de Misterio: "DESCUENTOS"
           </div>
           <p style={{ fontSize: '0.8rem', color: '#E2E8F0', margin: '0 0 12px 0', lineHeight: 1.4 }}>
-            Genera e imprime el Cartel de Mostrador o el Sticker QR calibrado a <strong>12 x 12 cm</strong>. Cualquier cliente que lo escanee recibe <strong>7 días gratis</strong> de descuentos en Campeche.
+            Imprime stickers de <strong>12 x 12 cm</strong> sin logotipos para paradas de camión y terminales. Solo el QR y la palabra <strong>DESCUENTOS</strong>. Quien lo escanee recibe 7 días gratis.
           </p>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -595,7 +595,7 @@ const Home: React.FC = () => {
                 boxShadow: '0 0 20px rgba(212, 175, 55, 0.45)'
               }}
             >
-              <Printer size={16} /> Generar QR Mostrador (12x12 cm)
+              <Printer size={16} /> Imprimir Stickers QR (12x12 cm)
             </button>
             <button
               onClick={() => navigate('/campeche/semana-gratis')}

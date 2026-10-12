@@ -292,7 +292,7 @@ export const CampecheSemanaGratis: React.FC = () => {
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em'
               }}>
-                <Sparkles size={14} /> Campaña Oficial Campeche
+                <Sparkles size={14} /> ¡ENCONTRASTE EL CÓDIGO! • CAMPECHE
               </div>
             </div>
 
@@ -306,7 +306,7 @@ export const CampecheSemanaGratis: React.FC = () => {
               letterSpacing: '-0.02em',
               textTransform: 'uppercase'
             }}>
-              7 DÍAS DE MEMBRESÍA <span className="gold-text">GRATIS</span>
+              7 DÍAS DE DESCUENTOS <span className="gold-text">GRATIS</span>
             </h1>
 
             <p style={{
@@ -316,7 +316,7 @@ export const CampecheSemanaGratis: React.FC = () => {
               lineHeight: 1.5,
               margin: '0 0 1.8rem'
             }}>
-              Ingresa tu nombre y WhatsApp para activar de inmediato tu pase digital sin costo y comenzar a ahorrar en toda la red de Campeche.
+              Ingresa tu nombre y WhatsApp para desbloquear de inmediato tu pase digital de 7 días y ahorrar en cafeterías, restaurantes, lavados y comercios aliados en Campeche.
             </p>
 
             {/* Comercio que lo refiere (si viene de QR en mesa / mostrador) */}

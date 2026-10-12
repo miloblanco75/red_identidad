@@ -1668,10 +1668,10 @@ const Admin: React.FC = () => {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FFD700', fontWeight: 800, fontSize: '1rem' }}>
                   <Sparkles size={18} color="#FFD700" />
-                  <span>Cartel Mostrador y Sticker QR 12x12 cm (Campaña Masiva Campeche 7 Días)</span>
+                  <span>Stickers Callejeros QR 12x12 cm (Campaña Misterio "DESCUENTOS" Campeche)</span>
                 </div>
                 <p style={{ margin: '6px 0 0', fontSize: '0.83rem', color: '#E2E8F0', maxWidth: '640px', lineHeight: 1.4 }}>
-                  Generador de carteles de mostrador y stickers QR calibrados exactamente a <strong>12 x 12 cm</strong>. Al escanearlo, los clientes reciben su membresía digital gratis por 7 días.
+                  Generador de stickers calibrados a <strong>12 x 12 cm</strong> sin logotipos para paradas de camión y terminales de Campeche. Solo el código QR y la palabra <strong>DESCUENTOS</strong>.
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
@@ -1694,7 +1694,7 @@ const Admin: React.FC = () => {
                   }}
                 >
                   <Printer size={16} />
-                  <span>Abrir QR 12x12 cm / Cartel</span>
+                  <span>Abrir Stickers 12x12 cm</span>
                 </button>
                 <button
                   type="button"
