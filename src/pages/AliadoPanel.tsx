@@ -663,7 +663,7 @@ const AliadoPanel: React.FC = () => {
             status: 'invalid',
             code: clean,
             discountToApply: '',
-            message: `⚠️ CALCOMANÍA NO ACTIVADA: Pide al cliente que escanee el código con su celular para dar de alta su número en ${isJuarez ? 'juarezconecta' : 'redidentidad.vercel.app'} antes de aplicar el descuento.`,
+            message: `⚠️ ${isJuarez ? 'PASE NO ACTIVADO' : 'CALCOMANÍA NO ACTIVADA'}: Pide al cliente que escanee el código con su celular para dar de alta su número en ${isJuarez ? 'juarezconecta' : 'redidentidad.vercel.app'} antes de aplicar el descuento.`,
             isPhysicalSticker: true,
           });
           return;

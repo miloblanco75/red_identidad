@@ -753,7 +753,7 @@ const Home: React.FC = () => {
             {/* Selector Visual de Pertenencia Territorial */}
             <div style={{ marginBottom: '1.8rem', textAlign: 'center' }}>
               <span style={{ fontSize: '0.74rem', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800, display: 'block', marginBottom: '0.8rem' }}>
-                {isJuarez ? 'Distintivo Digital Oficial ($80 MXN) • Calcomanía física próximamente' : 'Elige tu Distintivo Oficial ($90 MXN):'}
+                {isJuarez ? 'Distintivo Digital Oficial ($80 MXN)' : 'Elige tu Distintivo Oficial ($90 MXN):'}
               </span>
               {isJuarez ? (
                 <div style={{ maxWidth: '380px', margin: '0 auto' }}>

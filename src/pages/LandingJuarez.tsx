@@ -55,7 +55,7 @@ export const LandingJuarez: React.FC = () => {
   const [selectedStickerForModal, setSelectedStickerForModal] = useState<string>('juarense_oficial');
   const [showMerchantModal, setShowMerchantModal] = useState(false);
 
-  // Simulador de calcomanía
+  // Simulador de distintivo digital
   const [simulatorMode, setSimulatorMode] = useState<'car' | 'phone'>('car');
 
   // Filtros de comercios de muestra en Ciudad Juárez
@@ -112,25 +112,25 @@ export const LandingJuarez: React.FC = () => {
       name: 'Punto Las Misiones',
       zone: 'Av. Paseo de la Victoria',
       city: 'Ciudad Juárez, Chih.',
-      desc: 'Punto céntrico para entrega de distintivos automotrices oficiales.'
+      desc: 'Punto de atención oficial e información para miembros y aliados.'
     },
     {
       name: 'Punto Pronaf / San Lorenzo',
       zone: 'Zona Pronaf',
       city: 'Ciudad Juárez, Chih.',
-      desc: 'Atención a comercios aliados y recogida de calcomanías.'
+      desc: 'Atención a comercios aliados y soporte oficial de la red.'
     },
     {
       name: 'Punto Av. Tecnológico',
       zone: 'Av. Tecnológico',
       city: 'Ciudad Juárez, Chih.',
-      desc: 'Stock completo de distintivos en vinil de grado automotriz.'
+      desc: 'Atención presencial y registro de comercios aliados.'
     },
     {
       name: 'Punto Valle del Sol',
       zone: 'Valle del Sol',
       city: 'Ciudad Juárez, Chih.',
-      desc: 'Entrega de kits físicos para la zona residencial oriente.'
+      desc: 'Módulo de atención e información para la zona oriente.'
     }
   ];
 
@@ -138,15 +138,15 @@ export const LandingJuarez: React.FC = () => {
   const faqList = [
     {
       q: '¿Qué es Juárez Conecta?',
-      a: 'Juárez Conecta es el movimiento de orgullo local y club de beneficios exclusivos de Ciudad Juárez respaldado por la plataforma Red Identidad. Al colocar tu distintivo oficial automotriz (o pase digital) obtienes hasta un 15% de descuento en restaurantes, servicios y comercios aliados en toda la ciudad.'
+      a: 'Juárez Conecta es el movimiento de orgullo local y club de beneficios exclusivos de Ciudad Juárez respaldado por la plataforma Red Identidad. Con tu distintivo digital oficial obtienes hasta un 15% de descuento en restaurantes, servicios y comercios aliados en toda la ciudad.'
     },
     {
-      q: '¿La calcomanía soporta el clima extremo de Ciudad Juárez?',
-      a: '¡Totalmente! Está producida en vinil automotriz alemán tricapa de alta durabilidad con protección contra rayos UV. Resiste tanto el calor intenso de verano como las heladas de invierno y los lavados de vehículo a presión.'
+      q: '¿Cómo funciona el distintivo digital en Ciudad Juárez?',
+      a: '¡Es 100% digital y va siempre en tu celular! Al adquirirlo por $80 MXN, obtienes tu pase con código QR oficial que presentas directamente desde tu smartphone en cualquier comercio aliado para recibir tu descuento inmediato de hasta el 15%.'
     },
     {
       q: '¿Cómo activo mis beneficios en comercios juarenses?',
-      a: 'Recibes tu distintivo en un sobre sellado con un código QR irrepetible. Al escanearlo con la cámara de tu celular, activas tu membresía en 30 segundos. En cualquier comercio aliado solo muestras tu distintivo o tu QR en el celular para recibir el descuento inmediato.'
+      a: 'Al adquirir tu membresía por $80 MXN, recibes tu folio y código QR oficial de inmediato en tu celular. En cualquier comercio aliado solo muestras tu pase digital en tu smartphone para recibir tu descuento directo.'
     },
     {
       q: '¿Dónde puedo conseguir el distintivo oficial en Ciudad Juárez?',
@@ -449,7 +449,7 @@ export const LandingJuarez: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <CheckCircle2 size={16} color="var(--accent-gold)" />
-                  <span>Calcomanías físicas: próximamente en puntos autorizados</span>
+                  <span>Pase 100% digital en tu celular sin necesidad de plásticos</span>
                 </div>
               </div>
             </div>
@@ -670,7 +670,7 @@ export const LandingJuarez: React.FC = () => {
               </div>
               <h3 style={{ fontSize: '1.25rem', marginBottom: '0.8rem' }}>Adquiere tu Distintivo</h3>
               <p style={{ color: '#9E9EA8', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                Obtén tu <strong>Distintivo Digital Oficial ($80 MXN)</strong> que se convierte automáticamente en tu pase con código QR en tu smartphone. (Calcomanías físicas próximamente).
+                Obtén tu <strong>Distintivo Digital Oficial ($80 MXN)</strong> que se convierte automáticamente en tu pase oficial con código QR en tu smartphone.
               </p>
             </div>
 
@@ -840,7 +840,7 @@ export const LandingJuarez: React.FC = () => {
                   fontSize: '0.82rem',
                   color: '#DDD'
                 }}>
-                  📍 <strong>Lanzamiento 100% digital ($80 MXN)</strong>: No hay calcomanía física aún. Recibirás tu distintivo y folio de socio oficial de inmediato en tu celular. Las piezas físicas se anunciarán próximamente.
+                  📍 <strong>Membresía 100% digital ($80 MXN)</strong>: Recibirás tu distintivo oficial y folio de socio de inmediato en tu celular para empezar a ahorrar hoy mismo.
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
@@ -1050,7 +1050,7 @@ export const LandingJuarez: React.FC = () => {
                   <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'flex-start' }}>
                     <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', flexShrink: 0, fontWeight: 800, fontSize: '0.85rem' }}>4</div>
                     <div style={{ fontSize: '0.9rem', color: '#D0D0D8', lineHeight: 1.5 }}>
-                      <strong>Calcomanía física:</strong> Próximamente disponible en puntos de entrega autorizados.
+                      <strong>100% Digital en tu smartphone:</strong> Tu pase siempre va contigo en tu celular, sin necesidad de cargar tarjetas ni plásticos.
                     </div>
                   </div>
                 </div>
@@ -1244,7 +1244,7 @@ export const LandingJuarez: React.FC = () => {
               ¿Cuánto te ahorras con Juárez Conecta?
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
-              Ajusta tu consumo habitual y comprueba que una calcomanía de $90 se paga sola desde tus primeras salidas.
+              Ajusta tu consumo habitual y comprueba cómo tu membresía digital de $80 se paga sola desde tus primeras salidas.
             </p>
           </div>
 
@@ -1347,7 +1347,7 @@ export const LandingJuarez: React.FC = () => {
               Puntos de Entrega en Juárez
             </h2>
             <p style={{ color: '#A5A5AF', fontSize: '1.05rem', lineHeight: 1.6 }}>
-              <strong>Lanzamiento Fase 1:</strong> Distintivo 100% Digital ($80 MXN) que se convierte en tu Pase Oficial con Código QR disponible hoy mismo en tu smartphone. Próximamente distribución de calcomanías físicas oficiales en sobre sellado en estos puntos autorizados.
+              <strong>Membresía 100% Digital ($80 MXN):</strong> Tu Pase Oficial con Código QR dinámico disponible hoy mismo en tu smartphone para acceder a descuentos inmediatos en todos los comercios aliados de Ciudad Juárez.
             </p>
           </div>
 
@@ -1472,7 +1472,7 @@ export const LandingJuarez: React.FC = () => {
                     'Hasta 15% de descuento en restaurantes, talleres y comercios aliados en Cd. Juárez',
                     'Folio único de socio fronterizo registrado en el sistema',
                     'Sin plazos forzosos ni mensualidades (un solo pago de $80 MXN)',
-                    'Próximamente calcomanía física en sobre sellado en puntos de entrega oficiales'
+                    'Membresía 100% digital: tu pase siempre disponible en tu teléfono celular'
                   ].map((feat, idx) => (
                     <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.7rem', fontSize: '0.92rem', color: '#FFF' }}>
                       <Check size={16} color="var(--accent-gold)" style={{ flexShrink: 0, marginTop: '3px' }} />

@@ -367,7 +367,7 @@ const Registro: React.FC = () => {
           <BrandLogo size="medium" showSlogan={true} />
         </div>
         <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginBottom: '2rem' }}>
-          Ingresa tu WhatsApp para vincular tu calcomanía física y obtener tu Pase VIP.
+          {isJuarez ? 'Ingresa tu WhatsApp para vincular tu pase digital y obtener tu membresía.' : 'Ingresa tu WhatsApp para vincular tu calcomanía física y obtener tu Pase VIP.'}
         </p>
 
         <section className="glass" style={{ padding: '2rem', borderRadius: '24px', textAlign: 'left' }}>
@@ -750,7 +750,7 @@ const Registro: React.FC = () => {
                 gap: '6px'
               }}
             >
-              ⭐ Desbloquear Membresía Oficial Vitalicia ($45 / $90)
+              {isJuarez ? '⭐ Desbloquear Membresía Oficial ($80 MXN)' : '⭐ Desbloquear Membresía Oficial Vitalicia ($45 / $90)'}
             </button>
           </div>
         )}

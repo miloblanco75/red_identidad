@@ -371,7 +371,7 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                             Juárez Conecta — Edición Única
                           </div>
                           <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', lineHeight: 1.3 }}>
-                            Activación 100% digital inmediata. Descuentos en la red de comercios aliados. (Calcomanía física próximamente en puntos de entrega).
+                            Activación 100% digital inmediata. Descuentos en la red de comercios aliados con tu Pase Oficial con Código QR.
                           </div>
                         </div>
                       </div>
