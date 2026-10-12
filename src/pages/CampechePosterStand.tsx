@@ -7,10 +7,9 @@ import { getCampecheCampaignQrUrl } from '../lib/campecheTrialService';
 export const CampechePosterStand: React.FC = () => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
-  const [stickerColor, setStickerColor] = useState<'white' | 'black'>('white');
-  // Por defecto 2 por hoja como solicitó el usuario
-  const [sheetCount, setSheetCount] = useState<number>(1); // 1 hoja = 2 stickers
-  // Control de densidad / finura del QR
+  // Por defecto exactamente 1 hoja (con los 2 stickers de 12x12 cm)
+  const [sheetCount, setSheetCount] = useState<number>(1);
+  // Finura del QR
   const [qrDensity, setQrDensity] = useState<'ultra' | 'fino' | 'clasico'>('fino');
 
   // URL a la que dirigirá el QR al escanearse en paradas de camión / terminales
@@ -33,13 +32,8 @@ export const CampechePosterStand: React.FC = () => {
     clasico: 1  // Versión estándar con módulos más grandes
   };
 
-  // Componente que dibuja exactamente 1 Sticker de 12 x 12 cm de puro misterio
+  // Componente que dibuja exactamente 1 Sticker de 12 x 12 cm (Fondo blanco, QR negro)
   const MysterySticker = ({ idSuffix = '1' }: { idSuffix?: string }) => {
-    const isDark = stickerColor === 'black';
-    const bgColor = isDark ? '#000000' : '#FFFFFF';
-    const textColor = isDark ? '#FFFFFF' : '#000000';
-    const borderColor = isDark ? '#333333' : '#D1D5DB';
-
     return (
       <div 
         id={`mystery-sticker-12x12-${idSuffix}`}
@@ -49,19 +43,18 @@ export const CampechePosterStand: React.FC = () => {
           height: '12cm',
           maxWidth: '12cm',
           maxHeight: '12cm',
-          backgroundColor: bgColor,
-          color: textColor,
+          backgroundColor: '#FFFFFF',
+          color: '#000000',
           boxSizing: 'border-box',
-          padding: '0.55cm 0.6cm 0.45cm',
+          padding: '0.5cm 0.6cm 0.4cm',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'space-between',
           position: 'relative',
-          borderRadius: '2px',
-          border: `1px solid ${borderColor}`,
+          border: '1px solid #111111',
           userSelect: 'none',
-          boxShadow: '0 8px 30px rgba(0,0,0,0.35)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
           margin: '0 auto',
           pageBreakInside: 'avoid',
           breakInside: 'avoid'
@@ -73,7 +66,7 @@ export const CampechePosterStand: React.FC = () => {
         <div className="crop-mark bottom-left" />
         <div className="crop-mark bottom-right" />
 
-        {/* CÓDIGO QR PURO Y FINO (SIN LOGO, MATRIZ DE ALTA DEFINICIÓN) */}
+        {/* CÓDIGO QR PURO Y FINO: FONDO BLANCO, QR NEGRO NÍTIDO */}
         <div 
           style={{
             width: '9.4cm',
@@ -81,7 +74,7 @@ export const CampechePosterStand: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: bgColor,
+            backgroundColor: '#FFFFFF',
             margin: '0 auto'
           }}
         >
@@ -91,8 +84,8 @@ export const CampechePosterStand: React.FC = () => {
             level="Q"
             minVersion={minVersionMap[qrDensity]}
             marginSize={1}
-            fgColor={textColor}
-            bgColor={bgColor}
+            fgColor="#000000"
+            bgColor="#FFFFFF"
             style={{
               width: '100%',
               height: '100%',
@@ -102,7 +95,7 @@ export const CampechePosterStand: React.FC = () => {
           />
         </div>
 
-        {/* ÚNICO TEXTO: LA PALABRA 'DESCUENTOS' (TIPOGRAFÍA FINA, ELEGANTE Y DE ALTO IMPACTO) */}
+        {/* ÚNICO TEXTO: LA PALABRA 'DESCUENTOS' (NEGRO SÓLIDO, ELEGANTE Y CENTRADO) */}
         <div 
           style={{
             width: '100%',
@@ -117,9 +110,9 @@ export const CampechePosterStand: React.FC = () => {
               fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
               letterSpacing: '0.36em',
               textTransform: 'uppercase',
-              color: textColor,
+              color: '#000000',
               lineHeight: 1,
-              margin: '0 0 0 0.36em' // Compensar el letterSpacing al final para centrado milimétrico
+              margin: '0 0 0 0.36em'
             }}
           >
             DESCUENTOS
@@ -130,15 +123,18 @@ export const CampechePosterStand: React.FC = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#0F0F12',
-      padding: '1.8rem 1rem 4rem',
-      fontFamily: "'Outfit', 'Segoe UI', -apple-system, sans-serif",
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center'
-    }}>
+    <div 
+      className="page-root"
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#0F0F12',
+        padding: '1.8rem 1rem 4rem',
+        fontFamily: "'Outfit', 'Segoe UI', -apple-system, sans-serif",
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
+      }}
+    >
       {/* Barra superior de herramientas (se oculta al imprimir) */}
       <div className="no-print" style={{
         width: '100%',
@@ -172,7 +168,7 @@ export const CampechePosterStand: React.FC = () => {
           <span>Volver</span>
         </button>
 
-        {/* Controles: Finura del QR, Color y Cantidad de Hojas */}
+        {/* Controles: Finura del QR y Cantidad de Hojas */}
         <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
           
           {/* Selector de Finura del QR */}
@@ -237,48 +233,6 @@ export const CampechePosterStand: React.FC = () => {
             </button>
           </div>
 
-          {/* Color del Sticker */}
-          <div style={{
-            display: 'flex',
-            backgroundColor: 'rgba(255,255,255,0.06)',
-            padding: '3px',
-            borderRadius: '10px',
-            border: '1px solid rgba(255,255,255,0.1)'
-          }}>
-            <button
-              onClick={() => setStickerColor('white')}
-              style={{
-                padding: '5px 11px',
-                borderRadius: '7px',
-                fontSize: '0.76rem',
-                fontWeight: 700,
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: stickerColor === 'white' ? '#FFF' : 'transparent',
-                color: stickerColor === 'white' ? '#000' : '#AAA',
-                transition: 'all 0.2s'
-              }}
-            >
-              Blanco
-            </button>
-            <button
-              onClick={() => setStickerColor('black')}
-              style={{
-                padding: '5px 11px',
-                borderRadius: '7px',
-                fontSize: '0.76rem',
-                fontWeight: 700,
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: stickerColor === 'black' ? '#FFF' : 'transparent',
-                color: stickerColor === 'black' ? '#000' : '#AAA',
-                transition: 'all 0.2s'
-              }}
-            >
-              Negro
-            </button>
-          </div>
-
           {/* Cantidad de Hojas a Imprimir (2 stickers por hoja) */}
           <div style={{
             display: 'flex',
@@ -306,7 +260,7 @@ export const CampechePosterStand: React.FC = () => {
                   transition: 'all 0.2s'
                 }}
               >
-                {num} ({num * 2} u.)
+                {num} ({num * 2} stickers)
               </button>
             ))}
           </div>
@@ -343,21 +297,21 @@ export const CampechePosterStand: React.FC = () => {
               backgroundColor: '#FFFFFF',
               border: 'none',
               color: '#000000',
-              padding: '0.6rem 1.2rem',
+              padding: '0.6rem 1.3rem',
               borderRadius: '10px',
-              fontSize: '0.84rem',
+              fontSize: '0.85rem',
               fontWeight: 900,
               cursor: 'pointer',
               boxShadow: '0 4px 20px rgba(255, 255, 255, 0.25)'
             }}
           >
             <Printer size={17} />
-            <span>Imprimir ({sheetCount * 2} Stickers — 2 por hoja)</span>
+            <span>Imprimir ({sheetCount * 2} Stickers en {sheetCount} hoja{sheetCount > 1 ? 's' : ''})</span>
           </button>
         </div>
       </div>
 
-      {/* Indicador de Campaña y Calibración */}
+      {/* Indicador de Campaña y Calibración en pantalla */}
       <div className="no-print" style={{
         maxWidth: '580px',
         textAlign: 'center',
@@ -368,13 +322,13 @@ export const CampechePosterStand: React.FC = () => {
       }}>
         <div style={{ color: '#FFF', fontWeight: 800, marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
           <Scissors size={15} color="#4ADE80" />
-          <span>Calibrado a 2 Stickers de 12 x 12 cm por Hoja Carta</span>
+          <span>Fondo Blanco Puro • Exactamente 2 Stickers de 12 x 12 cm por Hoja</span>
         </div>
-        Código QR con matriz fina de alta definición sin logotipos + palabra <strong>DESCUENTOS</strong>. Cada hoja impresa contiene exactamente 2 stickers listos para corte.
+        Impresión limpia en blanco y negro para fotocopia, láser o vinil. Al imprimir saldrá únicamente la hoja con los 2 códigos QR (sin hojas vacías ni fondos oscuros).
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          ÁREA IMPRIMIBLE: HOJAS CARTA CON EXACTAMENTE 2 STICKERS CADA UNA
+          ÁREA IMPRIMIBLE: EXACTAMENTE 2 STICKERS DE 12 X 12 CM POR HOJA
          ───────────────────────────────────────────────────────────── */}
       <div id="printable-area">
         {Array.from({ length: sheetCount }).map((_, sheetIdx) => (
@@ -386,7 +340,7 @@ export const CampechePosterStand: React.FC = () => {
         ))}
       </div>
 
-      {/* Estilos de Impresión y Calibración Estricta a Hoja Carta */}
+      {/* ── ESTILOS DE IMPRESIÓN ESTRICTOS ── */}
       <style>{`
         /* Guías de corte en esquinas */
         .crop-mark {
@@ -398,26 +352,26 @@ export const CampechePosterStand: React.FC = () => {
         .crop-mark.top-left {
           top: 0;
           left: 0;
-          border-top: 1px dashed rgba(100, 100, 100, 0.45);
-          border-left: 1px dashed rgba(100, 100, 100, 0.45);
+          border-top: 1px dashed #666;
+          border-left: 1px dashed #666;
         }
         .crop-mark.top-right {
           top: 0;
           right: 0;
-          border-top: 1px dashed rgba(100, 100, 100, 0.45);
-          border-right: 1px dashed rgba(100, 100, 100, 0.45);
+          border-top: 1px dashed #666;
+          border-right: 1px dashed #666;
         }
         .crop-mark.bottom-left {
           bottom: 0;
           left: 0;
-          border-bottom: 1px dashed rgba(100, 100, 100, 0.45);
-          border-left: 1px dashed rgba(100, 100, 100, 0.45);
+          border-bottom: 1px dashed #666;
+          border-left: 1px dashed #666;
         }
         .crop-mark.bottom-right {
           bottom: 0;
           right: 0;
-          border-bottom: 1px dashed rgba(100, 100, 100, 0.45);
-          border-right: 1px dashed rgba(100, 100, 100, 0.45);
+          border-bottom: 1px dashed #666;
+          border-right: 1px dashed #666;
         }
 
         /* En pantalla */
@@ -436,53 +390,77 @@ export const CampechePosterStand: React.FC = () => {
           gap: 0.6cm;
           padding: 1.2rem;
           border-radius: 12px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px dashed rgba(255, 255, 255, 0.15);
+          background: #FFFFFF;
+          border: 1px dashed rgba(255, 255, 255, 0.2);
+          box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
 
         .sheet-cut-divider {
           width: 12cm;
-          border-top: 1px dashed rgba(255, 255, 255, 0.2);
+          border-top: 1px dashed #CBD5E1;
           margin: 0.2cm 0;
         }
 
-        /* ── CONFIGURACIÓN DE IMPRESIÓN OFICIAL TAMAÑO CARTA ── */
+        /* ── CONFIGURACIÓN DE IMPRESIÓN DEFINITIVA ── */
         @page {
           size: letter portrait;
-          margin: 4mm auto;
+          margin: 8mm auto;
         }
 
         @media print {
+          /* 1. Forzar blanco absoluto en HTML y BODY sin márgenes parásitos */
           html, body {
+            background: #FFFFFF !important;
             background-color: #FFFFFF !important;
-            padding: 0 !important;
+            color: #000000 !important;
             margin: 0 !important;
-            height: 100% !important;
+            padding: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            overflow: visible !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
 
-          .no-print {
-            display: none !important;
-          }
-
-          #printable-area {
-            gap: 0 !important;
-            margin: 0 auto !important;
+          /* 2. Anular el fondo oscuro del contenedor raíz de pantalla */
+          .page-root {
+            background: #FFFFFF !important;
+            background-color: #FFFFFF !important;
             padding: 0 !important;
-            width: 100% !important;
+            margin: 0 !important;
+            min-height: auto !important;
+            height: auto !important;
             display: block !important;
           }
 
-          /* Cada hoja carta contiene exactamente 2 stickers (12cm + 12cm = 24cm de alto en hoja de 27.94cm) */
+          /* 3. Ocultar absolutamente todo lo que no sea el área de impresión */
+          .no-print {
+            display: none !important;
+            height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+
+          #printable-area {
+            display: block !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            background: #FFFFFF !important;
+          }
+
+          /* 4. Cada hoja contiene estrictamente los 2 stickers (12cm + 12cm = 24cm) dentro de los 27.94cm de la hoja carta */
           .print-sheet {
             width: 100% !important;
-            height: 26.5cm !important;
-            max-height: 27cm !important;
+            height: 25cm !important;
+            max-height: 25.2cm !important;
             margin: 0 auto !important;
             padding: 0.3cm 0 !important;
-            background: transparent !important;
+            background: #FFFFFF !important;
             border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
@@ -494,17 +472,21 @@ export const CampechePosterStand: React.FC = () => {
             break-inside: avoid !important;
           }
 
+          /* La última hoja NO debe romper página para evitar la hoja en blanco final */
           .print-sheet:last-child {
             page-break-after: avoid !important;
             break-after: avoid !important;
           }
 
-          /* Cada sticker mide estrictamente 12 x 12 cm */
+          /* 5. Cada sticker mide estrictamente 12 x 12 cm */
           .sticker-12x12 {
             width: 12cm !important;
             height: 12cm !important;
             max-width: 12cm !important;
             max-height: 12cm !important;
+            background: #FFFFFF !important;
+            background-color: #FFFFFF !important;
+            color: #000000 !important;
             box-shadow: none !important;
             border: 1px solid #000000 !important;
             page-break-inside: avoid !important;
@@ -516,7 +498,7 @@ export const CampechePosterStand: React.FC = () => {
           .crop-mark.top-right,
           .crop-mark.bottom-left,
           .crop-mark.bottom-right {
-            border-color: #777777 !important;
+            border-color: #888888 !important;
           }
         }
       `}</style>
