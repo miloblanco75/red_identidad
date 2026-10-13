@@ -1668,10 +1668,10 @@ const Admin: React.FC = () => {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#FFD700', fontWeight: 800, fontSize: '1rem' }}>
                   <Sparkles size={18} color="#FFD700" />
-                  <span>Stickers Callejeros QR 12x12 cm (Campaña Misterio "DESCUENTOS" Campeche)</span>
+                  <span>Stickers Callejeros QR 12x12 cm (Campaña Misterio "¿YA LA TRAES?" Campeche)</span>
                 </div>
                 <p style={{ margin: '6px 0 0', fontSize: '0.83rem', color: '#E2E8F0', maxWidth: '640px', lineHeight: 1.4 }}>
-                  Generador de stickers calibrados a <strong>12 x 12 cm</strong> sin logotipos para paradas de camión y terminales de Campeche. Solo el código QR y la palabra <strong>DESCUENTOS</strong>.
+                  Generador de stickers calibrados a <strong>12 x 12 cm</strong> sin logotipos para paradas de camión y terminales de Campeche. Solo el código QR y la frase <strong>¿YA LA TRAES?</strong>.
                 </p>
               </div>
               <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>

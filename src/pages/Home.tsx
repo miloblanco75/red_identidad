@@ -568,10 +568,10 @@ const Home: React.FC = () => {
           </div>
 
           <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FFF', marginBottom: '4px', lineHeight: 1.25 }}>
-            Sticker de Misterio: "DESCUENTOS"
+            Sticker de Misterio: "¿YA LA TRAES?"
           </div>
           <p style={{ fontSize: '0.8rem', color: '#E2E8F0', margin: '0 0 12px 0', lineHeight: 1.4 }}>
-            Imprime stickers de <strong>12 x 12 cm</strong> sin logotipos para paradas de camión y terminales. Solo el QR y la palabra <strong>DESCUENTOS</strong>. Quien lo escanee recibe 7 días gratis.
+            Imprime stickers de <strong>12 x 12 cm</strong> sin logotipos para paradas de camión y terminales. Solo el código QR y la frase <strong>¿YA LA TRAES?</strong>. Quien lo escanee recibe 7 días gratis.
           </p>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>

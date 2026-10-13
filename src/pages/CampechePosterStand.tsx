@@ -95,7 +95,7 @@ export const CampechePosterStand: React.FC = () => {
           />
         </div>
 
-        {/* ÚNICO TEXTO: LA PALABRA 'DESCUENTOS' (NEGRO SÓLIDO, ELEGANTE Y CENTRADO) */}
+        {/* ÚNICO TEXTO: LA FRASE '¿YA LA TRAES?' (NEGRO SÓLIDO, ELEGANTE Y CENTRADO) */}
         <div 
           style={{
             width: '100%',
@@ -108,14 +108,14 @@ export const CampechePosterStand: React.FC = () => {
               fontSize: '1.25rem',
               fontWeight: 900,
               fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-              letterSpacing: '0.36em',
+              letterSpacing: '0.22em',
               textTransform: 'uppercase',
               color: '#000000',
               lineHeight: 1,
-              margin: '0 0 0 0.36em'
+              margin: '0 0 0 0.22em'
             }}
           >
-            DESCUENTOS
+            ¿YA LA TRAES?
           </div>
         </div>
       </div>
