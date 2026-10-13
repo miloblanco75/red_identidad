@@ -92,13 +92,64 @@ export const CampecheSemanaGratis: React.FC = () => {
     }
   };
 
-  // Comercios aliados muestra en Campeche
+  // Comercios aliados reales de Campeche
   const sampleAllies = [
-    { name: 'Café del Mar Campeche', category: 'Cafetería & Restaurante', discount: '15% de Descuento en Consumo Total', icon: Utensils, color: '#F59E0B' },
-    { name: 'AutoLavado Fast El Carmen', category: 'Cuidado Automotriz', discount: 'Lavado Gratis en tu 3ra Visita', icon: Car, color: '#38BDF8' },
-    { name: 'Club 59 Lounge Bar', category: 'Entretenimiento & Vida Nocturna', discount: 'Shot de Bienvenida de Cortesía', icon: Sparkles, color: '#A855F7' },
-    { name: 'Spa Sentidos & Bienestar', category: 'Salud y Relajación', discount: '15% OFF en Masajes y Tratamientos', icon: Heart, color: '#EC4899' },
-    { name: 'Refaccionaria Bahía', category: 'Servicio Automotriz', discount: '10% de Descuento en Refacciones', icon: Award, color: '#10B981' }
+    { 
+      name: 'Palmare', 
+      category: 'Restaurante & Bar de Playa', 
+      discount: '2x1 en bebidas de la casa al atardecer (5:00 a 6:30 pm)', 
+      highlight: '2x1 Atardecer',
+      icon: Utensils, 
+      color: '#F59E0B' 
+    },
+    { 
+      name: 'Tacos Los Toños', 
+      category: 'Taquería Tradicional', 
+      discount: '2x1 en tacos al pastor (5:00 pm a 6:30 pm)', 
+      highlight: '2x1 al Pastor',
+      icon: Utensils, 
+      color: '#EF4444' 
+    },
+    { 
+      name: 'Taquería Tenoch', 
+      category: 'Tacos & Antojos', 
+      discount: '15% de descuento en consumo total', 
+      highlight: '15% OFF Total',
+      icon: Store, 
+      color: '#EAB308' 
+    },
+    { 
+      name: 'Café con Pan', 
+      category: 'Cafetería & Panadería Artesanal', 
+      discount: 'Café americano gratis en la compra de cualquier pan', 
+      highlight: 'Café Gratis',
+      icon: Utensils, 
+      color: '#D97706' 
+    },
+    { 
+      name: 'Olivina', 
+      category: 'Cocina & Panadería', 
+      discount: 'Café americano gratis en compra de focaccia (Lun-Jue)', 
+      highlight: 'Café Gratis',
+      icon: Sparkles, 
+      color: '#10B981' 
+    },
+    { 
+      name: 'Clínica Veterinaria Ceballos', 
+      category: 'Salud Animal & Estética Canina', 
+      discount: 'Descuento especial en consultas y estética', 
+      highlight: 'Precio Socio',
+      icon: Heart, 
+      color: '#38BDF8' 
+    },
+    { 
+      name: 'Printmix', 
+      category: 'Imprenta Digital & The Gift Bar', 
+      discount: '15% al contratar The Gift Bar Live Experience', 
+      highlight: '15% OFF',
+      icon: Award, 
+      color: '#8B5CF6' 
+    }
   ];
 
   return (
@@ -552,51 +603,57 @@ export const CampecheSemanaGratis: React.FC = () => {
                       <div 
                         key={idx}
                         style={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                          border: '1px solid rgba(255, 255, 255, 0.06)',
-                          borderRadius: '14px',
-                          padding: '0.75rem 0.9rem',
+                          backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          borderRadius: '16px',
+                          padding: '0.85rem 1rem',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
-                          gap: '10px'
+                          gap: '12px'
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden', flex: 1 }}>
                           <div style={{
                             backgroundColor: `${ally.color}22`,
                             color: ally.color,
-                            borderRadius: '10px',
-                            padding: '6px',
+                            borderRadius: '12px',
+                            padding: '8px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             flexShrink: 0
                           }}>
-                            <IconComp size={16} />
+                            <IconComp size={18} />
                           </div>
                           <div style={{ overflow: 'hidden' }}>
-                            <div style={{ fontSize: '0.84rem', fontWeight: 800, color: '#FFF', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                              {ally.name}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '0.88rem', fontWeight: 900, color: '#FFF' }}>
+                                {ally.name}
+                              </span>
+                              <span style={{ fontSize: '0.68rem', color: '#94A3B8' }}>
+                                • {ally.category}
+                              </span>
                             </div>
-                            <div style={{ fontSize: '0.72rem', color: '#94A3B8' }}>
-                              {ally.category}
+                            <div style={{ fontSize: '0.76rem', color: '#CBD5E1', marginTop: '2px', lineHeight: 1.3 }}>
+                              {ally.discount}
                             </div>
                           </div>
                         </div>
 
                         <div style={{
                           backgroundColor: 'rgba(212, 175, 55, 0.15)',
-                          border: '1px solid rgba(212, 175, 55, 0.3)',
+                          border: '1px solid rgba(212, 175, 55, 0.4)',
                           borderRadius: '8px',
-                          padding: '3px 8px',
-                          fontSize: '0.7rem',
-                          fontWeight: 800,
+                          padding: '4px 9px',
+                          fontSize: '0.72rem',
+                          fontWeight: 900,
                           color: '#FFD700',
-                          textAlign: 'right',
+                          textAlign: 'center',
+                          whiteSpace: 'nowrap',
                           flexShrink: 0
                         }}>
-                          {ally.discount}
+                          {ally.highlight}
                         </div>
                       </div>
                     );
