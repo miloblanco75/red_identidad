@@ -570,6 +570,31 @@ export const Landing: React.FC = () => {
               <span>Obtener Distintivo</span>
             </button>
 
+            {/* Acceso a Facebook Oficial */}
+            <a
+              href="https://www.facebook.com/profile.php?id=61589711656219"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Facebook Oficial Red Identidad"
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '12px',
+                backgroundColor: '#1877F2',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textDecoration: 'none',
+                boxShadow: '0 2px 10px rgba(24, 119, 242, 0.4)',
+                transition: 'transform 0.2s ease',
+                flexShrink: 0
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFFFF">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+
             {/* Mobile Menu Hamburger */}
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -701,6 +726,34 @@ export const Landing: React.FC = () => {
                   Comprar
                 </button>
               </div>
+
+              {/* Enlace directo a Facebook en menú móvil */}
+              <a
+                href="https://www.facebook.com/profile.php?id=61589711656219"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  backgroundColor: '#1877F2',
+                  color: '#FFFFFF',
+                  borderRadius: '12px',
+                  padding: '0.7rem 1rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 800,
+                  textDecoration: 'none',
+                  marginTop: '0.6rem',
+                  boxShadow: '0 2px 10px rgba(24, 119, 242, 0.4)'
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="#FFFFFF">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                <span>Facebook Oficial Red Identidad</span>
+              </a>
             </motion.div>
           )}
         </AnimatePresence>
@@ -2245,6 +2298,30 @@ export const Landing: React.FC = () => {
                 <MessageCircle size={16} />
                 <span>WhatsApp: 981 197 1305</span>
               </a>
+
+              {/* Redes Sociales Oficiales */}
+              <div style={{ marginTop: '0.8rem' }}>
+                <a 
+                  href="https://www.facebook.com/profile.php?id=61589711656219" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    color: '#60A5FA',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                    fontSize: '0.88rem'
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                  <span>Facebook Oficial ↗</span>
+                </a>
+              </div>
+
               <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#6A6A74' }}>
                 San Francisco de Campeche, México
               </div>

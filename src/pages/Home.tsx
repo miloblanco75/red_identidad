@@ -4,7 +4,7 @@ import {
   ChevronRight, ShieldCheck, Sparkles, Utensils, Car, Wine, 
   HeartPulse, Building2, MapPin, Loader2, Globe, QrCode, 
   Award, Heart, Store, Camera, Flame, DollarSign, ChevronDown, ChevronUp, Briefcase, Navigation,
-  Gift, Trophy, ShoppingBag, Smartphone, FerrisWheel, Printer
+  Gift, Trophy, ShoppingBag, Smartphone, FerrisWheel, Printer, ExternalLink
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabase';
@@ -20,6 +20,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCity } from '../contexts/CityContext';
 import { getUserGamificationProfile } from '../lib/challengesService';
 import { juarezAlliesList } from '../data/juarezAllies';
+
+export const FACEBOOK_OFFICIAL_URL = 'https://www.facebook.com/profile.php?id=61589711656219';
 
 const FacebookIcon = ({ size = 14, color = '#1877F2' }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -352,7 +354,7 @@ const Home: React.FC = () => {
           <MapPin size={15} color="var(--accent-gold)" />
           <span style={{ fontSize: '0.75rem', color: '#FFF', fontWeight: 700 }}>Ciudad:</span>
         </div>
-        <div style={{ display: 'flex', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
           {[
             { id: 'campeche', label: '🏛️ Campeche' },
             { id: 'carmen', label: '🏖️ Carmen' },
@@ -380,6 +382,34 @@ const Home: React.FC = () => {
               </button>
             );
           })}
+
+          {/* Acceso a Facebook Oficial de Red Identidad */}
+          <a
+            href={FACEBOOK_OFFICIAL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Facebook Oficial de Red Identidad"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px',
+              backgroundColor: '#1877F2',
+              color: '#FFFFFF',
+              borderRadius: '10px',
+              padding: '0.35rem 0.65rem',
+              fontSize: '0.74rem',
+              fontWeight: 800,
+              textDecoration: 'none',
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 2px 10px rgba(24, 119, 242, 0.45)',
+              marginLeft: '0.2rem',
+              flexShrink: 0
+            }}
+          >
+            <FacebookIcon size={14} color="#FFFFFF" />
+            <span>Facebook</span>
+          </a>
         </div>
       </div>
 
@@ -1592,6 +1622,78 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* ── Banner Oficial de Facebook de Red Identidad ── */}
+      <section style={{ marginBottom: '3rem' }}>
+        <a
+          href={FACEBOOK_OFFICIAL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: 'none', display: 'block' }}
+        >
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="glass"
+            style={{
+              padding: '1.2rem 1.4rem',
+              borderRadius: '24px',
+              border: '1.5px solid rgba(24, 119, 242, 0.45)',
+              background: 'linear-gradient(135deg, rgba(24, 119, 242, 0.16) 0%, rgba(12, 16, 28, 0.95) 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              boxShadow: '0 8px 25px rgba(24, 119, 242, 0.22)',
+              cursor: 'pointer'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem' }}>
+              <div style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '14px',
+                backgroundColor: '#1877F2',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 15px rgba(24, 119, 242, 0.5)',
+                flexShrink: 0
+              }}>
+                <FacebookIcon size={26} color="#FFFFFF" />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.72rem', color: '#60A5FA', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                  Comunidad Oficial
+                </div>
+                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#FFFFFF', lineHeight: 1.25 }}>
+                  Síguenos en Facebook
+                </div>
+                <div style={{ fontSize: '0.78rem', color: '#94A3B8', marginTop: '2px' }}>
+                  Novedades, aliados y dinámicas de Red Identidad
+                </div>
+              </div>
+            </div>
+            <div style={{
+              backgroundColor: 'rgba(24, 119, 242, 0.2)',
+              padding: '0.55rem 0.95rem',
+              borderRadius: '12px',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              color: '#93C5FD',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '5px',
+              whiteSpace: 'nowrap',
+              border: '1px solid rgba(24, 119, 242, 0.35)',
+              flexShrink: 0
+            }}>
+              <span>Ver Página</span>
+              <ExternalLink size={14} />
+            </div>
+          </motion.div>
+        </a>
+      </section>
+
       {/* ── Galería / Álbum Showcase ── */}
       <section className="glass premium-glow-gold" style={{ 
         padding: '1.5rem', 
@@ -1788,6 +1890,72 @@ const Home: React.FC = () => {
           </motion.button>
         </div>
       </section>
+
+      {/* ── Pie Social de la App ── */}
+      <footer style={{
+        textAlign: 'center',
+        padding: '2rem 1rem 1.5rem',
+        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+        marginTop: '1rem',
+        marginBottom: '2rem'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', alignItems: 'center', marginBottom: '0.8rem' }}>
+          <a
+            href={FACEBOOK_OFFICIAL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Facebook Oficial Red Identidad"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              backgroundColor: '#1877F2',
+              color: '#FFFFFF',
+              padding: '0.6rem 1.2rem',
+              borderRadius: '14px',
+              fontSize: '0.84rem',
+              fontWeight: 800,
+              textDecoration: 'none',
+              boxShadow: '0 4px 15px rgba(24, 119, 242, 0.4)'
+            }}
+          >
+            <FacebookIcon size={16} color="#FFFFFF" />
+            <span>Facebook Oficial Red Identidad</span>
+            <ExternalLink size={13} />
+          </a>
+        </div>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-dim)', margin: 0 }}>
+          Red Identidad • El poder de consumir, ahorrar y pertenecer
+        </p>
+      </footer>
+
+      {/* ── Botón Flotante Oficial de Facebook (Siempre Visible) ── */}
+      <a
+        href={FACEBOOK_OFFICIAL_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Página de Facebook de Red Identidad"
+        title="Síguenos en Facebook"
+        style={{
+          position: 'fixed',
+          bottom: 'calc(80px + var(--safe-area-bottom))',
+          right: '16px',
+          width: '46px',
+          height: '46px',
+          borderRadius: '50%',
+          backgroundColor: '#1877F2',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 18px rgba(24, 119, 242, 0.6), 0 0 0 2px rgba(255, 255, 255, 0.25)',
+          zIndex: 999,
+          cursor: 'pointer',
+          textDecoration: 'none',
+          transition: 'transform 0.2s ease'
+        }}
+      >
+        <FacebookIcon size={24} color="#FFFFFF" />
+      </a>
 
       {/* Modals preserved without changing any flow */}
       <BuyStickerModal isOpen={showBuyModal} onClose={() => setShowBuyModal(false)} initialSticker={initialStickerSelection} />
