@@ -32,21 +32,21 @@ export const CampechePosterStand: React.FC = () => {
     clasico: 1  // Versión estándar con módulos más grandes
   };
 
-  // Componente que dibuja exactamente 1 Sticker de 12 x 12 cm (Fondo blanco, QR negro)
+  // Componente que dibuja exactamente 1 Sticker para grilla 2x2 (4 por hoja carta)
   const MysterySticker = ({ idSuffix = '1' }: { idSuffix?: string }) => {
     return (
       <div 
-        id={`mystery-sticker-12x12-${idSuffix}`}
-        className="sticker-12x12"
+        id={`mystery-sticker-4up-${idSuffix}`}
+        className="sticker-4up"
         style={{
-          width: '12cm',
-          height: '12cm',
-          maxWidth: '12cm',
-          maxHeight: '12cm',
+          width: '9.8cm',
+          height: '12.2cm',
+          maxWidth: '9.8cm',
+          maxHeight: '12.2cm',
           backgroundColor: '#FFFFFF',
           color: '#000000',
           boxSizing: 'border-box',
-          padding: '0.5cm 0.6cm 0.4cm',
+          padding: '0.35cm 0.35cm 0.3cm',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -54,13 +54,13 @@ export const CampechePosterStand: React.FC = () => {
           position: 'relative',
           border: '1px solid #111111',
           userSelect: 'none',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.12)',
           margin: '0 auto',
           pageBreakInside: 'avoid',
           breakInside: 'avoid'
         }}
       >
-        {/* Guías de corte en esquinas para recorte manual preciso a 12x12 cm */}
+        {/* Guías de corte en esquinas para recorte manual preciso */}
         <div className="crop-mark top-left" />
         <div className="crop-mark top-right" />
         <div className="crop-mark bottom-left" />
@@ -69,8 +69,8 @@ export const CampechePosterStand: React.FC = () => {
         {/* CÓDIGO QR PURO Y FINO: FONDO BLANCO, QR NEGRO NÍTIDO */}
         <div 
           style={{
-            width: '9.4cm',
-            height: '9.4cm',
+            width: '8.8cm',
+            height: '8.8cm',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -80,7 +80,7 @@ export const CampechePosterStand: React.FC = () => {
         >
           <QRCodeSVG 
             value={campaignUrl}
-            size={355}
+            size={330}
             level="Q"
             minVersion={minVersionMap[qrDensity]}
             marginSize={1}
@@ -95,24 +95,25 @@ export const CampechePosterStand: React.FC = () => {
           />
         </div>
 
-        {/* ÚNICO TEXTO: LA FRASE '¿YA LA TRAES?' (NEGRO SÓLIDO, ELEGANTE Y CENTRADO) */}
+        {/* ÚNICO TEXTO: LA FRASE '¿YA LA TRAES?' MÁS GRANDE Y EN NEGRITAS EXTRA BOLD */}
         <div 
           style={{
             width: '100%',
             textAlign: 'center',
-            paddingTop: '0.15cm'
+            paddingTop: '0.1cm'
           }}
         >
           <div 
             style={{
-              fontSize: '1.25rem',
-              fontWeight: 900,
-              fontFamily: "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-              letterSpacing: '0.22em',
+              fontSize: '1.5rem',
+              fontWeight: 950,
+              fontFamily: "'Outfit', 'Arial Black', Impact, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              letterSpacing: '0.06em',
               textTransform: 'uppercase',
               color: '#000000',
-              lineHeight: 1,
-              margin: '0 0 0 0.22em'
+              lineHeight: 1.1,
+              whiteSpace: 'nowrap',
+              margin: '0'
             }}
           >
             ¿YA LA TRAES?
@@ -233,7 +234,7 @@ export const CampechePosterStand: React.FC = () => {
             </button>
           </div>
 
-          {/* Cantidad de Hojas a Imprimir (2 stickers por hoja) */}
+          {/* Cantidad de Hojas a Imprimir (4 stickers por hoja) */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -244,7 +245,7 @@ export const CampechePosterStand: React.FC = () => {
             border: '1px solid rgba(255,255,255,0.1)'
           }}>
             <span style={{ fontSize: '0.72rem', color: '#94A3B8', fontWeight: 600 }}>Hojas:</span>
-            {[1, 2, 5].map((num) => (
+            {[1, 2, 3, 5].map((num) => (
               <button
                 key={num}
                 onClick={() => setSheetCount(num)}
@@ -260,7 +261,7 @@ export const CampechePosterStand: React.FC = () => {
                   transition: 'all 0.2s'
                 }}
               >
-                {num} ({num * 2} stickers)
+                {num} ({num * 4} stickers)
               </button>
             ))}
           </div>
@@ -306,14 +307,14 @@ export const CampechePosterStand: React.FC = () => {
             }}
           >
             <Printer size={17} />
-            <span>Imprimir ({sheetCount * 2} Stickers en {sheetCount} hoja{sheetCount > 1 ? 's' : ''})</span>
+            <span>Imprimir ({sheetCount * 4} Stickers en {sheetCount} hoja{sheetCount > 1 ? 's' : ''})</span>
           </button>
         </div>
       </div>
 
       {/* Indicador de Campaña y Calibración en pantalla */}
       <div className="no-print" style={{
-        maxWidth: '580px',
+        maxWidth: '680px',
         textAlign: 'center',
         marginBottom: '1.8rem',
         color: '#94A3B8',
@@ -322,20 +323,21 @@ export const CampechePosterStand: React.FC = () => {
       }}>
         <div style={{ color: '#FFF', fontWeight: 800, marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
           <Scissors size={15} color="#4ADE80" />
-          <span>Fondo Blanco Puro • Exactamente 2 Stickers de 12 x 12 cm por Hoja</span>
+          <span>Fondo Blanco Puro • Exactamente 4 Stickers por Hoja Carta (Grilla 2x2)</span>
         </div>
-        Impresión limpia en blanco y negro para fotocopia, láser o vinil. Al imprimir saldrá únicamente la hoja con los 2 códigos QR (sin hojas vacías ni fondos oscuros).
+        Frase <strong>¿YA LA TRAES?</strong> ampliada y en negritas extra bold para lectura instantánea en paradas y postes. Cada hoja carta contiene exactamente 4 stickers listos para recortar (sin hojas vacías ni fondos oscuros).
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          ÁREA IMPRIMIBLE: EXACTAMENTE 2 STICKERS DE 12 X 12 CM POR HOJA
+          ÁREA IMPRIMIBLE: EXACTAMENTE 4 STICKERS POR HOJA CARTA (2x2)
          ───────────────────────────────────────────────────────────── */}
       <div id="printable-area">
         {Array.from({ length: sheetCount }).map((_, sheetIdx) => (
           <div key={sheetIdx} className="print-sheet">
             <MysterySticker idSuffix={`s${sheetIdx}-1`} />
-            <div className="sheet-cut-divider no-print" />
             <MysterySticker idSuffix={`s${sheetIdx}-2`} />
+            <MysterySticker idSuffix={`s${sheetIdx}-3`} />
+            <MysterySticker idSuffix={`s${sheetIdx}-4`} />
           </div>
         ))}
       </div>
@@ -345,8 +347,8 @@ export const CampechePosterStand: React.FC = () => {
         /* Guías de corte en esquinas */
         .crop-mark {
           position: absolute;
-          width: 7mm;
-          height: 7mm;
+          width: 5mm;
+          height: 5mm;
           pointer-events: none;
         }
         .crop-mark.top-left {
@@ -384,27 +386,35 @@ export const CampechePosterStand: React.FC = () => {
         }
 
         .print-sheet {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0.6cm;
-          padding: 1.2rem;
+          display: grid;
+          grid-template-columns: repeat(2, 9.8cm);
+          grid-template-rows: repeat(2, 12.2cm);
+          column-gap: 0.4cm;
+          row-gap: 0.5cm;
+          padding: 0.8cm;
           border-radius: 12px;
           background: #FFFFFF;
           border: 1px dashed rgba(255, 255, 255, 0.2);
           box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+          box-sizing: content-box;
         }
 
-        .sheet-cut-divider {
-          width: 12cm;
-          border-top: 1px dashed #CBD5E1;
-          margin: 0.2cm 0;
+        @media screen and (max-width: 860px) {
+          .print-sheet {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            padding: 0.8rem;
+            width: auto;
+            height: auto;
+          }
         }
 
-        /* ── CONFIGURACIÓN DE IMPRESIÓN DEFINITIVA ── */
+        /* ── CONFIGURACIÓN DE IMPRESIÓN DEFINITIVA (HOJA CARTA) ── */
         @page {
           size: letter portrait;
-          margin: 8mm auto;
+          margin: 6mm auto;
         }
 
         @media print {
@@ -450,21 +460,25 @@ export const CampechePosterStand: React.FC = () => {
             background: #FFFFFF !important;
           }
 
-          /* 4. Cada hoja contiene estrictamente los 2 stickers (12cm + 12cm = 24cm) dentro de los 27.94cm de la hoja carta */
+          /* 4. Cada hoja carta contiene exactamente 4 stickers en grilla 2x2 */
           .print-sheet {
-            width: 100% !important;
-            height: 25cm !important;
-            max-height: 25.2cm !important;
+            width: 20cm !important;
+            max-width: 20cm !important;
+            height: 25.2cm !important;
+            max-height: 25.6cm !important;
             margin: 0 auto !important;
-            padding: 0.3cm 0 !important;
+            padding: 0 !important;
             background: #FFFFFF !important;
             border: none !important;
             box-shadow: none !important;
             border-radius: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            justify-content: space-between !important;
+            display: grid !important;
+            grid-template-columns: 9.8cm 9.8cm !important;
+            grid-template-rows: 12.2cm 12.2cm !important;
+            column-gap: 0.4cm !important;
+            row-gap: 0.5cm !important;
+            justify-content: center !important;
+            align-content: center !important;
             box-sizing: border-box !important;
             page-break-after: always !important;
             break-after: page !important;
@@ -478,12 +492,12 @@ export const CampechePosterStand: React.FC = () => {
             break-after: avoid !important;
           }
 
-          /* 5. Cada sticker mide estrictamente 12 x 12 cm */
-          .sticker-12x12 {
-            width: 12cm !important;
-            height: 12cm !important;
-            max-width: 12cm !important;
-            max-height: 12cm !important;
+          /* 5. Cada sticker mide estrictamente 9.8 x 12.2 cm */
+          .sticker-4up {
+            width: 9.8cm !important;
+            height: 12.2cm !important;
+            max-width: 9.8cm !important;
+            max-height: 12.2cm !important;
             background: #FFFFFF !important;
             background-color: #FFFFFF !important;
             color: #000000 !important;
@@ -492,6 +506,7 @@ export const CampechePosterStand: React.FC = () => {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
             margin: 0 auto !important;
+            box-sizing: border-box !important;
           }
 
           .crop-mark.top-left,
