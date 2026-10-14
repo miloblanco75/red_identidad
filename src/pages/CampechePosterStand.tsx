@@ -40,13 +40,13 @@ export const CampechePosterStand: React.FC = () => {
         className="sticker-4up"
         style={{
           width: '9.8cm',
-          height: '12.2cm',
+          height: '12.4cm',
           maxWidth: '9.8cm',
-          maxHeight: '12.2cm',
+          maxHeight: '12.4cm',
           backgroundColor: '#FFFFFF',
           color: '#000000',
           boxSizing: 'border-box',
-          padding: '0.35cm 0.35cm 0.3cm',
+          padding: '0.35cm 0.4cm 0.35cm',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -95,29 +95,41 @@ export const CampechePosterStand: React.FC = () => {
           />
         </div>
 
-        {/* ÚNICO TEXTO: LA FRASE '¿YA LA TRAES?' MÁS GRANDE Y EN NEGRITAS EXTRA BOLD */}
+        {/* ÚNICO TEXTO: LA FRASE '¿YA LA TRAES?' DEL MISMO ANCHO QUE EL QR EN LETRAS GRANDES Y BOLD */}
         <div 
           style={{
-            width: '100%',
-            textAlign: 'center',
-            paddingTop: '0.1cm'
+            width: '8.8cm',
+            height: '1.8cm',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto',
+            paddingTop: '0.15cm'
           }}
         >
-          <div 
-            style={{
-              fontSize: '1.5rem',
-              fontWeight: 950,
-              fontFamily: "'Outfit', 'Arial Black', Impact, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              color: '#000000',
-              lineHeight: 1.1,
-              whiteSpace: 'nowrap',
-              margin: '0'
+          <svg 
+            viewBox="0 0 880 160" 
+            style={{ 
+              width: '8.8cm', 
+              height: '1.6cm', 
+              display: 'block',
+              overflow: 'visible'
             }}
           >
-            ¿YA LA TRAES?
-          </div>
+            <text
+              x="440"
+              y="122"
+              textAnchor="middle"
+              fill="#000000"
+              fontSize="122"
+              fontWeight="950"
+              fontFamily="'Impact', 'Arial Black', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+              textLength="860"
+              lengthAdjust="spacing"
+            >
+              ¿YA LA TRAES?
+            </text>
+          </svg>
         </div>
       </div>
     );
@@ -388,9 +400,9 @@ export const CampechePosterStand: React.FC = () => {
         .print-sheet {
           display: grid;
           grid-template-columns: repeat(2, 9.8cm);
-          grid-template-rows: repeat(2, 12.2cm);
+          grid-template-rows: repeat(2, 12.4cm);
           column-gap: 0.4cm;
-          row-gap: 0.5cm;
+          row-gap: 0.4cm;
           padding: 0.8cm;
           border-radius: 12px;
           background: #FFFFFF;
@@ -464,7 +476,7 @@ export const CampechePosterStand: React.FC = () => {
           .print-sheet {
             width: 20cm !important;
             max-width: 20cm !important;
-            height: 25.2cm !important;
+            height: 25.4cm !important;
             max-height: 25.6cm !important;
             margin: 0 auto !important;
             padding: 0 !important;
@@ -474,9 +486,9 @@ export const CampechePosterStand: React.FC = () => {
             border-radius: 0 !important;
             display: grid !important;
             grid-template-columns: 9.8cm 9.8cm !important;
-            grid-template-rows: 12.2cm 12.2cm !important;
+            grid-template-rows: 12.4cm 12.4cm !important;
             column-gap: 0.4cm !important;
-            row-gap: 0.5cm !important;
+            row-gap: 0.4cm !important;
             justify-content: center !important;
             align-content: center !important;
             box-sizing: border-box !important;
@@ -492,12 +504,12 @@ export const CampechePosterStand: React.FC = () => {
             break-after: avoid !important;
           }
 
-          /* 5. Cada sticker mide estrictamente 9.8 x 12.2 cm */
+          /* 5. Cada sticker mide estrictamente 9.8 x 12.4 cm */
           .sticker-4up {
             width: 9.8cm !important;
-            height: 12.2cm !important;
+            height: 12.4cm !important;
             max-width: 9.8cm !important;
-            max-height: 12.2cm !important;
+            max-height: 12.4cm !important;
             background: #FFFFFF !important;
             background-color: #FFFFFF !important;
             color: #000000 !important;
