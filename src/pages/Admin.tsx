@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award, Plus, Crown, Sparkles, Copy, Check, ExternalLink, LogOut, ShieldCheck, History } from 'lucide-react';
+import { ShieldAlert, Download, Loader2, CheckCircle2, QrCode, Store, MapPin, Trash2, Printer, Pencil, X, BookOpen, ChevronDown, ChevronUp, Upload, Activity, Search, RotateCcw, Smartphone, CheckCircle, XCircle, Clock, RefreshCw, Globe, Gift, MessageSquare, Award, Plus, Crown, Sparkles, Copy, Check, ExternalLink, LogOut, ShieldCheck, History, LayoutGrid, Table2, Layers, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import StickerQRCode from '../components/StickerQRCode';
 
@@ -145,6 +145,12 @@ const Admin: React.FC = () => {
   const [isStatusLoading, setIsStatusLoading] = useState(false);
   const [statusSearch, setStatusSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'claimed' | 'unclaimed'>('all');
+  const [statusViewMode, setStatusViewMode] = useState<'table' | 'matrix' | 'batches' | 'cards'>('table');
+  const [statusSelectedBatch, setStatusSelectedBatch] = useState<number | 'all'>('all');
+  const [statusBatchSize] = useState<number>(50);
+  const [statusCurrentPage, setStatusCurrentPage] = useState<number>(1);
+  const [statusPageSize, setStatusPageSize] = useState<number>(25);
+  const [inspectingSticker, setInspectingSticker] = useState<any | null>(null);
 
   // Manual state
   const [showAllyManual, setShowAllyManual] = useState(true);
@@ -2959,385 +2965,1383 @@ const Admin: React.FC = () => {
             );
           })()}
 
-          {/* Filtros y Buscador */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1.5rem' }}>
-            {/* Filtro de Plaza */}
-            {userRole === 'superadmin' ? (
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => setStatusCityFilter('all')}
-                  style={{
-                    padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
-                    backgroundColor: statusCityFilter === 'all' ? '#FFF' : 'rgba(255,255,255,0.08)',
-                    color: statusCityFilter === 'all' ? '#000' : '#FFF', border: 'none', cursor: 'pointer'
-                  }}
-                >
-                  🌐 Todas las Plazas ({allStickers.length})
-                </button>
-                <button
-                  onClick={() => setStatusCityFilter('campeche')}
-                  style={{
-                    padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
-                    backgroundColor: statusCityFilter === 'campeche' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)',
-                    color: statusCityFilter === 'campeche' ? '#000' : '#FFF', border: 'none', cursor: 'pointer'
-                  }}
-                >
-                  🏰 Campeche ({allStickers.filter(s => !s.code?.startsWith('VJ') && !(s.level || '').toLowerCase().includes('juar')).length})
-                </button>
-                <button
-                  onClick={() => setStatusCityFilter('juarez')}
-                  style={{
-                    padding: '0.45rem 0.9rem', borderRadius: '14px', fontSize: '0.78rem', fontWeight: 700,
-                    backgroundColor: statusCityFilter === 'juarez' ? '#DC2626' : 'rgba(255,255,255,0.08)',
-                    color: '#FFF', border: 'none', cursor: 'pointer'
-                  }}
-                >
-                  🌵 Ciudad Juárez ({allStickers.filter(s => s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar')).length})
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.8rem', padding: '0.45rem 0.9rem', borderRadius: '10px', backgroundColor: 'rgba(239,68,68,0.2)', color: '#FCA5A5', border: '1px solid #EF4444', fontWeight: 800 }}>
-                  🌵 Membresías Asignadas a Ciudad Juárez ({allStickers.filter(s => s.code?.startsWith('VJ') || (s.level || '').toLowerCase().includes('juar')).length})
-                </span>
-              </div>
-            )}
+          {/* ── FILTROS Y CONTROLES AVANZADOS COMBINADOS ── */}
+          {(() => {
+            const isJuarezSticker = (s: any) => {
+              const code = (s.code || '').toUpperCase();
+              const lvl = (s.level || '').toLowerCase();
+              return code.startsWith('VJ') || lvl.includes('juar') || lvl.includes('juarez');
+            };
 
-            <div style={{ position: 'relative' }}>
-              <Search size={18} color="var(--text-dim)" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
-              <input
-                type="text"
-                placeholder="Buscar por código (ej. VJ0001, RED-0001) o WhatsApp..."
-                value={statusSearch}
-                onChange={(e) => setStatusSearch(e.target.value)}
-                style={{
-                  width: '100%', padding: '0.85rem 1rem 0.85rem 2.8rem',
-                  backgroundColor: 'rgba(255,255,255,0.05)',
-                  border: '1px solid var(--glass-border)', borderRadius: '12px',
-                  color: '#FFF', fontSize: '0.9rem', outline: 'none'
-                }}
-              />
-            </div>
+            // 1. Filtrado por plaza (Campeche / Juárez / Todas)
+            const cityFilteredStickers = allStickers.filter(s => {
+              if (statusCityFilter === 'juarez') return isJuarezSticker(s);
+              if (statusCityFilter === 'campeche') return !isJuarezSticker(s);
+              return true;
+            });
 
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => setStatusFilter('all')}
-                style={{
-                  padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 600,
-                  backgroundColor: statusFilter === 'all' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)',
-                  color: statusFilter === 'all' ? '#121212' : '#FFF', border: 'none', cursor: 'pointer'
-                }}
-              >
-                Todos los estados
-              </button>
+            // 2. División automática en lotes / cuadernillos (por bloques de statusBatchSize, e.g. 50)
+            const batches: Array<{
+              index: number;
+              startNum: number;
+              endNum: number;
+              stickers: any[];
+              firstCode: string;
+              lastCode: string;
+              total: number;
+              claimed: number;
+              unclaimed: number;
+              percent: number;
+            }> = [];
 
-              <button
-                onClick={() => setStatusFilter('claimed')}
-                style={{
-                  padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 600,
-                  backgroundColor: statusFilter === 'claimed' ? 'rgba(255, 68, 68, 0.25)' : 'rgba(255,255,255,0.08)',
-                  color: statusFilter === 'claimed' ? '#FF4444' : '#FFF',
-                  border: statusFilter === 'claimed' ? '1px solid #FF4444' : 'none', cursor: 'pointer'
-                }}
-              >
-                🔴 Solo Usados
-              </button>
+            for (let i = 0; i < cityFilteredStickers.length; i += statusBatchSize) {
+              const chunk = cityFilteredStickers.slice(i, i + statusBatchSize);
+              const claimedInChunk = chunk.filter(s => !!s.phone).length;
+              batches.push({
+                index: batches.length,
+                startNum: i + 1,
+                endNum: Math.min(i + statusBatchSize, cityFilteredStickers.length),
+                stickers: chunk,
+                firstCode: chunk[0]?.code || '',
+                lastCode: chunk[chunk.length - 1]?.code || '',
+                total: chunk.length,
+                claimed: claimedInChunk,
+                unclaimed: chunk.length - claimedInChunk,
+                percent: chunk.length > 0 ? Math.round((claimedInChunk / chunk.length) * 100) : 0
+              });
+            }
 
-              <button
-                onClick={() => setStatusFilter('unclaimed')}
-                style={{
-                  padding: '0.5rem 1rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: 600,
-                  backgroundColor: statusFilter === 'unclaimed' ? 'rgba(74, 222, 128, 0.25)' : 'rgba(255,255,255,0.08)',
-                  color: statusFilter === 'unclaimed' ? '#4ADE80' : '#FFF',
-                  border: statusFilter === 'unclaimed' ? '1px solid #4ADE80' : 'none', cursor: 'pointer'
-                }}
-              >
-                🟢 Solo Disponibles
-              </button>
-            </div>
-          </div>
+            // 3. Selección del lote actual
+            const batchFilteredStickers = (statusSelectedBatch === 'all' || !batches[statusSelectedBatch as number])
+              ? cityFilteredStickers
+              : batches[statusSelectedBatch as number].stickers;
 
-          {/* Listado de Calcomanías */}
-          {isStatusLoading ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-dim)' }}>
-              <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 1rem', color: 'var(--accent-gold)' }} />
-              Cargando catálogo de calcomanías...
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-              {(() => {
-                const isJuarezSticker = (s: any) => {
-                  const code = (s.code || '').toUpperCase();
-                  const lvl = (s.level || '').toLowerCase();
-                  return code.startsWith('VJ') || lvl.includes('juar') || lvl.includes('juarez');
-                };
+            // 4. Búsqueda y estado (claimed/unclaimed)
+            const finalFilteredList = batchFilteredStickers.filter(s => {
+              const matchSearch = !statusSearch.trim() ||
+                s.code?.toLowerCase().includes(statusSearch.toLowerCase()) ||
+                (s.phone && s.phone.includes(statusSearch)) ||
+                String(s.member_number || '').includes(statusSearch);
+              if (!matchSearch) return false;
+              if (statusFilter === 'claimed') return !!s.phone;
+              if (statusFilter === 'unclaimed') return !s.phone;
+              return true;
+            });
 
-                const currentList = allStickers.filter(s => {
-                  if (statusCityFilter === 'juarez') {
-                    if (!isJuarezSticker(s)) return false;
-                  }
-                  if (statusCityFilter === 'campeche') {
-                    if (isJuarezSticker(s)) return false;
-                  }
-                  const matchSearch =
-                    s.code?.toLowerCase().includes(statusSearch.toLowerCase()) ||
-                    (s.phone && s.phone.includes(statusSearch)) ||
-                    String(s.member_number || '').includes(statusSearch);
-                  if (!matchSearch) return false;
-                  if (statusFilter === 'claimed') return !!s.phone;
-                  if (statusFilter === 'unclaimed') return !s.phone;
-                  return true;
-                });
+            // 5. Paginación
+            const totalPages = Math.max(1, Math.ceil(finalFilteredList.length / statusPageSize));
+            const safeCurrentPage = Math.min(Math.max(1, statusCurrentPage), totalPages);
+            const startIndex = (safeCurrentPage - 1) * statusPageSize;
+            const paginatedList = finalFilteredList.slice(startIndex, startIndex + statusPageSize);
 
-                if (currentList.length === 0) {
-                  return (
-                    <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', color: 'var(--text-dim)', fontSize: '0.9rem' }}>
-                      {statusCityFilter === 'juarez' ? (
-                        <div>
-                          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#EF4444', marginBottom: '0.5rem' }}>
-                            🌵 Ciudad Juárez: 0 calcomanías generadas
-                          </div>
-                          <p style={{ margin: '0 0 1.2rem 0', fontSize: '0.88rem', color: '#A0A0A8', maxWidth: '520px', marginLeft: 'auto', marginRight: 'auto' }}>
-                            Actualmente hay 0 calcomanías físicas o códigos QR para Ciudad Juárez (los {allStickers.length} códigos del sistema corresponden a Campeche).
-                          </p>
-                          <button
-                            onClick={() => {
-                              setActiveTab('codes');
-                              setAdminCity('juarez');
-                              setCodeCity('juarez');
-                              setPrefix('VJ-');
-                              setLevel('juarense_oficial');
-                            }}
-                            style={{
-                              padding: '0.75rem 1.4rem',
-                              borderRadius: '12px',
-                              backgroundColor: '#DC2626',
-                              color: '#FFF',
-                              border: 'none',
-                              fontWeight: 800,
-                              fontSize: '0.85rem',
-                              cursor: 'pointer',
-                              boxShadow: '0 4px 15px rgba(220, 38, 38, 0.4)'
-                            }}
-                          >
-                            Ir a Generador de QRs para Juárez →
-                          </button>
-                        </div>
-                      ) : (
-                        'No se encontraron códigos que coincidan con los filtros aplicados.'
-                      )}
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginBottom: '1.5rem' }}>
+                {/* ── BARRA 1: SELECTOR DE PLAZA + SELECTOR DE MODO DE VISTA ── */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.8rem' }}>
+                  {/* Selector de Plaza */}
+                  {userRole === 'superadmin' ? (
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                      <button
+                        onClick={() => { setStatusCityFilter('all'); setStatusSelectedBatch('all'); setStatusCurrentPage(1); }}
+                        style={{
+                          padding: '0.45rem 0.9rem', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 700,
+                          backgroundColor: statusCityFilter === 'all' ? '#FFF' : 'rgba(255,255,255,0.08)',
+                          color: statusCityFilter === 'all' ? '#000' : '#FFF', border: 'none', cursor: 'pointer'
+                        }}
+                      >
+                        🌐 Todas ({allStickers.length})
+                      </button>
+                      <button
+                        onClick={() => { setStatusCityFilter('campeche'); setStatusSelectedBatch('all'); setStatusCurrentPage(1); }}
+                        style={{
+                          padding: '0.45rem 0.9rem', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 700,
+                          backgroundColor: statusCityFilter === 'campeche' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)',
+                          color: statusCityFilter === 'campeche' ? '#000' : '#FFF', border: 'none', cursor: 'pointer'
+                        }}
+                      >
+                        🏰 Campeche ({allStickers.filter(s => !isJuarezSticker(s)).length})
+                      </button>
+                      <button
+                        onClick={() => { setStatusCityFilter('juarez'); setStatusSelectedBatch('all'); setStatusCurrentPage(1); }}
+                        style={{
+                          padding: '0.45rem 0.9rem', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 700,
+                          backgroundColor: statusCityFilter === 'juarez' ? '#DC2626' : 'rgba(255,255,255,0.08)',
+                          color: '#FFF', border: 'none', cursor: 'pointer'
+                        }}
+                      >
+                        🌵 Cd. Juárez ({allStickers.filter(isJuarezSticker).length})
+                      </button>
                     </div>
-                  );
-                }
+                  ) : (
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.8rem', padding: '0.45rem 0.9rem', borderRadius: '10px', backgroundColor: 'rgba(239,68,68,0.2)', color: '#FCA5A5', border: '1px solid #EF4444', fontWeight: 800 }}>
+                        🌵 Ciudad Juárez ({allStickers.filter(isJuarezSticker).length})
+                      </span>
+                    </div>
+                  )}
 
-                return currentList.map((sticker) => {
-                  const isClaimed = !!sticker.phone;
-                  const isDig = sticker.code?.startsWith('DIG-') || sticker.level === 'digital';
-                  const isTrial = sticker.code?.startsWith('TRIAL-') || sticker.level === 'trial';
-                  const isJuarSticker = sticker.code?.startsWith('VJ') || (sticker.level || '').toLowerCase().includes('juar');
-                  const effectiveLevel = isDig ? 'digital' : isTrial ? 'trial' : isJuarSticker ? 'juarense_oficial' : sticker.level;
-                  const levelColor = isJuarSticker ? '#EF4444' : effectiveLevel === 'digital' ? '#38BDF8' : effectiveLevel === 'trial' ? '#4ADE80' : effectiveLevel === 'gold' ? 'var(--accent-gold)' : effectiveLevel === 'silver' ? 'var(--accent-silver)' : effectiveLevel === 'campechana_rosa' ? '#FF5C9D' : effectiveLevel === 'campechana_negra' ? '#D4AF37' : 'var(--accent-white)';
-
-                  return (
-                    <div
-                      key={sticker.id || sticker.code}
+                  {/* Selector de Modo de Vista (Tabs: Tabla, Matriz, Lotes, Tarjetas) */}
+                  <div style={{
+                    display: 'flex',
+                    backgroundColor: 'rgba(0,0,0,0.4)',
+                    padding: '3px',
+                    borderRadius: '14px',
+                    border: '1px solid rgba(255,255,255,0.1)'
+                  }}>
+                    <button
+                      type="button"
+                      onClick={() => setStatusViewMode('table')}
+                      title="Vista en Tabla Compacta tipo Dashboard"
                       style={{
-                        backgroundColor: isClaimed ? 'rgba(255, 68, 68, 0.05)' : 'rgba(255, 255, 255, 0.02)',
-                        border: isClaimed ? '1px solid rgba(255, 68, 68, 0.2)' : '1px solid rgba(255, 255, 255, 0.08)',
-                        borderRadius: '16px',
-                        padding: '1rem 1.2rem',
+                        padding: '0.45rem 0.85rem',
+                        borderRadius: '11px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
                         display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.8rem'
+                        alignItems: 'center',
+                        gap: '5px',
+                        backgroundColor: statusViewMode === 'table' ? 'var(--accent-gold)' : 'transparent',
+                        color: statusViewMode === 'table' ? '#000' : '#A0A0A8',
+                        transition: 'all 0.2s'
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                          <span style={{ fontSize: '1.1rem', fontWeight: 800, fontFamily: 'monospace', color: '#FFF' }}>
-                            {sticker.code}
-                          </span>
+                      <Table2 size={14} />
+                      <span>Tabla</span>
+                    </button>
 
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', border: `1px solid ${levelColor}`, color: levelColor, textTransform: 'uppercase' }}>
-                            {formatStickerLabel(effectiveLevel)}
-                          </span>
+                    <button
+                      type="button"
+                      onClick={() => setStatusViewMode('matrix')}
+                      title="Vista Matriz de Pines / Mapa de Calor"
+                      style={{
+                        padding: '0.45rem 0.85rem',
+                        borderRadius: '11px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        backgroundColor: statusViewMode === 'matrix' ? 'var(--accent-gold)' : 'transparent',
+                        color: statusViewMode === 'matrix' ? '#000' : '#A0A0A8',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <LayoutGrid size={14} />
+                      <span>Matriz Pines</span>
+                    </button>
 
-                          {sticker.member_number && (
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontFamily: 'monospace' }}>
-                              #{String(sticker.member_number).padStart(4, '0')}
-                            </span>
-                          )}
+                    <button
+                      type="button"
+                      onClick={() => setStatusViewMode('batches')}
+                      title="Vista por Lotes o Cuadernillos de 50"
+                      style={{
+                        padding: '0.45rem 0.85rem',
+                        borderRadius: '11px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        backgroundColor: statusViewMode === 'batches' ? 'var(--accent-gold)' : 'transparent',
+                        color: statusViewMode === 'batches' ? '#000' : '#A0A0A8',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <Layers size={14} />
+                      <span>Lotes ({batches.length})</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setStatusViewMode('cards')}
+                      title="Vista en Tarjetas Detalladas Paginadas"
+                      style={{
+                        padding: '0.45rem 0.85rem',
+                        borderRadius: '11px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '0.76rem',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        backgroundColor: statusViewMode === 'cards' ? 'var(--accent-gold)' : 'transparent',
+                        color: statusViewMode === 'cards' ? '#000' : '#A0A0A8',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <Activity size={14} />
+                      <span>Tarjetas</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── BARRA 2: BUSCADOR + SELECTOR DE LOTE + FILTRO DE ESTADO ── */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.8rem', alignItems: 'center' }}>
+                  {/* Buscador de Códigos */}
+                  <div style={{ position: 'relative' }}>
+                    <Search size={16} color="var(--text-dim)" style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)' }} />
+                    <input
+                      type="text"
+                      placeholder="Buscar código (ej. VJ0012, RED-001) o WhatsApp..."
+                      value={statusSearch}
+                      onChange={(e) => { setStatusSearch(e.target.value); setStatusCurrentPage(1); }}
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem 2.2rem 0.75rem 2.5rem',
+                        backgroundColor: 'rgba(255,255,255,0.05)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '12px',
+                        color: '#FFF',
+                        fontSize: '0.86rem',
+                        outline: 'none'
+                      }}
+                    />
+                    {statusSearch && (
+                      <button
+                        onClick={() => { setStatusSearch(''); setStatusCurrentPage(1); }}
+                        style={{
+                          position: 'absolute',
+                          right: '0.8rem',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          background: 'none',
+                          border: 'none',
+                          color: '#A0A0A8',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <X size={15} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Selector de Lote activo */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#94A3B8', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                      <Layers size={13} style={{ display: 'inline', marginRight: '3px' }} /> Lote:
+                    </span>
+                    <select
+                      value={statusSelectedBatch}
+                      onChange={(e) => {
+                        const val = e.target.value === 'all' ? 'all' : Number(e.target.value);
+                        setStatusSelectedBatch(val);
+                        setStatusCurrentPage(1);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '0.72rem 0.9rem',
+                        backgroundColor: 'rgba(255,255,255,0.05)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '12px',
+                        color: '#FFF',
+                        fontSize: '0.82rem',
+                        fontWeight: 600,
+                        outline: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <option value="all" style={{ backgroundColor: '#18181F', color: '#FFF' }}>
+                        📦 Todos los Lotes ({cityFilteredStickers.length} códigos)
+                      </option>
+                      {batches.map((b) => (
+                        <option key={b.index} value={b.index} style={{ backgroundColor: '#18181F', color: '#FFF' }}>
+                          Lote {b.index + 1}: {b.firstCode} ➔ {b.lastCode} ({b.claimed}/{b.total} activados - {b.percent}%)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Filtro por estado: Todos / Usados / Libres */}
+                  <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-start', flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => { setStatusFilter('all'); setStatusCurrentPage(1); }}
+                      style={{
+                        padding: '0.45rem 0.8rem', borderRadius: '16px', fontSize: '0.75rem', fontWeight: 700,
+                        backgroundColor: statusFilter === 'all' ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)',
+                        color: statusFilter === 'all' ? '#121212' : '#FFF', border: 'none', cursor: 'pointer'
+                      }}
+                    >
+                      Todos ({batchFilteredStickers.length})
+                    </button>
+                    <button
+                      onClick={() => { setStatusFilter('claimed'); setStatusCurrentPage(1); }}
+                      style={{
+                        padding: '0.45rem 0.8rem', borderRadius: '16px', fontSize: '0.75rem', fontWeight: 700,
+                        backgroundColor: statusFilter === 'claimed' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(255,255,255,0.08)',
+                        color: statusFilter === 'claimed' ? '#EF4444' : '#FFF',
+                        border: statusFilter === 'claimed' ? '1px solid #EF4444' : 'none', cursor: 'pointer'
+                      }}
+                    >
+                      🔴 Usados ({batchFilteredStickers.filter(s => !!s.phone).length})
+                    </button>
+                    <button
+                      onClick={() => { setStatusFilter('unclaimed'); setStatusCurrentPage(1); }}
+                      style={{
+                        padding: '0.45rem 0.8rem', borderRadius: '16px', fontSize: '0.75rem', fontWeight: 700,
+                        backgroundColor: statusFilter === 'unclaimed' ? 'rgba(74, 222, 128, 0.25)' : 'rgba(255,255,255,0.08)',
+                        color: statusFilter === 'unclaimed' ? '#4ADE80' : '#FFF',
+                        border: statusFilter === 'unclaimed' ? '1px solid #4ADE80' : 'none', cursor: 'pointer'
+                      }}
+                    >
+                      🟢 Libres ({batchFilteredStickers.filter(s => !s.phone).length})
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── AVISO DE LOTE FILTRADO SI NO ESTÁ EN TODOS ── */}
+                {statusSelectedBatch !== 'all' && batches[statusSelectedBatch as number] && (
+                  <div style={{
+                    backgroundColor: 'rgba(212, 175, 55, 0.08)',
+                    border: '1px solid rgba(212, 175, 55, 0.3)',
+                    padding: '0.65rem 1rem',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem',
+                    fontSize: '0.8rem'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Layers size={15} color="var(--accent-gold)" />
+                      <span>
+                        Viendo <strong>Lote {Number(statusSelectedBatch) + 1}</strong>: {batches[statusSelectedBatch as number].firstCode} al {batches[statusSelectedBatch as number].lastCode} ({batches[statusSelectedBatch as number].claimed} de {batches[statusSelectedBatch as number].total} activados - {batches[statusSelectedBatch as number].percent}%)
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => { setStatusSelectedBatch('all'); setStatusCurrentPage(1); }}
+                      style={{
+                        backgroundColor: 'transparent',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        color: '#FFF',
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        fontSize: '0.72rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Ver todos los lotes
+                    </button>
+                  </div>
+                )}
+
+                {/* ── RENDERIZADO PRINCIPAL SEGÚN EL MODO DE VISTA ── */}
+                {isStatusLoading ? (
+                  <div style={{ textAlign: 'center', padding: '3.5rem', color: 'var(--text-dim)' }}>
+                    <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 1rem', color: 'var(--accent-gold)' }} />
+                    Cargando catálogo de calcomanías...
+                  </div>
+                ) : finalFilteredList.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '3.5rem 1.5rem', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', color: 'var(--text-dim)', fontSize: '0.9rem' }}>
+                    {statusCityFilter === 'juarez' && allStickers.filter(isJuarezSticker).length === 0 ? (
+                      <div>
+                        <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#EF4444', marginBottom: '0.5rem' }}>
+                          🌵 Ciudad Juárez: 0 calcomanías generadas
                         </div>
-
-                        {/* Badge Estado */}
-                        {isClaimed ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(255,68,68,0.15)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.4)', padding: '4px 10px', borderRadius: '100px', fontSize: '0.72rem', fontWeight: 800 }}>
-                            <XCircle size={14} /> USADO / ACTIVADO
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(74,222,128,0.12)', color: '#4ADE80', border: '1px solid rgba(74,222,128,0.3)', padding: '4px 10px', borderRadius: '100px', fontSize: '0.72rem', fontWeight: 800 }}>
-                            <CheckCircle size={14} /> DISPONIBLE / SIN USAR
-                          </div>
-                        )}
+                        <p style={{ margin: '0 0 1.2rem 0', fontSize: '0.88rem', color: '#A0A0A8', maxWidth: '520px', marginLeft: 'auto', marginRight: 'auto' }}>
+                          Actualmente hay 0 calcomanías físicas o códigos QR para Ciudad Juárez.
+                        </p>
+                        <button
+                          onClick={() => {
+                            setActiveTab('codes');
+                            setAdminCity('juarez');
+                            setCodeCity('juarez');
+                            setPrefix('VJ-');
+                            setLevel('juarense_oficial');
+                          }}
+                          style={{
+                            padding: '0.75rem 1.4rem',
+                            borderRadius: '12px',
+                            backgroundColor: '#DC2626',
+                            color: '#FFF',
+                            border: 'none',
+                            fontWeight: 800,
+                            fontSize: '0.85rem',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 15px rgba(220, 38, 38, 0.4)'
+                          }}
+                        >
+                          Ir a Generador de QRs para Juárez →
+                        </button>
                       </div>
-
-                      {/* Detalles si fue usado */}
-                      {isClaimed && (
-                        <div style={{
-                          backgroundColor: 'rgba(0,0,0,0.25)',
-                          borderRadius: '10px',
-                          padding: '0.8rem',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          flexWrap: 'wrap',
-                          gap: '0.8rem',
-                          fontSize: '0.8rem'
-                        }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FFF', fontWeight: 600 }}>
-                              <Smartphone size={15} color="var(--accent-gold)" /> WhatsApp: {sticker.phone}
-                            </div>
-                            {sticker.claimed_at && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '0.75rem' }}>
-                                <Clock size={14} /> Activado el: {new Date(sticker.claimed_at).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })}
-                              </div>
-                            )}
-                          </div>
-
-                          {isClaimed && (
-                            <button
-                              onClick={() => handleResetSingleSticker(sticker.id, sticker.code)}
+                    ) : (
+                      <div>
+                        <p style={{ margin: '0 0 1rem 0' }}>No se encontraron códigos que coincidan con los filtros aplicados.</p>
+                        <button
+                          onClick={() => { setStatusSearch(''); setStatusFilter('all'); setStatusSelectedBatch('all'); setStatusCurrentPage(1); }}
+                          style={{
+                            padding: '0.5rem 1rem',
+                            borderRadius: '10px',
+                            backgroundColor: 'rgba(255,255,255,0.08)',
+                            color: '#FFF',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            fontSize: '0.78rem',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Restablecer Filtros
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    {/* ─────────────────────────────────────────────────────────────
+                        MODO 1: VISTA POR LOTES / CUADERNILLOS (50 en 50)
+                       ───────────────────────────────────────────────────────────── */}
+                    {statusViewMode === 'batches' && (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                        {batches.map((batch) => {
+                          const isCurrent = statusSelectedBatch === batch.index;
+                          return (
+                            <div
+                              key={batch.index}
+                              className="glass"
                               style={{
-                                padding: '0.4rem 0.8rem',
-                                borderRadius: '8px',
-                                backgroundColor: 'rgba(212,175,55,0.15)',
-                                border: '1px solid var(--accent-gold)',
-                                color: 'var(--accent-gold)',
-                                fontSize: '0.75rem',
-                                fontWeight: 700,
-                                cursor: 'pointer',
+                                padding: '1.2rem',
+                                borderRadius: '18px',
+                                border: isCurrent ? '2px solid var(--accent-gold)' : '1px solid rgba(255,255,255,0.08)',
+                                backgroundColor: isCurrent ? 'rgba(212, 175, 55, 0.08)' : 'rgba(20,20,24,0.7)',
                                 display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px'
+                                flexDirection: 'column',
+                                gap: '0.8rem',
+                                transition: 'all 0.2s',
+                                boxShadow: isCurrent ? '0 0 20px rgba(212,175,55,0.2)' : 'none'
                               }}
                             >
-                              <RotateCcw size={13} /> Liberar Código
-                            </button>
-                          )}
-                        </div>
-                      )}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#FFF' }}>
+                                  📦 Lote {batch.index + 1}
+                                </span>
+                                <span style={{
+                                  fontSize: '0.72rem',
+                                  fontWeight: 800,
+                                  padding: '3px 8px',
+                                  borderRadius: '8px',
+                                  backgroundColor: batch.percent === 100 ? 'rgba(239,68,68,0.2)' : batch.percent > 0 ? 'rgba(212,175,55,0.2)' : 'rgba(74,222,128,0.15)',
+                                  color: batch.percent === 100 ? '#EF4444' : batch.percent > 0 ? 'var(--accent-gold)' : '#4ADE80'
+                                }}>
+                                  {batch.percent}% activado
+                                </span>
+                              </div>
 
-                      {/* Barra de Acciones del Pase Digital */}
+                              <div style={{ fontSize: '0.78rem', color: '#A0A0A8', fontFamily: 'monospace' }}>
+                                {batch.firstCode} ➔ {batch.lastCode}
+                              </div>
+
+                              {/* Barra de Progreso del Lote */}
+                              <div style={{ width: '100%', height: '8px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '6px', overflow: 'hidden' }}>
+                                <div style={{
+                                  width: `${batch.percent}%`,
+                                  height: '100%',
+                                  background: batch.percent === 100 ? '#EF4444' : 'linear-gradient(90deg, #4ADE80, var(--accent-gold))',
+                                  borderRadius: '6px'
+                                }} />
+                              </div>
+
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94A3B8' }}>
+                                <span>🟢 Libres: <strong>{batch.unclaimed}</strong></span>
+                                <span>🔴 Usados: <strong>{batch.claimed}</strong></span>
+                                <span>Total: <strong>{batch.total}</strong></span>
+                              </div>
+
+                              <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.4rem' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setStatusSelectedBatch(batch.index);
+                                    setStatusViewMode('table');
+                                    setStatusCurrentPage(1);
+                                  }}
+                                  style={{
+                                    flex: 1,
+                                    padding: '0.55rem',
+                                    borderRadius: '10px',
+                                    border: 'none',
+                                    backgroundColor: 'var(--accent-gold)',
+                                    color: '#000',
+                                    fontWeight: 800,
+                                    fontSize: '0.74rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  <Table2 size={13} />
+                                  <span>Ver en Tabla</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setStatusSelectedBatch(batch.index);
+                                    setStatusViewMode('matrix');
+                                    setStatusCurrentPage(1);
+                                  }}
+                                  style={{
+                                    flex: 1,
+                                    padding: '0.55rem',
+                                    borderRadius: '10px',
+                                    border: '1px solid rgba(255,255,255,0.15)',
+                                    backgroundColor: 'rgba(255,255,255,0.06)',
+                                    color: '#FFF',
+                                    fontWeight: 700,
+                                    fontSize: '0.74rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  <LayoutGrid size={13} />
+                                  <span>Ver en Matriz</span>
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* ─────────────────────────────────────────────────────────────
+                        MODO 2: VISTA TABLA COMPACTA (DASHBOARD AUDITORÍA)
+                       ───────────────────────────────────────────────────────────── */}
+                    {statusViewMode === 'table' && (
+                      <div style={{ overflowX: 'auto', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
+                          <thead>
+                            <tr style={{ backgroundColor: 'rgba(255,255,255,0.04)', color: '#94A3B8', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                              <th style={{ padding: '0.85rem 0.9rem', fontWeight: 800 }}>#</th>
+                              <th style={{ padding: '0.85rem 0.9rem', fontWeight: 800 }}>Código QR</th>
+                              <th style={{ padding: '0.85rem 0.9rem', fontWeight: 800 }}>Plaza</th>
+                              <th style={{ padding: '0.85rem 0.9rem', fontWeight: 800 }}>Distintivo</th>
+                              <th style={{ padding: '0.85rem 0.9rem', fontWeight: 800 }}>Estatus</th>
+                              <th style={{ padding: '0.85rem 0.9rem', fontWeight: 800 }}>WhatsApp Cliente</th>
+                              <th style={{ padding: '0.85rem 0.9rem', fontWeight: 800 }}>Fecha Activación</th>
+                              <th style={{ padding: '0.85rem 0.9rem', fontWeight: 800, textAlign: 'right' }}>Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {paginatedList.map((sticker, idx) => {
+                              const isClaimed = !!sticker.phone;
+                              const isJuarSticker = isJuarezSticker(sticker);
+                              const isDig = sticker.code?.startsWith('DIG-') || sticker.level === 'digital';
+                              const isTrial = sticker.code?.startsWith('TRIAL-') || sticker.level === 'trial';
+                              const effectiveLevel = isDig ? 'digital' : isTrial ? 'trial' : isJuarSticker ? 'juarense_oficial' : sticker.level;
+                              const rowNum = startIndex + idx + 1;
+
+                              return (
+                                <tr
+                                  key={sticker.id || sticker.code}
+                                  style={{
+                                    borderBottom: '1px solid rgba(255,255,255,0.04)',
+                                    backgroundColor: isClaimed ? 'rgba(239,68,68,0.03)' : 'transparent',
+                                    transition: 'background 0.15s'
+                                  }}
+                                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
+                                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = isClaimed ? 'rgba(239,68,68,0.03)' : 'transparent')}
+                                >
+                                  <td style={{ padding: '0.75rem 0.9rem', color: '#64748B', fontFamily: 'monospace' }}>
+                                    {rowNum}
+                                  </td>
+
+                                  <td style={{ padding: '0.75rem 0.9rem', fontWeight: 800, fontFamily: 'monospace', color: '#FFF' }}>
+                                    <span 
+                                      onClick={() => setInspectingSticker(sticker)}
+                                      style={{ cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '3px' }}
+                                      title="Clic para inspeccionar"
+                                    >
+                                      {sticker.code}
+                                    </span>
+                                  </td>
+
+                                  <td style={{ padding: '0.75rem 0.9rem' }}>
+                                    {isJuarSticker ? (
+                                      <span style={{ fontSize: '0.72rem', color: '#EF4444', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                        🌵 Juárez
+                                      </span>
+                                    ) : (
+                                      <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                        🏰 Campeche
+                                      </span>
+                                    )}
+                                  </td>
+
+                                  <td style={{ padding: '0.75rem 0.9rem', fontSize: '0.75rem', color: '#CBD5E1' }}>
+                                    {formatStickerLabel(effectiveLevel)}
+                                  </td>
+
+                                  <td style={{ padding: '0.75rem 0.9rem' }}>
+                                    {isClaimed ? (
+                                      <span style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        padding: '3px 8px',
+                                        borderRadius: '100px',
+                                        backgroundColor: 'rgba(239,68,68,0.15)',
+                                        color: '#EF4444',
+                                        border: '1px solid rgba(239,68,68,0.4)',
+                                        fontSize: '0.72rem',
+                                        fontWeight: 800
+                                      }}>
+                                        🔴 ACTIVADO
+                                      </span>
+                                    ) : (
+                                      <span style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                        padding: '3px 8px',
+                                        borderRadius: '100px',
+                                        backgroundColor: 'rgba(74,222,128,0.12)',
+                                        color: '#4ADE80',
+                                        border: '1px solid rgba(74,222,128,0.3)',
+                                        fontSize: '0.72rem',
+                                        fontWeight: 800
+                                      }}>
+                                        🟢 LIBRE
+                                      </span>
+                                    )}
+                                  </td>
+
+                                  <td style={{ padding: '0.75rem 0.9rem' }}>
+                                    {isClaimed && sticker.phone ? (
+                                      <a
+                                        href={`https://wa.me/52${sticker.phone.replace(/\D/g, '')}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                          color: '#25D366',
+                                          fontWeight: 700,
+                                          textDecoration: 'none',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '4px'
+                                        }}
+                                        title="Chatear con el usuario"
+                                      >
+                                        <Smartphone size={13} />
+                                        <span>{sticker.phone}</span>
+                                      </a>
+                                    ) : (
+                                      <span style={{ color: '#64748B' }}>—</span>
+                                    )}
+                                  </td>
+
+                                  <td style={{ padding: '0.75rem 0.9rem', fontSize: '0.75rem', color: '#94A3B8' }}>
+                                    {sticker.claimed_at ? new Date(sticker.claimed_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}
+                                  </td>
+
+                                  <td style={{ padding: '0.75rem 0.9rem', textAlign: 'right' }}>
+                                    <div style={{ display: 'inline-flex', gap: '4px', alignItems: 'center' }}>
+                                      <button
+                                        type="button"
+                                        onClick={() => setSelectedDigitalSticker(sticker)}
+                                        title="Ver Código QR Digital"
+                                        style={{
+                                          padding: '5px 8px',
+                                          borderRadius: '7px',
+                                          backgroundColor: isJuarSticker ? 'rgba(239,68,68,0.2)' : 'rgba(212,175,55,0.2)',
+                                          border: isJuarSticker ? '1px solid #EF4444' : '1px solid var(--accent-gold)',
+                                          color: isJuarSticker ? '#FCA5A5' : 'var(--accent-gold)',
+                                          fontSize: '0.72rem',
+                                          fontWeight: 700,
+                                          cursor: 'pointer',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '3px'
+                                        }}
+                                      >
+                                        <QrCode size={13} /> QR
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const cityParam = isJuarSticker ? '&city=juarez' : '';
+                                          const link = `https://redidentidad.vercel.app/registro?c=${sticker.code}${cityParam}`;
+                                          navigator.clipboard.writeText(link);
+                                          setCopiedStickerCode(sticker.code);
+                                          setTimeout(() => setCopiedStickerCode(null), 2500);
+                                        }}
+                                        title="Copiar enlace de activación"
+                                        style={{
+                                          padding: '5px 8px',
+                                          borderRadius: '7px',
+                                          backgroundColor: 'rgba(255,255,255,0.08)',
+                                          border: '1px solid rgba(255,255,255,0.15)',
+                                          color: '#FFF',
+                                          fontSize: '0.72rem',
+                                          fontWeight: 600,
+                                          cursor: 'pointer',
+                                          display: 'inline-flex',
+                                          alignItems: 'center'
+                                        }}
+                                      >
+                                        {copiedStickerCode === sticker.code ? <Check size={13} color="#4ADE80" /> : <Copy size={13} />}
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => setInspectingSticker(sticker)}
+                                        title="Inspeccionar todos los detalles"
+                                        style={{
+                                          padding: '5px 8px',
+                                          borderRadius: '7px',
+                                          backgroundColor: 'rgba(255,255,255,0.06)',
+                                          border: '1px solid rgba(255,255,255,0.1)',
+                                          color: '#CBD5E1',
+                                          fontSize: '0.72rem',
+                                          fontWeight: 600,
+                                          cursor: 'pointer',
+                                          display: 'inline-flex',
+                                          alignItems: 'center'
+                                        }}
+                                      >
+                                        <Eye size={13} />
+                                      </button>
+
+                                      {isClaimed && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleResetSingleSticker(sticker.id, sticker.code)}
+                                          title="Liberar código usado"
+                                          style={{
+                                            padding: '5px 8px',
+                                            borderRadius: '7px',
+                                            backgroundColor: 'rgba(239,68,68,0.15)',
+                                            border: '1px solid #EF4444',
+                                            color: '#FCA5A5',
+                                            fontSize: '0.72rem',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
+                                            display: 'inline-flex',
+                                            alignItems: 'center'
+                                          }}
+                                        >
+                                          <RotateCcw size={12} />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* ─────────────────────────────────────────────────────────────
+                        MODO 3: VISTA MATRIZ DE PINES (GRID MAPA DE CALOR)
+                       ───────────────────────────────────────────────────────────── */}
+                    {statusViewMode === 'matrix' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                        {/* Guía informativa de la matriz */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          flexWrap: 'wrap',
+                          gap: '0.5rem',
+                          padding: '0.6rem 0.9rem',
+                          backgroundColor: 'rgba(0,0,0,0.3)',
+                          borderRadius: '12px',
+                          border: '1px solid rgba(255,255,255,0.06)',
+                          fontSize: '0.76rem',
+                          color: '#94A3B8'
+                        }}>
+                          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#4ADE80', fontWeight: 700 }}>
+                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ADE80', display: 'inline-block' }} />
+                              Verde: Código Libre / Disponible
+                            </span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#EF4444', fontWeight: 700 }}>
+                              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444', display: 'inline-block' }} />
+                              Rojo: Activado por Cliente
+                            </span>
+                          </div>
+                          <span style={{ color: '#CBD5E1' }}>
+                            💡 Da clic en cualquier recuadro para ver detalles, su QR o liberarlo.
+                          </span>
+                        </div>
+
+                        {/* Grid de Pines */}
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(88px, 1fr))',
+                          gap: '6px'
+                        }}>
+                          {paginatedList.map((sticker) => {
+                            const isClaimed = !!sticker.phone;
+
+                            return (
+                              <button
+                                key={sticker.id || sticker.code}
+                                type="button"
+                                onClick={() => setInspectingSticker(sticker)}
+                                title={`${sticker.code} — ${isClaimed ? `Activado por ${sticker.phone}` : 'Disponible para entrega'}`}
+                                style={{
+                                  padding: '8px 4px',
+                                  borderRadius: '10px',
+                                  border: isClaimed ? '1px solid rgba(239, 68, 68, 0.45)' : '1px solid rgba(74, 222, 128, 0.35)',
+                                  backgroundColor: isClaimed ? 'rgba(239, 68, 68, 0.16)' : 'rgba(74, 222, 128, 0.12)',
+                                  color: isClaimed ? '#FCA5A5' : '#4ADE80',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '3px',
+                                  transition: 'transform 0.15s, background 0.15s',
+                                  minHeight: '52px'
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.06)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                              >
+                                <span style={{ fontSize: '0.78rem', fontWeight: 800, fontFamily: 'monospace', letterSpacing: '-0.02em' }}>
+                                  {sticker.code}
+                                </span>
+                                <span style={{
+                                  fontSize: '0.62rem',
+                                  fontWeight: 800,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '2px',
+                                  color: isClaimed ? '#EF4444' : '#22C55E'
+                                }}>
+                                  {isClaimed ? '● Usado' : '● Libre'}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ─────────────────────────────────────────────────────────────
+                        MODO 4: VISTA EN TARJETAS DETALLADAS (PAGINADA)
+                       ───────────────────────────────────────────────────────────── */}
+                    {statusViewMode === 'cards' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                        {paginatedList.map((sticker) => {
+                          const isClaimed = !!sticker.phone;
+                          const isDig = sticker.code?.startsWith('DIG-') || sticker.level === 'digital';
+                          const isTrial = sticker.code?.startsWith('TRIAL-') || sticker.level === 'trial';
+                          const isJuarSticker = isJuarezSticker(sticker);
+                          const effectiveLevel = isDig ? 'digital' : isTrial ? 'trial' : isJuarSticker ? 'juarense_oficial' : sticker.level;
+                          const levelColor = isJuarSticker ? '#EF4444' : effectiveLevel === 'digital' ? '#38BDF8' : effectiveLevel === 'trial' ? '#4ADE80' : effectiveLevel === 'gold' ? 'var(--accent-gold)' : effectiveLevel === 'silver' ? 'var(--accent-silver)' : effectiveLevel === 'campechana_rosa' ? '#FF5C9D' : effectiveLevel === 'campechana_negra' ? '#D4AF37' : 'var(--accent-white)';
+
+                          return (
+                            <div
+                              key={sticker.id || sticker.code}
+                              style={{
+                                backgroundColor: isClaimed ? 'rgba(255, 68, 68, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                                border: isClaimed ? '1px solid rgba(255, 68, 68, 0.2)' : '1px solid rgba(255, 255, 255, 0.08)',
+                                borderRadius: '16px',
+                                padding: '1rem 1.2rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.8rem'
+                              }}
+                            >
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                                  <span style={{ fontSize: '1.1rem', fontWeight: 800, fontFamily: 'monospace', color: '#FFF' }}>
+                                    {sticker.code}
+                                  </span>
+
+                                  <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', border: `1px solid ${levelColor}`, color: levelColor, textTransform: 'uppercase' }}>
+                                    {formatStickerLabel(effectiveLevel)}
+                                  </span>
+
+                                  {sticker.member_number && (
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontFamily: 'monospace' }}>
+                                      #{String(sticker.member_number).padStart(4, '0')}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {isClaimed ? (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(255,68,68,0.15)', color: '#FF4444', border: '1px solid rgba(255,68,68,0.4)', padding: '4px 10px', borderRadius: '100px', fontSize: '0.72rem', fontWeight: 800 }}>
+                                    <XCircle size={14} /> USADO / ACTIVADO
+                                  </div>
+                                ) : (
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: 'rgba(74,222,128,0.12)', color: '#4ADE80', border: '1px solid rgba(74,222,128,0.3)', padding: '4px 10px', borderRadius: '100px', fontSize: '0.72rem', fontWeight: 800 }}>
+                                    <CheckCircle size={14} /> DISPONIBLE / SIN USAR
+                                  </div>
+                                )}
+                              </div>
+
+                              {isClaimed && (
+                                <div style={{
+                                  backgroundColor: 'rgba(0,0,0,0.25)',
+                                  borderRadius: '10px',
+                                  padding: '0.8rem',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  flexWrap: 'wrap',
+                                  gap: '0.8rem',
+                                  fontSize: '0.8rem'
+                                }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#FFF', fontWeight: 600 }}>
+                                      <Smartphone size={15} color="var(--accent-gold)" /> WhatsApp: {sticker.phone}
+                                    </div>
+                                    {sticker.claimed_at && (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-dim)', fontSize: '0.75rem' }}>
+                                        <Clock size={14} /> Activado el: {new Date(sticker.claimed_at).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <button
+                                    onClick={() => handleResetSingleSticker(sticker.id, sticker.code)}
+                                    style={{
+                                      padding: '0.4rem 0.8rem',
+                                      borderRadius: '8px',
+                                      backgroundColor: 'rgba(212,175,55,0.15)',
+                                      border: '1px solid var(--accent-gold)',
+                                      color: 'var(--accent-gold)',
+                                      fontSize: '0.75rem',
+                                      fontWeight: 700,
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '4px'
+                                    }}
+                                  >
+                                    <RotateCcw size={13} /> Liberar Código
+                                  </button>
+                                </div>
+                              )}
+
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                flexWrap: 'wrap',
+                                gap: '0.6rem',
+                                borderTop: '1px solid rgba(255,255,255,0.06)',
+                                paddingTop: '0.65rem'
+                              }}>
+                                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                  <button
+                                    onClick={() => setSelectedDigitalSticker(sticker)}
+                                    style={{
+                                      padding: '0.42rem 0.85rem',
+                                      borderRadius: '8px',
+                                      backgroundColor: isJuarSticker ? '#DC2626' : 'rgba(212,175,55,0.2)',
+                                      color: isJuarSticker ? '#FFF' : 'var(--accent-gold)',
+                                      border: isJuarSticker ? 'none' : '1px solid var(--accent-gold)',
+                                      fontSize: '0.75rem',
+                                      fontWeight: 700,
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '5px'
+                                    }}
+                                  >
+                                    <QrCode size={14} /> Ver QR Digital
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      const cityParam = isJuarSticker ? '&city=juarez' : '';
+                                      const link = `https://redidentidad.vercel.app/registro?c=${sticker.code}${cityParam}`;
+                                      navigator.clipboard.writeText(link);
+                                      setCopiedStickerCode(sticker.code);
+                                      setTimeout(() => setCopiedStickerCode(null), 2500);
+                                    }}
+                                    style={{
+                                      padding: '0.42rem 0.85rem',
+                                      borderRadius: '8px',
+                                      backgroundColor: 'rgba(255,255,255,0.08)',
+                                      border: '1px solid rgba(255,255,255,0.15)',
+                                      color: '#FFF',
+                                      fontSize: '0.75rem',
+                                      fontWeight: 600,
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '5px'
+                                    }}
+                                  >
+                                    {copiedStickerCode === sticker.code ? <Check size={14} color="#4ADE80" /> : <Copy size={14} />}
+                                    <span>{copiedStickerCode === sticker.code ? '¡Copiado!' : 'Copiar Link'}</span>
+                                  </button>
+
+                                  <button
+                                    onClick={() => {
+                                      const cityParam = isJuarSticker ? '&city=juarez' : '';
+                                      const link = `https://redidentidad.vercel.app/registro?c=${sticker.code}${cityParam}`;
+                                      const msg = `¡Hola! Aquí tienes tu Membresía Digital Oficial Juárez Conecta (${sticker.code}). Ábrela en tu celular para activar tus descuentos: ${link}`;
+                                      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+                                    }}
+                                    style={{
+                                      padding: '0.42rem 0.85rem',
+                                      borderRadius: '8px',
+                                      backgroundColor: 'rgba(37, 211, 102, 0.15)',
+                                      border: '1px solid #25D366',
+                                      color: '#25D366',
+                                      fontSize: '0.75rem',
+                                      fontWeight: 700,
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '5px'
+                                    }}
+                                  >
+                                    <Smartphone size={14} /> WhatsApp
+                                  </button>
+                                </div>
+
+                                <button
+                                  onClick={() => {
+                                    const cityParam = isJuarSticker ? '&city=juarez' : '';
+                                    const testUrl = `https://redidentidad.vercel.app/registro?c=${sticker.code}${cityParam}`;
+                                    window.open(testUrl, '_blank');
+                                  }}
+                                  style={{
+                                    padding: '0.4rem 0.75rem',
+                                    borderRadius: '8px',
+                                    backgroundColor: 'transparent',
+                                    border: '1px solid rgba(255,255,255,0.15)',
+                                    color: '#A0A0A8',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  <ExternalLink size={12} /> Probar Escaneo
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* ─────────────────────────────────────────────────────────────
+                        BARRA INFERIOR DE PAGINACIÓN INTELIGENTE
+                       ───────────────────────────────────────────────────────────── */}
+                    {statusViewMode !== 'batches' && (
                       <div style={{
+                        marginTop: '1.2rem',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         flexWrap: 'wrap',
-                        gap: '0.6rem',
-                        borderTop: '1px solid rgba(255,255,255,0.06)',
-                        paddingTop: '0.65rem'
+                        gap: '1rem',
+                        padding: '1rem',
+                        backgroundColor: 'rgba(0,0,0,0.3)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(255,255,255,0.06)'
                       }}>
-                        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                          <button
-                            onClick={() => setSelectedDigitalSticker(sticker)}
-                            style={{
-                              padding: '0.42rem 0.85rem',
-                              borderRadius: '8px',
-                              backgroundColor: isJuarSticker ? '#DC2626' : 'rgba(212,175,55,0.2)',
-                              color: isJuarSticker ? '#FFF' : 'var(--accent-gold)',
-                              border: isJuarSticker ? 'none' : '1px solid var(--accent-gold)',
-                              fontSize: '0.75rem',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '5px'
-                            }}
-                          >
-                            <QrCode size={14} /> Ver QR Digital
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              const cityParam = isJuarSticker ? '&city=juarez' : '';
-                              const link = `https://redidentidad.vercel.app/registro?c=${sticker.code}${cityParam}`;
-                              navigator.clipboard.writeText(link);
-                              setCopiedStickerCode(sticker.code);
-                              setTimeout(() => setCopiedStickerCode(null), 2500);
-                            }}
-                            style={{
-                              padding: '0.42rem 0.85rem',
-                              borderRadius: '8px',
-                              backgroundColor: 'rgba(255,255,255,0.08)',
-                              border: '1px solid rgba(255,255,255,0.15)',
-                              color: '#FFF',
-                              fontSize: '0.75rem',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '5px'
-                            }}
-                          >
-                            {copiedStickerCode === sticker.code ? <Check size={14} color="#4ADE80" /> : <Copy size={14} />}
-                            <span>{copiedStickerCode === sticker.code ? '¡Copiado!' : 'Copiar Link'}</span>
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              const cityParam = isJuarSticker ? '&city=juarez' : '';
-                              const link = `https://redidentidad.vercel.app/registro?c=${sticker.code}${cityParam}`;
-                              const msg = `¡Hola! Aquí tienes tu Membresía Digital Oficial Juárez Conecta (${sticker.code}). Ábrela en tu celular para activar tus descuentos: ${link}`;
-                              window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-                            }}
-                            style={{
-                              padding: '0.42rem 0.85rem',
-                              borderRadius: '8px',
-                              backgroundColor: 'rgba(37, 211, 102, 0.15)',
-                              border: '1px solid #25D366',
-                              color: '#25D366',
-                              fontSize: '0.75rem',
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '5px'
-                            }}
-                          >
-                            <Smartphone size={14} /> WhatsApp
-                          </button>
+                        {/* Selector de Tamaño de Página */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                          <span style={{ fontSize: '0.75rem', color: '#94A3B8' }}>Mostrar por página:</span>
+                          {[25, 50, 100].map((sz) => (
+                            <button
+                              key={sz}
+                              type="button"
+                              onClick={() => { setStatusPageSize(sz); setStatusCurrentPage(1); }}
+                              style={{
+                                padding: '3px 8px',
+                                borderRadius: '7px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                backgroundColor: statusPageSize === sz ? 'var(--accent-gold)' : 'rgba(255,255,255,0.08)',
+                                color: statusPageSize === sz ? '#000' : '#AAA'
+                              }}
+                            >
+                              {sz}
+                            </button>
+                          ))}
                         </div>
 
-                        <button
-                          onClick={() => {
-                            const cityParam = isJuarSticker ? '&city=juarez' : '';
-                            const testUrl = `https://redidentidad.vercel.app/registro?c=${sticker.code}${cityParam}`;
-                            window.open(testUrl, '_blank');
-                          }}
-                          style={{
-                            padding: '0.4rem 0.75rem',
-                            borderRadius: '8px',
-                            backgroundColor: 'transparent',
-                            border: '1px solid rgba(255,255,255,0.15)',
-                            color: '#A0A0A8',
-                            fontSize: '0.72rem',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          <ExternalLink size={12} /> Probar Escaneo
-                        </button>
+                        {/* Rango de Códigos */}
+                        <div style={{ fontSize: '0.78rem', color: '#94A3B8' }}>
+                          Mostrando <strong>{startIndex + 1}</strong> - <strong>{Math.min(startIndex + statusPageSize, finalFilteredList.length)}</strong> de <strong>{finalFilteredList.length}</strong> códigos
+                        </div>
+
+                        {/* Botones Anterior / Siguiente */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <button
+                            type="button"
+                            disabled={safeCurrentPage <= 1}
+                            onClick={() => setStatusCurrentPage(prev => Math.max(1, prev - 1))}
+                            style={{
+                              padding: '0.45rem 0.8rem',
+                              borderRadius: '9px',
+                              border: '1px solid rgba(255,255,255,0.15)',
+                              backgroundColor: 'rgba(255,255,255,0.06)',
+                              color: safeCurrentPage <= 1 ? '#555' : '#FFF',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              cursor: safeCurrentPage <= 1 ? 'not-allowed' : 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            <ChevronLeft size={14} /> Anterior
+                          </button>
+
+                          <span style={{ fontSize: '0.78rem', padding: '0 8px', color: '#CBD5E1', fontWeight: 700 }}>
+                            Página {safeCurrentPage} de {totalPages}
+                          </span>
+
+                          <button
+                            type="button"
+                            disabled={safeCurrentPage >= totalPages}
+                            onClick={() => setStatusCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            style={{
+                              padding: '0.45rem 0.8rem',
+                              borderRadius: '9px',
+                              border: '1px solid rgba(255,255,255,0.15)',
+                              backgroundColor: 'rgba(255,255,255,0.06)',
+                              color: safeCurrentPage >= totalPages ? '#555' : '#FFF',
+                              fontSize: '0.78rem',
+                              fontWeight: 700,
+                              cursor: safeCurrentPage >= totalPages ? 'not-allowed' : 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            Siguiente <ChevronRight size={14} />
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  );
-                });
-              })()}
-            </div>
-          )}
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })()}
         </section>
+      )}
+
+      {/* ── MODAL DE INSPECCIÓN RÁPIDA DE CÓDIGO (MATRIZ / TABLA) ── */}
+      {inspectingSticker && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '1.2rem'
+        }}>
+          <div className="glass" style={{
+            width: '100%',
+            maxWidth: '480px',
+            borderRadius: '24px',
+            border: '1px solid rgba(212, 175, 55, 0.4)',
+            background: 'linear-gradient(135deg, rgba(28,28,34,0.98) 0%, rgba(14,14,18,0.99) 100%)',
+            padding: '1.8rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.2rem',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.8)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', color: 'var(--accent-gold)', fontWeight: 800, letterSpacing: '0.08em' }}>
+                  Auditoría de Código QR
+                </span>
+                <div style={{ fontSize: '1.6rem', fontWeight: 900, fontFamily: 'monospace', color: '#FFF' }}>
+                  {inspectingSticker.code}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInspectingSticker(null)}
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  border: 'none',
+                  color: '#FFF',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Estado Badge y Plaza */}
+            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              {inspectingSticker.phone ? (
+                <span style={{ padding: '4px 10px', borderRadius: '100px', backgroundColor: 'rgba(239,68,68,0.2)', color: '#EF4444', border: '1px solid #EF4444', fontSize: '0.75rem', fontWeight: 800 }}>
+                  🔴 ACTIVADO / EN USO
+                </span>
+              ) : (
+                <span style={{ padding: '4px 10px', borderRadius: '100px', backgroundColor: 'rgba(74,222,128,0.15)', color: '#4ADE80', border: '1px solid #4ADE80', fontSize: '0.75rem', fontWeight: 800 }}>
+                  🟢 LIBRE / DISPONIBLE
+                </span>
+              )}
+
+              {inspectingSticker.code?.startsWith('VJ') ? (
+                <span style={{ padding: '4px 10px', borderRadius: '100px', backgroundColor: 'rgba(239,68,68,0.12)', color: '#FCA5A5', fontSize: '0.75rem', fontWeight: 700 }}>
+                  🌵 Ciudad Juárez
+                </span>
+              ) : (
+                <span style={{ padding: '4px 10px', borderRadius: '100px', backgroundColor: 'rgba(212,175,55,0.15)', color: 'var(--accent-gold)', fontSize: '0.75rem', fontWeight: 700 }}>
+                  🏰 Campeche
+                </span>
+              )}
+
+              {inspectingSticker.member_number && (
+                <span style={{ fontSize: '0.75rem', color: '#94A3B8', fontFamily: 'monospace' }}>
+                  Socio #{String(inspectingSticker.member_number).padStart(4, '0')}
+                </span>
+              )}
+            </div>
+
+            {/* Datos si está activado */}
+            {inspectingSticker.phone && (
+              <div style={{
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                padding: '1rem',
+                borderRadius: '14px',
+                border: '1px solid rgba(255,255,255,0.08)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                fontSize: '0.84rem'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: '#94A3B8' }}>WhatsApp del Cliente:</span>
+                  <a
+                    href={`https://wa.me/52${inspectingSticker.phone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#25D366', fontWeight: 800, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '5px' }}
+                  >
+                    <Smartphone size={14} /> {inspectingSticker.phone}
+                  </a>
+                </div>
+                {inspectingSticker.claimed_at && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.76rem' }}>
+                    <span style={{ color: '#94A3B8' }}>Activado el:</span>
+                    <span style={{ color: '#CBD5E1' }}>
+                      {new Date(inspectingSticker.claimed_at).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' })}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Acciones principales */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '0.4rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const s = inspectingSticker;
+                  setInspectingSticker(null);
+                  setSelectedDigitalSticker(s);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '0.8rem',
+                  borderRadius: '12px',
+                  backgroundColor: 'var(--accent-gold)',
+                  color: '#000',
+                  border: 'none',
+                  fontWeight: 800,
+                  fontSize: '0.86rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <QrCode size={16} /> Ver Código QR Digital Grande
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const isJ = inspectingSticker.code?.startsWith('VJ');
+                  const cityParam = isJ ? '&city=juarez' : '';
+                  const link = `https://redidentidad.vercel.app/registro?c=${inspectingSticker.code}${cityParam}`;
+                  navigator.clipboard.writeText(link);
+                  alert('¡Enlace copiado al portapapeles!\n\n' + link);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  borderRadius: '12px',
+                  backgroundColor: 'rgba(255,255,255,0.08)',
+                  color: '#FFF',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  fontWeight: 600,
+                  fontSize: '0.84rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Copy size={15} /> Copiar Enlace de Activación
+              </button>
+
+              {inspectingSticker.phone && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleResetSingleSticker(inspectingSticker.id, inspectingSticker.code);
+                    setInspectingSticker(null);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    borderRadius: '12px',
+                    backgroundColor: 'rgba(239,68,68,0.15)',
+                    color: '#EF4444',
+                    border: '1px solid #EF4444',
+                    fontWeight: 700,
+                    fontSize: '0.84rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <RotateCcw size={15} /> Liberar Código (Volver a Disponible)
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Tab: Sorteos & Ruleta */}
