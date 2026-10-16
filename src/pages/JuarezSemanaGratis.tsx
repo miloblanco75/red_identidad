@@ -16,7 +16,6 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useCity } from '../contexts/CityContext';
 import { BuyStickerModal } from '../components/BuyStickerModal';
-import { recordQrScan } from '../lib/qrScanService';
 
 export const JuarezSemanaGratis: React.FC = () => {
   const navigate = useNavigate();
@@ -32,13 +31,9 @@ export const JuarezSemanaGratis: React.FC = () => {
   const [activePass, setActivePass] = useState<JuarezTrialPassData | null>(null);
   const [showBuyModal, setShowBuyModal] = useState(false);
 
-  // Asegurar que la ciudad sea juarez y registrar escaneo QR en tiempo real
+  // Asegurar que la ciudad sea juarez
   useEffect(() => {
     setCity('juarez');
-
-    // Registrar escaneo en tiempo real (calle / aliado)
-    const scanSource = searchParams.get('src') || searchParams.get('source') || searchParams.get('ref') || searchParams.get('ally');
-    recordQrScan('juarez', scanSource);
     
     // Revisar si ya tiene un pase guardado en este dispositivo
     const stored = getStoredJuarezTrialPass();

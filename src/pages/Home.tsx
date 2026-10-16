@@ -565,98 +565,98 @@ const Home: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* ── Campaña Masiva Callejera (7 Días Gratis): Campeche vs Juárez ── */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="glass"
-        style={{
-          marginTop: '0.8rem',
-          marginBottom: '1rem',
-          padding: '1.2rem 1.3rem',
-          borderRadius: '24px',
-          border: '2px solid rgba(212, 175, 55, 0.45)',
-          background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(20, 18, 12, 0.95) 100%)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.4), 0 0 25px rgba(212, 175, 55, 0.2)',
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            backgroundColor: 'rgba(212, 175, 55, 0.2)',
-            border: '1px solid #D4AF37',
-            color: '#FFD700',
-            padding: '4px 10px',
-            borderRadius: '100px',
-            fontSize: '0.72rem',
-            fontWeight: 800,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em'
-          }}>
-            {isJuarez ? '💥 Campaña Callejera Cd. Juárez' : '💥 Campaña Callejera Campeche'}
-          </span>
-          <span style={{ color: '#FFD700', fontSize: '0.75rem', fontWeight: 800 }}>
-            Sticker 12 x 12 cm
-          </span>
-        </div>
-
-        <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FFF', marginBottom: '4px', lineHeight: 1.25 }}>
-          Sticker de Misterio: "¿YA LA TRAES?"
-        </div>
-        <p style={{ fontSize: '0.8rem', color: '#E2E8F0', margin: '0 0 12px 0', lineHeight: 1.4 }}>
-          {isJuarez
-            ? <>Imprime stickers <strong>(4 por hoja tamaño carta)</strong> para paradas de camión y comercios en Cd. Juárez. Solo el código QR y la frase en grande <strong>¿YA LA TRAES?</strong>. Quien lo escanee recibe 7 días gratis en Juárez Conecta.</>
-            : <>Imprime stickers <strong>(4 por hoja tamaño carta)</strong> sin logotipos para paradas de camión y terminales. Solo el código QR y la frase en grande <strong>¿YA LA TRAES?</strong>. Quien lo escanee recibe 7 días gratis.</>}
-        </p>
-
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <button
-            onClick={() => window.open(isJuarez ? '/juarez/poster-mostrador' : '/campeche/poster-mostrador', '_blank')}
-            style={{
-              flex: 1,
-              minWidth: '180px',
-              padding: '0.85rem 1rem',
-              borderRadius: '14px',
-              backgroundColor: 'var(--accent-gold)',
-              color: '#121212',
-              fontWeight: 900,
-              fontSize: '0.88rem',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
+      {/* ── Campaña Masiva Callejera (7 Días Gratis): Exclusiva para Campeche ── */}
+      {!isJuarez && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="glass"
+          style={{
+            marginTop: '0.8rem',
+            marginBottom: '1rem',
+            padding: '1.2rem 1.3rem',
+            borderRadius: '24px',
+            border: '2px solid rgba(212, 175, 55, 0.45)',
+            background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.15) 0%, rgba(20, 18, 12, 0.95) 100%)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.4), 0 0 25px rgba(212, 175, 55, 0.2)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{
+              display: 'inline-flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: '0 0 20px rgba(212, 175, 55, 0.45)'
-            }}
-          >
-            <Printer size={16} /> Imprimir 4 Stickers por Hoja
-          </button>
-          <button
-            onClick={() => navigate(isJuarez ? '/juarez/semana-gratis' : '/campeche/semana-gratis')}
-            style={{
-              padding: '0.85rem 1rem',
-              borderRadius: '14px',
-              backgroundColor: 'rgba(255,255,255,0.06)',
-              color: '#FFF',
-              fontWeight: 700,
-              fontSize: '0.78rem',
-              border: '1px solid rgba(255,255,255,0.15)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <Sparkles size={14} color="#FFD700" /> Probar Escaneo
-          </button>
-        </div>
-      </motion.div>
+              gap: '6px',
+              backgroundColor: 'rgba(212, 175, 55, 0.2)',
+              border: '1px solid #D4AF37',
+              color: '#FFD700',
+              padding: '4px 10px',
+              borderRadius: '100px',
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              💥 Campaña Callejera Campeche
+            </span>
+            <span style={{ color: '#FFD700', fontSize: '0.75rem', fontWeight: 800 }}>
+              Sticker 12 x 12 cm
+            </span>
+          </div>
+
+          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FFF', marginBottom: '4px', lineHeight: 1.25 }}>
+            Sticker de Misterio: "¿YA LA TRAES?"
+          </div>
+          <p style={{ fontSize: '0.8rem', color: '#E2E8F0', margin: '0 0 12px 0', lineHeight: 1.4 }}>
+            Imprime stickers <strong>(4 por hoja tamaño carta)</strong> sin logotipos para paradas de camión y terminales de Campeche. Solo el código QR y la frase en grande <strong>¿YA LA TRAES?</strong>. Quien lo escanee recibe 7 días gratis.
+          </p>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => window.open('/campeche/poster-mostrador', '_blank')}
+              style={{
+                flex: 1,
+                minWidth: '180px',
+                padding: '0.85rem 1rem',
+                borderRadius: '14px',
+                backgroundColor: 'var(--accent-gold)',
+                color: '#121212',
+                fontWeight: 900,
+                fontSize: '0.88rem',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 0 20px rgba(212, 175, 55, 0.45)'
+              }}
+            >
+              <Printer size={16} /> Imprimir 4 Stickers por Hoja
+            </button>
+            <button
+              onClick={() => navigate('/campeche/semana-gratis')}
+              style={{
+                padding: '0.85rem 1rem',
+                borderRadius: '14px',
+                backgroundColor: 'rgba(255,255,255,0.06)',
+                color: '#FFF',
+                fontWeight: 700,
+                fontSize: '0.78rem',
+                border: '1px solid rgba(255,255,255,0.15)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Sparkles size={14} color="#FFD700" /> Probar Escaneo
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* ── Banner de Invitación al Pase de Cortesía (Para nuevos visitantes) ── */}
       {!user && (

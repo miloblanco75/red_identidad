@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 export interface QrScanLog {
   id: string;
   code: string;
-  city: 'campeche' | 'juarez';
+  city: 'campeche';
   source: string;
   sourceLabel: string;
   timestamp: string;
@@ -20,12 +20,15 @@ export interface QrCampaignStats {
   recentScans: QrScanLog[];
 }
 
-const LOCAL_SCANS_KEY = 'red_identidad_offline_qr_scans';
+const LOCAL_SCANS_KEY = 'red_identidad_campeche_qr_scans';
 
 /**
  * Normaliza la fuente del escaneo a partir de los query parameters.
  * NOTA CRUCIAL: Si viene vacío o sin parámetros, significa que proviene
- * del QR FÍSICO QUE YA ESTÁ PEGADO EN LAS CALLES de Campeche o Juárez.
+ * del QR FÍSICO QUE YA ESTÁ PEGADO EN LAS CALLES DE CAMPECHE.
+ * 
+ * En Ciudad Juárez NO EXISTE NI DEBE EXISTIR campaña callejera por
+ * seguridad (riesgo de clonación/quishing de QRs en vía pública).
  */
 export function normalizeScanSource(rawSource?: string | null): { source: string; sourceLabel: string } {
   if (!rawSource || rawSource.trim() === '') {
@@ -79,13 +82,16 @@ export function normalizeScanSource(rawSource?: string | null): { source: string
 }
 
 /**
- * Registra un escaneo QR en tiempo real cuando alguien abre la página.
- * Funciona de inmediato sin necesidad de cambiar los stickers ya pegados.
+ * Registra un escaneo QR en tiempo real para Campeche cuando alguien abre la página.
+ * Funciona de inmediato sin necesidad de cambiar los stickers que ya están pegados.
  */
-export async function recordQrScan(city: 'campeche' | 'juarez', rawSource?: string | null): Promise<boolean> {
+export async function recordQrScan(city: 'campeche', rawSource?: string | null): Promise<boolean> {
+  // Garantizar que la campaña Ya La Traes sea estrictamente de Campeche
+  if (city !== 'campeche') return false;
+
   const { source, sourceLabel } = normalizeScanSource(rawSource);
-  const sessionKey = `qr_scanned_session_${city}_${source}`;
-  const cooldownKey = `qr_cooldown_${city}_${source}`;
+  const sessionKey = `qr_scanned_session_campeche_${source}`;
+  const cooldownKey = `qr_cooldown_campeche_${source}`;
 
   try {
     // 1. Evitar contar recargas seguidas del mismo usuario (cooldown de 15 min por sesión)
@@ -104,13 +110,11 @@ export async function recordQrScan(city: 'campeche' | 'juarez', rawSource?: stri
     }
 
     const now = new Date();
-    const cityCode = city === 'juarez' ? 'JRA' : 'CAM';
     const randomSuffix = Math.floor(100 + Math.random() * 900);
-    const scanCode = `SCAN-${cityCode}-${Date.now().toString(36).toUpperCase()}-${randomSuffix}`;
-    const levelStr = `scan_${city}_${source}`.slice(0, 40);
+    const scanCode = `SCAN-CAM-${Date.now().toString(36).toUpperCase()}-${randomSuffix}`;
+    const levelStr = `scan_campeche_${source}`.slice(0, 40);
 
     // 2. Guardar en Supabase tabla 'stickers'
-    // phone tiene prefijo 'SCAN_' para que no se confunda con celular real ni con null
     const { error } = await supabase.from('stickers').insert([{
       code: scanCode,
       phone: `SCAN_${source.toUpperCase()}`,
@@ -120,7 +124,7 @@ export async function recordQrScan(city: 'campeche' | 'juarez', rawSource?: stri
     }]);
 
     if (error) {
-      console.warn('Registro de escaneo Supabase (aviso seguro):', error.message);
+      console.warn('Registro de escaneo Campeche (aviso seguro):', error.message);
     }
 
     // 3. Respaldo local
@@ -131,7 +135,7 @@ export async function recordQrScan(city: 'campeche' | 'juarez', rawSource?: stri
         list.unshift({
           id: scanCode,
           code: scanCode,
-          city,
+          city: 'campeche',
           source,
           sourceLabel,
           timestamp: now.toISOString()
@@ -142,15 +146,15 @@ export async function recordQrScan(city: 'campeche' | 'juarez', rawSource?: stri
 
     return true;
   } catch (err) {
-    console.error('Error al registrar escaneo QR:', err);
+    console.error('Error al registrar escaneo QR Campeche:', err);
     return false;
   }
 }
 
 /**
- * Consulta las métricas consolidadas de escaneos y activaciones de 7 días
+ * Consulta las métricas consolidadas de escaneos y activaciones de 7 días EXCLUSIVAMENTE de Campeche
  */
-export async function getQrCampaignStats(cityFilter: 'campeche' | 'juarez' | 'all' = 'all'): Promise<QrCampaignStats> {
+export async function getQrCampaignStats(): Promise<QrCampaignStats> {
   const result: QrCampaignStats = {
     totalScans: 0,
     streetScans: 0,
@@ -163,20 +167,13 @@ export async function getQrCampaignStats(cityFilter: 'campeche' | 'juarez' | 'al
   };
 
   try {
-    // 1. Obtener escaneos brutos desde Supabase
-    let scanQuery = supabase
+    // 1. Obtener escaneos brutos de Campeche desde Supabase
+    const { data: scanRows, error: scanErr } = await supabase
       .from('stickers')
       .select('code, level, phone, claimed_at, created_at')
-      .like('code', 'SCAN-%')
-      .order('claimed_at', { ascending: false });
-
-    if (cityFilter === 'campeche') {
-      scanQuery = scanQuery.or('code.ilike.SCAN-CAM-%,level.ilike.%campeche%');
-    } else if (cityFilter === 'juarez') {
-      scanQuery = scanQuery.or('code.ilike.SCAN-JRA-%,level.ilike.%juarez%');
-    }
-
-    const { data: scanRows, error: scanErr } = await scanQuery.limit(500);
+      .or('code.ilike.SCAN-CAM-%,level.ilike.%campeche%')
+      .order('claimed_at', { ascending: false })
+      .limit(500);
 
     if (!scanErr && scanRows && scanRows.length > 0) {
       result.totalScans = scanRows.length;
@@ -193,7 +190,7 @@ export async function getQrCampaignStats(cityFilter: 'campeche' | 'juarez' | 'al
           srcKey = 'calle_pegados';
           result.streetScans++;
         } else {
-          srcKey = lvl.replace('scan_campeche_', '').replace('scan_juarez_', '') || 'otros';
+          srcKey = lvl.replace('scan_campeche_', '') || 'otros';
           result.otherScans++;
         }
 
@@ -202,14 +199,13 @@ export async function getQrCampaignStats(cityFilter: 'campeche' | 'juarez' | 'al
 
       // Recientes
       result.recentScans = scanRows.slice(0, 15).map((row: any) => {
-        const isJuarez = row.code?.includes('-JRA-') || row.level?.includes('juarez');
         const rawSrc = (row.phone || '').replace('SCAN_', '').toLowerCase();
         const { source, sourceLabel } = normalizeScanSource(rawSrc);
 
         return {
           id: row.code,
           code: row.code,
-          city: isJuarez ? 'juarez' : 'campeche',
+          city: 'campeche',
           source,
           sourceLabel,
           timestamp: row.claimed_at || row.created_at || new Date().toISOString()
@@ -217,19 +213,11 @@ export async function getQrCampaignStats(cityFilter: 'campeche' | 'juarez' | 'al
       });
     }
 
-    // 2. Obtener activaciones de 7 días completadas (personas que dejaron su WhatsApp)
-    let trialQuery = supabase
+    // 2. Obtener activaciones de 7 días completadas de Campeche (personas que dejaron su WhatsApp)
+    const { count: trialCount, error: trialErr } = await supabase
       .from('stickers')
       .select('id, code, level, phone, member_number, claimed_at', { count: 'exact' })
-      .or('code.ilike.CAM-7D-%,code.ilike.VJ-7D-%,code.ilike.RED-7D-%,level.eq.trial_7d,level.eq.trial_7d_juarez,level.eq.trial_expired');
-
-    if (cityFilter === 'campeche') {
-      trialQuery = trialQuery.or('code.ilike.CAM-7D-%,code.ilike.RED-7D-%,level.eq.trial_7d');
-    } else if (cityFilter === 'juarez') {
-      trialQuery = trialQuery.or('code.ilike.VJ-7D-%,level.eq.trial_7d_juarez');
-    }
-
-    const { count: trialCount, error: trialErr } = await trialQuery;
+      .or('code.ilike.CAM-7D-%,code.ilike.RED-7D-%,level.eq.trial_7d');
 
     if (!trialErr && typeof trialCount === 'number') {
       result.totalTrials = trialCount;
@@ -259,7 +247,7 @@ export async function getQrCampaignStats(cityFilter: 'campeche' | 'juarez' | 'al
     }
 
   } catch (err) {
-    console.warn('Error obteniendo métricas de campaña QR:', err);
+    console.warn('Error obteniendo métricas de campaña QR Campeche:', err);
   }
 
   return result;

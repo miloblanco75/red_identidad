@@ -5,12 +5,7 @@ import {
 } from 'lucide-react';
 import { getQrCampaignStats, type QrCampaignStats } from '../lib/qrScanService';
 
-interface Props {
-  initialCity?: 'campeche' | 'juarez' | 'all';
-}
-
-export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) => {
-  const [cityFilter, setCityFilter] = useState<'all' | 'campeche' | 'juarez'>(initialCity);
+export const QrCampaignMetricsCard: React.FC = () => {
   const [stats, setStats] = useState<QrCampaignStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -18,11 +13,11 @@ export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) 
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const data = await getQrCampaignStats(cityFilter);
+      const data = await getQrCampaignStats();
       setStats(data);
       setLastUpdated(new Date());
     } catch (e) {
-      console.error('Error al cargar métricas QR:', e);
+      console.error('Error al cargar métricas QR Campeche:', e);
     } finally {
       setLoading(false);
     }
@@ -30,10 +25,10 @@ export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) 
 
   useEffect(() => {
     fetchStats();
-    // Auto-refresco suave cada 60 segundos si el admin tiene la pantalla abierta
+    // Auto-refresco cada 60 segundos si el admin tiene la pantalla abierta
     const interval = setInterval(fetchStats, 60000);
     return () => clearInterval(interval);
-  }, [cityFilter]);
+  }, []);
 
   const handleExportCsv = () => {
     if (!stats || stats.recentScans.length === 0) {
@@ -44,7 +39,7 @@ export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) 
     const headers = ['ID_ESCÁNEO,CIUDAD,ORIGEN_DETALLE,TIPO_CANAL,FECHA_HORA'];
     const rows = stats.recentScans.map(s => {
       const dateStr = new Date(s.timestamp).toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
-      return `"${s.code}","${s.city === 'juarez' ? 'Ciudad Juárez' : 'Campeche'}","${s.sourceLabel}","${s.source}","${dateStr}"`;
+      return `"${s.code}","San Francisco de Campeche","${s.sourceLabel}","${s.source}","${dateStr}"`;
     });
 
     const csvContent = [headers.join('\n'), ...rows].join('\n');
@@ -52,7 +47,7 @@ export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) 
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `metricas_escaneos_qr_${cityFilter}_${Date.now()}.csv`;
+    a.download = `metricas_escaneos_qr_campeche_${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -95,7 +90,7 @@ export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: '#FFF' }}>
-                Métricas en Vivo: Campaña "¿YA LA TRAES?"
+                Métricas en Vivo: Campaña "¿YA LA TRAES?" (Campeche)
               </h4>
               <span style={{
                 display: 'inline-flex',
@@ -120,42 +115,13 @@ export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) 
               </span>
             </div>
             <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: '#9CA3AF' }}>
-              Rastreo automático de cada persona que abre el QR con su cámara (incluye los stickers ya pegados en la calle).
+              Rastreo automático de cada persona que abre el QR con su cámara en Campeche (incluye los stickers que ya tienes pegados en la calle).
             </p>
           </div>
         </div>
 
-        {/* Filtros y Acciones */}
+        {/* Acciones */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <div style={{
-            display: 'flex',
-            background: 'rgba(255,255,255,0.06)',
-            padding: '3px',
-            borderRadius: '10px',
-            border: '1px solid rgba(255,255,255,0.1)'
-          }}>
-            {(['all', 'campeche', 'juarez'] as const).map(c => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCityFilter(c)}
-                style={{
-                  padding: '5px 12px',
-                  borderRadius: '7px',
-                  border: 'none',
-                  fontSize: '0.75rem',
-                  fontWeight: cityFilter === c ? 800 : 500,
-                  cursor: 'pointer',
-                  backgroundColor: cityFilter === c ? '#F59E0B' : 'transparent',
-                  color: cityFilter === c ? '#121212' : '#9CA3AF',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                {c === 'all' ? 'Todas' : c === 'campeche' ? 'Campeche' : 'Cd. Juárez'}
-              </button>
-            ))}
-          </div>
-
           <button
             type="button"
             onClick={fetchStats}
@@ -283,7 +249,7 @@ export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) 
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.75rem', color: '#86EFAC', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Pases 7D Activados
+              Pases 7D Campeche
             </span>
             <Smartphone size={16} color="#4ADE80" />
           </div>
@@ -309,8 +275,8 @@ export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) 
       }}>
         <AlertCircle size={18} color="#F59E0B" style={{ flexShrink: 0, marginTop: '2px' }} />
         <div style={{ fontSize: '0.78rem', color: '#E5E7EB', lineHeight: 1.45 }}>
-          <strong style={{ color: '#FCD34D' }}>Stickers Físicos en la Calle: </strong>
-          No tuviste que reimprimir nada. Cualquier calcomanía que ya esté pegada en paradas o postes dirige a la página oficial; cuando la persona apunta su cámara, el sistema la reconoce como <span style={{ color: '#60A5FA', fontWeight: 700 }}>"Sticker en Calle"</span> y la suma automáticamente aquí en milisegundos.
+          <strong style={{ color: '#FCD34D' }}>Stickers Físicos en Campeche: </strong>
+          No tuviste que reimprimir nada. Cualquier calcomanía que ya esté pegada en paradas o postes de Campeche dirige a la página oficial; cuando la persona apunta su cámara, el sistema la reconoce como <span style={{ color: '#60A5FA', fontWeight: 700 }}>"Sticker en Calle"</span> y la suma automáticamente aquí en milisegundos.
         </div>
       </div>
 
@@ -324,7 +290,7 @@ export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) 
         }}>
           <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#E5E7EB', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <Clock size={14} color="#9CA3AF" />
-            Últimos Escaneos Registrados ({stats?.recentScans.length ?? 0})
+            Últimos Escaneos en Campeche ({stats?.recentScans.length ?? 0})
           </span>
           <span style={{ fontSize: '0.7rem', color: '#6B7280' }}>
             Actualizado: {lastUpdated.toLocaleTimeString('es-MX')}
@@ -368,10 +334,10 @@ export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) 
                           borderRadius: '6px',
                           fontSize: '0.68rem',
                           fontWeight: 700,
-                          backgroundColor: scan.city === 'juarez' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)',
-                          color: scan.city === 'juarez' ? '#FCA5A5' : '#93C5FD'
+                          backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                          color: '#93C5FD'
                         }}>
-                          {scan.city === 'juarez' ? 'Cd. Juárez' : 'Campeche'}
+                          Campeche
                         </span>
                       </td>
                       <td style={{ padding: '8px 12px' }}>
@@ -404,7 +370,7 @@ export const QrCampaignMetricsCard: React.FC<Props> = ({ initialCity = 'all' }) 
             color: '#6B7280',
             fontSize: '0.8rem'
           }}>
-            Aún no se registran escaneos en este filtro. En cuanto un usuario apunte su cámara a los stickers, aparecerá aquí inmediatamente.
+            Aún no se registran escaneos en Campeche. En cuanto un usuario apunte su cámara a los stickers, aparecerá aquí inmediatamente.
           </div>
         )}
       </div>

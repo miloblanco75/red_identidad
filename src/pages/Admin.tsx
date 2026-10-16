@@ -2754,8 +2754,10 @@ const Admin: React.FC = () => {
       {/* ─── TAB: ESTATUS Y RASTREO DE CÓDIGOS QR / CALCOMANÍAS ─── */}
       {activeTab === 'status' && (
         <section className="glass" style={{ padding: '1.5rem', borderRadius: '24px' }}>
-          {/* Métricas en Vivo de la Campaña "¿YA LA TRAES?" (Escaneos QR) */}
-          <QrCampaignMetricsCard initialCity={statusCityFilter} />
+          {/* Métricas en Vivo de la Campaña "¿YA LA TRAES?" (Escaneos QR - Exclusiva para Campeche) */}
+          {statusCityFilter !== 'juarez' && userRole !== 'juarez_operator' && (
+            <QrCampaignMetricsCard />
+          )}
 
           {/* Banner Cartel Mostrador 7 Días para Juárez */}
           {(userRole === 'juarez_operator' || adminCity === 'juarez' || statusCityFilter === 'juarez') && (
