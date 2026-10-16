@@ -565,8 +565,8 @@ const Home: React.FC = () => {
         </div>
       </motion.div>
 
-      {/* ── Campaña Masiva Callejera (7 Días Gratis): Exclusiva para Campeche ── */}
-      {!isJuarez && (
+      {/* ── Campaña de 7 Días: Campeche (Callejera) vs Juárez (Mostrador Seguro en Comercios) ── */}
+      {!isJuarez ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -653,6 +653,96 @@ const Home: React.FC = () => {
               }}
             >
               <Sparkles size={14} color="#FFD700" /> Probar Escaneo
+            </button>
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="glass"
+          style={{
+            marginTop: '0.8rem',
+            marginBottom: '1rem',
+            padding: '1.2rem 1.3rem',
+            borderRadius: '24px',
+            border: '2px solid rgba(239, 68, 68, 0.45)',
+            background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(20, 12, 12, 0.95) 100%)',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.4), 0 0 25px rgba(239, 68, 68, 0.2)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: 'rgba(239, 68, 68, 0.2)',
+              border: '1px solid #EF4444',
+              color: '#FCA5A5',
+              padding: '4px 10px',
+              borderRadius: '100px',
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              🏢 Comercios Aliados Cd. Juárez
+            </span>
+            <span style={{ color: '#FCA5A5', fontSize: '0.75rem', fontWeight: 800 }}>
+              Cartel Oficial de Mostrador
+            </span>
+          </div>
+
+          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#FFF', marginBottom: '4px', lineHeight: 1.25 }}>
+            Cartel Mostrador: 7 Días Gratis en Negocios
+          </div>
+          <p style={{ fontSize: '0.8rem', color: '#E2E8F0', margin: '0 0 12px 0', lineHeight: 1.4 }}>
+            Imprime el cartel oficial para colocar en acrílicos sobre cajas o mesas de comercios aliados en Cd. Juárez con el logo oficial de <strong>Juárez Conecta</strong>. Tus clientes escanean dentro del establecimiento para activar 7 días gratis.
+          </p>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => window.open('/juarez/poster-mostrador', '_blank')}
+              style={{
+                flex: 1,
+                minWidth: '180px',
+                padding: '0.85rem 1rem',
+                borderRadius: '14px',
+                backgroundColor: '#DC2626',
+                color: '#FFF',
+                fontWeight: 900,
+                fontSize: '0.88rem',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                boxShadow: '0 0 20px rgba(220, 38, 38, 0.45)'
+              }}
+            >
+              <Printer size={16} /> Imprimir Cartel de Mostrador
+            </button>
+            <button
+              onClick={() => navigate('/juarez/semana-gratis')}
+              style={{
+                padding: '0.85rem 1rem',
+                borderRadius: '14px',
+                backgroundColor: 'rgba(255,255,255,0.06)',
+                color: '#FFF',
+                fontWeight: 700,
+                fontSize: '0.78rem',
+                border: '1px solid rgba(255,255,255,0.15)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <Sparkles size={14} color="#FCA5A5" /> Probar Pantalla
             </button>
           </div>
         </motion.div>
