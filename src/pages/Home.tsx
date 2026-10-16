@@ -184,6 +184,24 @@ const Home: React.FC = () => {
       name: 'Punto Valle del Sol',
       address: 'Zona Residencial Valle del Sol',
       phone: '526562859358'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Las Torres',
+      address: 'Av. de las Torres (Frente a Plaza Sendero)',
+      phone: '526562859358'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Zaragoza',
+      address: 'Av. Manuel J. Clouthier y Ramón Rayón',
+      phone: '526562859358'
+    },
+    {
+      city: 'Ciudad Juárez, Chih.',
+      name: 'Punto Sur Oriente',
+      address: 'Blvd. Talamás Camandari y Miguel de la Madrid',
+      phone: '526562859358'
     }
   ];
 

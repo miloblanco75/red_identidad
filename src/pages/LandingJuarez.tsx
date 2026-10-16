@@ -85,9 +85,12 @@ export const LandingJuarez: React.FC = () => {
     { id: 'j-1', name: 'Burritos & Tradición Fronteriza', category: 'Comida', discount: '15% de Descuento en tu consumo', zone: 'Gómez Morín' },
     { id: 'j-2', name: 'Royal Shine Auto Spa Juárez', category: 'Auto', discount: 'Lavado Express Gratis en tu 3ra visita', zone: 'Las Misiones' },
     { id: 'j-3', name: 'Barbería & Grooming El Paso del Norte', category: 'Servicios', discount: '10% OFF en corte y arreglo de barba', zone: 'Pronaf' },
-    { id: 'j-4', name: 'Café de la X Terraza', category: 'Comida', discount: 'Bebida de cortesía al ordenar alimento', zone: 'Plaza de la Mexicanidad' },
-    { id: 'j-5', name: 'Lounge 656', category: 'Entretenimiento', discount: 'Bebida de bienvenida de cortesía', zone: 'Gómez Morín' },
-    { id: 'j-6', name: 'Refacciones & Detallado Frontera', category: 'Auto', discount: '10% de Descuento en accesorios y refacciones', zone: 'Av. Tecnológico' }
+    { id: 'j-4', name: 'Carnitas & Tacos Las Torres 656', category: 'Comida', discount: '15% de Descuento en tu consumo', zone: 'Las Torres' },
+    { id: 'j-5', name: 'Burritos & Tortas El Puente', category: 'Comida', discount: '15% de Descuento + Café de Olla Gratis', zone: 'Zaragoza' },
+    { id: 'j-6', name: 'Taquería & Parrilla El Compa', category: 'Comida', discount: '15% OFF en paquetes familiares', zone: 'Sur Oriente' },
+    { id: 'j-7', name: 'Café de la X Terraza', category: 'Comida', discount: 'Bebida de cortesía al ordenar alimento', zone: 'Plaza de la Mexicanidad' },
+    { id: 'j-8', name: 'Lounge 656', category: 'Entretenimiento', discount: 'Bebida de bienvenida de cortesía', zone: 'Gómez Morín' },
+    { id: 'j-9', name: 'Refacciones & Detallado Frontera', category: 'Auto', discount: '10% de Descuento en accesorios y refacciones', zone: 'Las Torres' }
   ];
 
   const handleOpenBuy = (stickerId: string = 'juarense_oficial') => {
@@ -113,6 +116,24 @@ export const LandingJuarez: React.FC = () => {
       zone: 'Av. Paseo de la Victoria',
       city: 'Ciudad Juárez, Chih.',
       desc: 'Punto de atención oficial e información para miembros y aliados.'
+    },
+    {
+      name: 'Punto Las Torres',
+      zone: 'Av. de las Torres',
+      city: 'Ciudad Juárez, Chih.',
+      desc: 'Módulo de atención frente a Plaza Sendero Las Torres.'
+    },
+    {
+      name: 'Punto Zaragoza',
+      zone: 'Zaragoza / Waterfill',
+      city: 'Ciudad Juárez, Chih.',
+      desc: 'Atención presencial en Av. Manuel J. Clouthier y Ramón Rayón.'
+    },
+    {
+      name: 'Punto Sur Oriente',
+      zone: 'Sur Oriente / Talamás',
+      city: 'Ciudad Juárez, Chih.',
+      desc: 'Módulo de atención en Blvd. Talamás Camandari y Miguel de la Madrid.'
     },
     {
       name: 'Punto Pronaf / San Lorenzo',
@@ -150,7 +171,7 @@ export const LandingJuarez: React.FC = () => {
     },
     {
       q: '¿Dónde puedo conseguir el distintivo oficial en Ciudad Juárez?',
-      a: 'Puedes solicitarlo en línea aquí mismo con envío directo o acudir a cualquiera de nuestros puntos de venta en Gómez Morín, Las Misiones, Pronaf, Tecnológico o Valle del Sol.'
+      a: 'Puedes solicitarlo en línea aquí mismo con entrega inmediata a tu celular o acudir a cualquiera de nuestros puntos en Gómez Morín, Las Misiones, Las Torres, Zaragoza, Sur Oriente, Pronaf, Tecnológico o Valle del Sol.'
     },
     {
       q: '¿Cómo puedo registrar mi negocio como Comercio Aliado en Juárez?',
@@ -1929,8 +1950,11 @@ export const LandingJuarez: React.FC = () => {
                       >
                         <option>Gómez Morín / San Lorenzo</option>
                         <option>Las Misiones / Ejército Nal.</option>
-                        <option>Zona Pronaf / Chamizal</option>
+                        <option>Av. de las Torres</option>
+                        <option>Zaragoza / Waterfill</option>
+                        <option>Sur Oriente / Talamás</option>
                         <option>Valle del Sol</option>
+                        <option>Zona Pronaf / Chamizal</option>
                         <option>Centro Histórico</option>
                         <option>Av. Tecnológico / Aeropuerto</option>
                       </select>

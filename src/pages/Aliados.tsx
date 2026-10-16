@@ -148,11 +148,29 @@ export function getJuarezSubzone(ally: Ally): string {
   const isDigital = !ally.lat || !ally.lng || isNaN(Number(ally.lat)) || isNaN(Number(ally.lng)) || (Number(ally.lat) === 0 && Number(ally.lng) === 0);
   if (isDigital) return 'digitales';
 
+  const address = (ally.address || '').toLowerCase();
+  if (address.includes('zaragoza') || address.includes('waterfill') || address.includes('clouthier') || address.includes('rayón') || address.includes('rayon')) {
+    return 'zaragoza';
+  }
+  if (address.includes('talamas') || address.includes('talamás') || address.includes('sur oriente') || address.includes('riberas') || address.includes('parajes') || address.includes('independencia') || address.includes('tierra nueva')) {
+    return 'sur_oriente';
+  }
+  if (address.includes('torres') || address.includes('mitla') || address.includes('henequen') || address.includes('henequén')) {
+    return 'torres';
+  }
+  if (address.includes('valle del sol') || address.includes('calzada del sol')) {
+    return 'valle_sol';
+  }
+
   const lat = Number(ally.lat);
   const lng = Number(ally.lng);
+
+  if (lat < 31.625 || (lng > -106.370 && lat < 31.635)) return 'sur_oriente';
+  if (lng > -106.350) return 'zaragoza';
+  if (lng >= -106.398 && lng <= -106.375 && lat >= 31.640 && lat <= 31.685) return 'torres';
   if (lat > 31.725) return 'pronaf';
-  if (lat < 31.690) return 'valle_sol';
-  if (lng > -106.410 && lng < -106.395) return 'misiones';
+  if (lat < 31.695 && lng > -106.400) return 'valle_sol';
+  if (lng > -106.415 && lng < -106.395) return 'misiones';
   return 'gomez_morin';
 }
 

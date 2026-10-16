@@ -10,7 +10,7 @@ export interface JuarezAlly {
   lat: number;
   lng: number;
   address: string;
-  subzone: 'gomez_morin' | 'misiones' | 'pronaf' | 'valle_sol' | 'mexicanidad';
+  subzone: 'gomez_morin' | 'misiones' | 'pronaf' | 'valle_sol' | 'mexicanidad' | 'torres' | 'zaragoza' | 'sur_oriente';
   promotions_given: number;
   facebook_url?: string;
   website_url?: string;
@@ -133,10 +133,10 @@ export const juarezAlliesList: JuarezAlly[] = [
     name: 'Refaccionaria & Accesorios Frontera Norte',
     category: 'Auto',
     discount: '10% de Descuento en Baterías y Accesorios Automotrices',
-    lat: 31.6850,
-    lng: -106.4290,
+    lat: 31.6550,
+    lng: -106.3880,
     address: 'Av. de las Torres y Palacio de Mitla',
-    subzone: 'valle_sol',
+    subzone: 'torres',
     promotions_given: 78,
     facebook_url: 'https://facebook.com',
     website_url: '',
@@ -196,7 +196,7 @@ export const juarezAlliesList: JuarezAlly[] = [
     lat: 31.6680,
     lng: -106.3880,
     address: 'Av. de las Torres 890, Col. Henequén',
-    subzone: 'valle_sol',
+    subzone: 'torres',
     promotions_given: 62,
     facebook_url: 'https://facebook.com',
     website_url: '',
@@ -228,6 +228,129 @@ export const juarezAlliesList: JuarezAlly[] = [
     address: 'Paseo de la Victoria 3800, Galerías Tec',
     subzone: 'misiones',
     promotions_given: 105,
+    facebook_url: 'https://facebook.com',
+    website_url: '',
+    created_at: daysAgo(6),
+    isMock: true
+  },
+  // --- ZONA: LAS TORRES ---
+  {
+    id: 'j-ally-15',
+    name: 'Carnitas & Tacos Las Torres 656',
+    category: 'Comida',
+    discount: '15% de Descuento en Kilo de Carnitas + Refrescos de Cortesía',
+    lat: 31.6560,
+    lng: -106.3890,
+    address: 'Av. de las Torres 1450 (Frente a Plaza Sendero Las Torres)',
+    subzone: 'torres',
+    promotions_given: 98,
+    facebook_url: 'https://facebook.com',
+    website_url: '',
+    created_at: daysAgo(3),
+    isMock: true
+  },
+  {
+    id: 'j-ally-16',
+    name: 'Dentix Integral Las Torres',
+    category: 'Salud',
+    discount: '20% OFF en Limpieza Dental + Diagnóstico Digital sin Costo',
+    lat: 31.6620,
+    lng: -106.3910,
+    address: 'Plaza Las Torres Local 18, Av. de las Torres y Blvd. Zaragoza',
+    subzone: 'torres',
+    promotions_given: 75,
+    facebook_url: 'https://facebook.com',
+    website_url: '',
+    created_at: daysAgo(7),
+    isMock: true
+  },
+  // --- ZONA: ZARAGOZA / WATERFILL ---
+  {
+    id: 'j-ally-17',
+    name: 'Burritos & Tortas El Puente Zaragoza',
+    category: 'Comida',
+    discount: '15% de Descuento en Consumo Total + Café de Olla Gratis',
+    lat: 31.6420,
+    lng: -106.3290,
+    address: 'Carretera Juárez-Porvenir 1820, Col. Zaragoza',
+    subzone: 'zaragoza',
+    promotions_given: 160,
+    facebook_url: 'https://facebook.com',
+    website_url: '',
+    created_at: daysAgo(2),
+    isMock: true
+  },
+  {
+    id: 'j-ally-18',
+    name: 'Llantas y Frenos Zaragoza',
+    category: 'Auto',
+    discount: 'Alineación y Balanceo al 2x1 + 10% en Llantas Nuevas',
+    lat: 31.6390,
+    lng: -106.3360,
+    address: 'Av. Manuel J. Clouthier 405 (Cruce con Ramón Rayón, Zaragoza)',
+    subzone: 'zaragoza',
+    promotions_given: 88,
+    facebook_url: 'https://facebook.com',
+    website_url: '',
+    created_at: daysAgo(9),
+    isMock: true
+  },
+  {
+    id: 'j-ally-19',
+    name: 'Mariscos del Valle Waterfill',
+    category: 'Comida',
+    discount: '15% OFF en Ceviches y Platillos Especiales de la Casa',
+    lat: 31.6490,
+    lng: -106.3210,
+    address: 'Av. Waterfill 710 (a 3 min del Puente Internacional Zaragoza)',
+    subzone: 'zaragoza',
+    promotions_given: 125,
+    facebook_url: 'https://facebook.com',
+    website_url: '',
+    created_at: daysAgo(11),
+    isMock: true
+  },
+  // --- ZONA: SUR ORIENTE / TALAMÁS ---
+  {
+    id: 'j-ally-20',
+    name: 'Taquería & Parrilla El Compa Talamás',
+    category: 'Comida',
+    discount: '15% de Descuento en Paquetes Familiares y Parilladas',
+    lat: 31.6050,
+    lng: -106.3580,
+    address: 'Blvd. Talamás Camandari 4500, Fracc. Parajes de Oriente',
+    subzone: 'sur_oriente',
+    promotions_given: 142,
+    facebook_url: 'https://facebook.com',
+    website_url: '',
+    created_at: daysAgo(1),
+    isMock: true
+  },
+  {
+    id: 'j-ally-21',
+    name: 'Taller Mecánico & Suspensión Sur Oriente',
+    category: 'Auto',
+    discount: 'Diagnóstico por Computadora Gratis + 15% en Mano de Obra',
+    lat: 31.5980,
+    lng: -106.3650,
+    address: 'Av. Miguel de la Madrid 1205, Fracc. Tierra Nueva',
+    subzone: 'sur_oriente',
+    promotions_given: 71,
+    facebook_url: 'https://facebook.com',
+    website_url: '',
+    created_at: daysAgo(13),
+    isMock: true
+  },
+  {
+    id: 'j-ally-22',
+    name: 'Farmacia y Consultorio Médico Talamás',
+    category: 'Salud',
+    discount: 'Consulta Médica al 50% con Distintivo Oficial + 10% en Medicamentos',
+    lat: 31.6150,
+    lng: -106.3450,
+    address: 'Blvd. Independencia y Puerto de Palos, Zona Sur Oriente',
+    subzone: 'sur_oriente',
+    promotions_given: 93,
     facebook_url: 'https://facebook.com',
     website_url: '',
     created_at: daysAgo(6),
@@ -270,19 +393,43 @@ export const JUAREZ_ZONES: JuarezZoneOption[] = [
     zoom: 14
   },
   {
+    id: 'torres',
+    label: 'Av. de las Torres',
+    shortLabel: 'Las Torres',
+    icon: '🛣️',
+    center: [31.6550, -106.3880],
+    zoom: 14
+  },
+  {
+    id: 'zaragoza',
+    label: 'Zaragoza / Waterfill',
+    shortLabel: 'Zaragoza',
+    icon: '🌉',
+    center: [31.6420, -106.3280],
+    zoom: 14
+  },
+  {
+    id: 'sur_oriente',
+    label: 'Sur Oriente / Talamás',
+    shortLabel: 'Sur Oriente',
+    icon: '🌇',
+    center: [31.6050, -106.3550],
+    zoom: 13
+  },
+  {
+    id: 'valle_sol',
+    label: 'Valle del Sol',
+    shortLabel: 'Valle del Sol',
+    icon: '🏡',
+    center: [31.6890, -106.3950],
+    zoom: 14
+  },
+  {
     id: 'pronaf',
     label: 'Pronaf / San Lorenzo',
     shortLabel: 'Pronaf / Triunfo',
     icon: '🏛️',
     center: [31.7330, -106.4440],
-    zoom: 14
-  },
-  {
-    id: 'valle_sol',
-    label: 'Valle del Sol / Torres',
-    shortLabel: 'Valle del Sol',
-    icon: '🏡',
-    center: [31.6850, -106.3950],
     zoom: 14
   },
   {
