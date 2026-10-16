@@ -26,6 +26,7 @@ const JuarezPosterStand = React.lazy(() => import('./pages/JuarezPosterStand'));
 const JuarezManual = React.lazy(() => import('./pages/JuarezManual'));
 const CampechePosterStand = React.lazy(() => import('./pages/CampechePosterStand'));
 const CampecheSemanaGratis = React.lazy(() => import('./pages/CampecheSemanaGratis'));
+const GaleriasPropuesta = React.lazy(() => import('./pages/GaleriasPropuesta'));
 
 // Layout para la Web App Móvil con su contenedor optimizado y navegación inferior
 const MobileAppLayout: React.FC = () => {
@@ -70,6 +71,11 @@ function App() {
               <Route path="/campeche/poster-mostrador" element={<CampechePosterStand />} />
               <Route path="/campeche/cartel-qr" element={<CampechePosterStand />} />
               <Route path="/campeche/qr-12x12" element={<CampechePosterStand />} />
+
+              {/* Propuesta Ejecutiva y Simulador Exclusivo: Galerías Campeche (Estacionamiento) */}
+              <Route path="/propuesta-galerias" element={<GaleriasPropuesta />} />
+              <Route path="/galerias" element={<GaleriasPropuesta />} />
+              <Route path="/galerias-campeche" element={<GaleriasPropuesta />} />
 
               {/* Rutas explícitas para Juárez Conecta (Ciudad Juárez) */}
               <Route path="/juarez" element={<LandingJuarez />} />
