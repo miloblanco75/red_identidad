@@ -15,13 +15,17 @@ interface BuyStickerModalProps {
 
 export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClose, initialSticker }) => {
   const { isJuarez } = useCity();
-  const effectiveIsJuarez = isJuarez || initialSticker?.includes('juarense') || initialSticker?.includes('juarez');
+  const effectiveIsJuarez = isJuarez;
 
   const [activeTab, setActiveTab] = useState<'online' | 'stores'>('online');
   const [membershipType, setMembershipType] = useState<'digital' | 'physical'>('digital');
-  const [selectedSticker, setSelectedSticker] = useState<string>(
-    effectiveIsJuarez ? 'juarense_oficial' : (initialSticker || 'campechano_negra')
-  );
+  const [selectedSticker, setSelectedSticker] = useState<string>(() => {
+    if (effectiveIsJuarez) return 'juarense_oficial';
+    if (initialSticker && !initialSticker.includes('juarense') && !initialSticker.includes('juarez')) {
+      return initialSticker;
+    }
+    return 'campechano_negra';
+  });
   const [fullName, setFullName] = useState('');
   const [userPhone, setUserPhone] = useState('');
   const [isOrdered, setIsOrdered] = useState(false);
@@ -31,10 +35,14 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
     if (effectiveIsJuarez) {
       setSelectedSticker('juarense_oficial');
       setMembershipType('digital');
-    } else if (initialSticker) {
-      setSelectedSticker(initialSticker);
+    } else {
+      if (initialSticker && !initialSticker.includes('juarense') && !initialSticker.includes('juarez')) {
+        setSelectedSticker(initialSticker);
+      } else {
+        setSelectedSticker('campechano_negra');
+      }
     }
-  }, [initialSticker, effectiveIsJuarez]);
+  }, [initialSticker, effectiveIsJuarez, isOpen]);
 
   const ADMIN_PHONE = effectiveIsJuarez ? '526562859358' : '9811971305';
   const currentPrice = effectiveIsJuarez ? 80 : (membershipType === 'digital' ? PRODUCTS.digital.price : PRODUCTS.physical.price);
@@ -488,11 +496,13 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                               cursor: 'pointer'
                             }}
                           >
-                            {stickerOptions.map((s) => (
-                              <option key={s.id} value={s.id} style={{ color: '#000' }}>
-                                {s.label}
-                              </option>
-                            ))}
+                            {stickerOptions
+                              .filter((s) => effectiveIsJuarez ? s.id.includes('juarense') : !s.id.includes('juarense'))
+                              .map((s) => (
+                                <option key={s.id} value={s.id} style={{ color: '#000' }}>
+                                  {s.label}
+                                </option>
+                              ))}
                           </select>
                         </div>
                       )}
@@ -624,10 +634,14 @@ export const BuyStickerModal: React.FC<BuyStickerModalProps> = ({ isOpen, onClos
                 /* Puntos de Venta Físicos */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-dim)', marginBottom: '0.2rem' }}>
-                    Adquiere tu calcomanía física oficial de $90 MXN de forma presencial en efectivo en los siguientes puntos oficiales:
+                    {effectiveIsJuarez
+                      ? 'Adquiere tu distintivo oficial en efectivo en los siguientes puntos oficiales en Ciudad Juárez:'
+                      : 'Adquiere tu calcomanía física oficial de $90 MXN de forma presencial en efectivo en los siguientes puntos oficiales en Campeche:'}
                   </p>
 
-                  {physicalStores.map((store, idx) => (
+                  {physicalStores
+                    .filter((store) => effectiveIsJuarez ? store.city.includes('Juárez') : !store.city.includes('Juárez'))
+                    .map((store, idx) => (
                     <div
                       key={idx}
                       style={{

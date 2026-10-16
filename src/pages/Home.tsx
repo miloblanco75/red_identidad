@@ -132,13 +132,15 @@ const Home: React.FC = () => {
   const [showUploadPhotoModal, setShowUploadPhotoModal] = useState(false);
   const [showSorteosModal, setShowSorteosModal] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-  const [initialStickerSelection, setInitialStickerSelection] = useState<string>(() => isJuarez ? 'juarense_blanca' : 'campechano_negra');
+  const [initialStickerSelection, setInitialStickerSelection] = useState<string>(() => isJuarez ? 'juarense_oficial' : 'campechano_negra');
   const [gamificationProfile, setGamificationProfile] = useState<any>(null);
   const [showTrialModal, setShowTrialModal] = useState(() => searchParams.get('trial') === 'true' || searchParams.get('prueba') === 'true');
 
   useEffect(() => {
     if (isJuarez) {
-      setInitialStickerSelection('juarense_blanca');
+      setInitialStickerSelection('juarense_oficial');
+    } else {
+      setInitialStickerSelection('campechano_negra');
     }
   }, [isJuarez]);
 
@@ -364,7 +366,10 @@ const Home: React.FC = () => {
             return (
               <button
                 key={c.id}
-                onClick={() => setCity(c.id as any)}
+                onClick={() => {
+                  setCity(c.id as any);
+                  setInitialStickerSelection(c.id === 'juarez' ? 'juarense_oficial' : 'campechano_negra');
+                }}
                 style={{
                   background: isSelected ? 'var(--accent-gold)' : 'rgba(255, 255, 255, 0.06)',
                   color: isSelected ? '#121212' : '#C0C0C5',
@@ -1034,7 +1039,10 @@ const Home: React.FC = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setShowBuyModal(true)}
+                onClick={() => {
+                  setInitialStickerSelection(isJuarez ? 'juarense_oficial' : 'campechano_negra');
+                  setShowBuyModal(true);
+                }}
                 style={{
                   width: '100%',
                   padding: '1.15rem 1.5rem',
@@ -1866,7 +1874,10 @@ const Home: React.FC = () => {
           <motion.button
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => setShowBuyModal(true)}
+            onClick={() => {
+              setInitialStickerSelection(isJuarez ? 'juarense_oficial' : 'campechano_negra');
+              setShowBuyModal(true);
+            }}
             style={{
               width: '100%',
               maxWidth: '340px',
@@ -1971,7 +1982,10 @@ const Home: React.FC = () => {
       <SorteosPublicModal
         isOpen={showSorteosModal}
         onClose={() => setShowSorteosModal(false)}
-        onBuySticker={() => setShowBuyModal(true)}
+        onBuySticker={() => {
+          setInitialStickerSelection(isJuarez ? 'juarense_oficial' : 'campechano_negra');
+          setShowBuyModal(true);
+        }}
       />
 
       <LoyaltyPassportModal
@@ -1983,7 +1997,10 @@ const Home: React.FC = () => {
       <TrialPassModal
         isOpen={showTrialModal}
         onClose={() => setShowTrialModal(false)}
-        onBuyFullPass={() => setShowBuyModal(true)}
+        onBuyFullPass={() => {
+          setInitialStickerSelection(isJuarez ? 'juarense_oficial' : 'campechano_negra');
+          setShowBuyModal(true);
+        }}
       />
 
     </div>
