@@ -18,13 +18,26 @@ const Registro: React.FC = () => {
   const navigate = useNavigate();
   const codeParam = searchParams.get('c') || '';
 
-  const { isJuarez } = useCity();
+  const { city, setCity, isJuarez } = useCity();
   const [serial, setSerial] = useState(codeParam);
   const [phone, setPhone] = useState('');
   const isJuarezUser = isJuarez || 
     user?.level?.toLowerCase().includes('juarez') || 
     user?.code?.toLowerCase().includes('jua') || 
     user?.code?.toLowerCase().includes('vj');
+
+  // Sincronizar automáticamente la plaza correcta según el código o perfil
+  useEffect(() => {
+    const isJ = codeParam.toUpperCase().startsWith('VJ') || 
+                codeParam.toUpperCase().startsWith('JUA') ||
+                searchParams.get('city') === 'juarez' ||
+                searchParams.get('ciudad') === 'juarez' ||
+                user?.level?.toLowerCase().includes('juarez') ||
+                user?.code?.toUpperCase().startsWith('VJ');
+    if (isJ && city !== 'juarez') {
+      setCity('juarez');
+    }
+  }, [codeParam, searchParams, user, city, setCity]);
   const [isActivating, setIsActivating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [showTrialModal, setShowTrialModal] = useState(() => searchParams.get('trial') === 'true' || searchParams.get('prueba') === 'true');
@@ -83,8 +96,8 @@ const Registro: React.FC = () => {
   const isFounder = user?.code.toUpperCase().includes('FD') || serial.toUpperCase().includes('FD');
 
   const inviteLink = typeof window !== 'undefined'
-    ? `${window.location.origin}/?trial=true&ref=${user?.member_number || user?.code || 'socio'}`
-    : `https://redidentidad.vercel.app/?trial=true&ref=${user?.member_number || user?.code || 'socio'}`;
+    ? `${window.location.origin}/?trial=true${isJuarezUser ? '&city=juarez' : ''}&ref=${user?.member_number || user?.code || 'socio'}`
+    : `https://redidentidad.vercel.app/?trial=true${isJuarezUser ? '&city=juarez' : ''}&ref=${user?.member_number || user?.code || 'socio'}`;
 
   const handleShareWhatsApp = () => {
     const text = isJuarezUser

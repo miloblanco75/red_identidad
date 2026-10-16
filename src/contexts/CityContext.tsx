@@ -31,7 +31,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const path = window.location.pathname.toLowerCase();
 
       if (isJuarezHost || path.startsWith('/juarez') || path.startsWith('/vivejuarez') || path.startsWith('/juarez-conecta')) return 'juarez';
-      if (path === '/' || path.startsWith('/campeche') || path.startsWith('/landing')) return 'campeche';
+      if (path.startsWith('/campeche') || path.startsWith('/landing')) return 'campeche';
 
       const saved = localStorage.getItem('selected_city') as CityId;
       if (saved && ['campeche', 'carmen', 'juarez'].includes(saved)) {
@@ -49,15 +49,15 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Sincronizar parámetro en la URL para evitar que query params desfasados reviertan la elección
     try {
-      const params = new URLSearchParams(location.search);
+      const params = new URLSearchParams(window.location.search);
       if (params.get('city') !== newCity) {
         params.set('city', newCity);
         params.delete('ciudad');
         navigate(
           {
-            pathname: location.pathname,
+            pathname: window.location.pathname,
             search: params.toString() ? `?${params.toString()}` : '',
-            hash: location.hash
+            hash: window.location.hash
           },
           { replace: true }
         );
@@ -65,7 +65,7 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // Ignorar si navigate no está disponible
     }
-  }, [location, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -84,8 +84,15 @@ export const CityProvider: React.FC<{ children: React.ReactNode }> = ({ children
       targetCity = 'carmen';
     } else if (isJuarezHost || path.startsWith('/juarez') || path.startsWith('/vivejuarez') || path.startsWith('/juarez-conecta')) {
       targetCity = 'juarez';
-    } else if (path === '/' || path.startsWith('/campeche') || path.startsWith('/landing')) {
+    } else if (path.startsWith('/campeche') || path.startsWith('/landing')) {
       targetCity = 'campeche';
+    } else if (path === '/') {
+      const saved = typeof window !== 'undefined' ? (localStorage.getItem('selected_city') as CityId) : null;
+      if (saved && ['campeche', 'carmen', 'juarez'].includes(saved)) {
+        targetCity = saved;
+      } else {
+        targetCity = 'campeche';
+      }
     }
 
     if (targetCity) {
