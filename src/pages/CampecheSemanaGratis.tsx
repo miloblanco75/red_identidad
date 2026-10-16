@@ -17,6 +17,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useCity } from '../contexts/CityContext';
 import { BuyStickerModal } from '../components/BuyStickerModal';
+import { recordQrScan } from '../lib/qrScanService';
 
 export const CampecheSemanaGratis: React.FC = () => {
   const navigate = useNavigate();
@@ -34,9 +35,13 @@ export const CampecheSemanaGratis: React.FC = () => {
 
   const formRef = useRef<HTMLDivElement>(null);
 
-  // Asegurar que la ciudad sea campeche
+  // Asegurar que la ciudad sea campeche y registrar el escaneo QR en tiempo real
   useEffect(() => {
     setCity('campeche');
+
+    // Registrar escaneo en tiempo real (calle / galerias / aliado)
+    const scanSource = searchParams.get('src') || searchParams.get('source') || searchParams.get('ref') || searchParams.get('ally');
+    recordQrScan('campeche', scanSource);
     
     // Revisar si ya tiene un pase guardado en este dispositivo
     const stored = getStoredCampecheTrialPass();
@@ -48,7 +53,7 @@ export const CampecheSemanaGratis: React.FC = () => {
         setActivePass(stored);
       }
     }
-  }, [setCity]);
+  }, [setCity, searchParams]);
 
   const scrollToForm = () => {
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
